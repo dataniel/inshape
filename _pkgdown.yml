@@ -23,6 +23,7 @@ reference:
     contents:
       - describe_key
       - describe_panel
+      - describe_spells
       - describe_varying
 
   - title: Checkpoints

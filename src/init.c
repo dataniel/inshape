@@ -10,6 +10,7 @@ SEXP lustrum_panel_scan(SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_panel_missing(SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_spell_status(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_spell_lookup(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+SEXP lustrum_spell_relations(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef call_methods[] = {
     {"lustrum_dense_ids", (DL_FUNC) &lustrum_dense_ids, 2},
@@ -18,6 +19,7 @@ static const R_CallMethodDef call_methods[] = {
     {"lustrum_panel_missing", (DL_FUNC) &lustrum_panel_missing, 5},
     {"lustrum_spell_status", (DL_FUNC) &lustrum_spell_status, 8},
     {"lustrum_spell_lookup", (DL_FUNC) &lustrum_spell_lookup, 6},
+    {"lustrum_spell_relations", (DL_FUNC) &lustrum_spell_relations, 3},
     {NULL, NULL, 0}
 };
 

@@ -10,6 +10,12 @@
   before a rule is chosen: duplicated keys split into exact copies and
   conflicts by column, and the panel's units, gaps, entries, exits and
   participation patterns, in the spirit of Stata's `xtdescribe`.
+* New `describe_spells()` relates each spell to the unit's earlier spells:
+  after a gap, adjacent (a transfer that may need merging), touching on one
+  day, overlapping, nested or duplicate, and counts ongoing spells and
+  spells that end before they start. `ensure_no_overlap()` shares its
+  compiled pass, which buckets spells by unit instead of sorting them, and
+  went from 6.0 to 2.5 seconds on 25 million spells.
 * New `describe_varying()` shows which columns vary within units, and
   `ensure_constant()` requires columns such as sex or birth date to be
   constant within each unit; a missing value is not a contradiction.

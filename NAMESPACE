@@ -2,10 +2,12 @@
 
 S3method(print,lustrum_key)
 S3method(print,lustrum_panel)
+S3method(print,lustrum_spells)
 S3method(print,lustrum_varying)
 export(add_spell_status)
 export(describe_key)
 export(describe_panel)
+export(describe_spells)
 export(describe_varying)
 export(ensure_balanced)
 export(ensure_constant)

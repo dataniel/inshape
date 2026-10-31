@@ -19,8 +19,8 @@
 #'
 #' ## Where to start
 #'
-#' * [describe_key()], [describe_panel()] and [describe_varying()]: look at
-#'   the structure before choosing a rule.
+#' * [describe_key()], [describe_panel()], [describe_spells()] and
+#'   [describe_varying()]: look at the structure before choosing a rule.
 #' * [ensure_unique()]: a key identifies each row.
 #' * [ensure_balanced()]: every unit is observed in every period, or at
 #'   least has no gaps.

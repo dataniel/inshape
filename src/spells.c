@@ -2,6 +2,7 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <limits.h>
+#include <string.h>
 
 /* Status of each unit at the primo and ultimo point of each period.
 
@@ -105,6 +106,52 @@ SEXP lustrum_spell_status(SEXP start, SEXP end, SEXP groups, SEXP lo, SEXP hi,
     return out;
 }
 
+/* Each spell's relation to the earlier spells of its unit, for
+   describe_spells() and ensure_no_overlap(). Spells arrive sorted by unit,
+   start and, for equal starts, longest first, with an ongoing spell's end
+   as INT_MAX. Sorting first (data.table's multi-threaded radix sort) keeps
+   this pass sequential in memory, which is faster than bucketing rows by
+   unit and visiting them in place. `cover` is the latest end among the
+   unit's earlier spells; the relation is
+
+     0 first     the unit's first spell
+     1 gap       starts after a gap: start > cover + 1 (gap length kept)
+     2 adjacent  starts the period after cover: start == cover + 1
+     3 touching  starts on the period cover ends: start == cover
+     4 overlap   starts inside the cover and ends after it
+     5 nested    ends within the cover
+     6 duplicate same start and end as the spell before it */
+SEXP lustrum_spell_relations(SEXP unit_, SEXP start_, SEXP end_) {
+    R_xlen_t n = XLENGTH(unit_);
+    const int *unit = INTEGER(unit_), *s = INTEGER(start_), *e = INTEGER(end_);
+    SEXP rel_ = PROTECT(Rf_allocVector(INTSXP, n));
+    SEXP gap_ = PROTECT(Rf_allocVector(INTSXP, n));
+    int *rel = INTEGER(rel_), *gap = INTEGER(gap_);
+    int cover = 0;
+    for (R_xlen_t i = 0; i < n; i++) {
+        gap[i] = NA_INTEGER;
+        if (i == 0 || unit[i] != unit[i - 1]) {
+            rel[i] = 0;
+            cover = e[i];
+            continue;
+        }
+        if (s[i] == s[i - 1] && e[i] == e[i - 1]) rel[i] = 6;
+        else if (e[i] <= cover) rel[i] = 5;
+        else if (s[i] < cover) rel[i] = 4;
+        else if (s[i] == cover) rel[i] = 3;
+        else if ((double) s[i] == (double) cover + 1) rel[i] = 2;
+        else {
+            rel[i] = 1;
+            gap[i] = (int) ((double) s[i] - cover - 1);
+        }
+        if (e[i] > cover) cover = e[i];
+    }
+    SEXP out = PROTECT(Rf_allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(out, 0, rel_);
+    SET_VECTOR_ELT(out, 1, gap_);
+    UNPROTECT(3);
+    return out;
+}
 /* Status at arbitrary points, for add_spell_status(). Points arrive sorted
    by (unit, day); qgroups[k] .. qgroups[k + 1] - 1 are unit k's points, in
    the same unit order as the spell groups. Same pointer pass as above. */

@@ -60,15 +60,6 @@ test_that("a long spell of one unit does not carry over to the next unit", {
   expect_no_warning(ensure_no_overlap(ok, cpr, start, end))
 })
 
-test_that("cummax_by() matches a grouped cummax()", {
-  set.seed(1)
-  unit <- sort(sample(1:30, 300, TRUE))
-  unit <- match(unit, unique(unit))
-  x <- sample(c(-5:20, Inf), 300, TRUE)
-  expect_identical(cummax_by(x, unit), ave(x, unit, FUN = cummax))
-  expect_identical(cummax_by(numeric(), integer()), numeric())
-})
-
 test_that("spells of different units never overlap", {
   ok <- data.frame(cpr = c("a", "b"), start = c(2020, 2020), end = c(2021, 2021))
   expect_no_warning(ensure_no_overlap(ok, cpr, start, end))

@@ -32,6 +32,7 @@ pipeline.
 |---|---|---|
 | `describe_key()` | (look) duplicated keys, exact copies vs. conflicts | a summary |
 | `describe_panel()` | (look) units, gaps, entries, exits, patterns | a summary |
+| `describe_spells()` | (look) gaps, transfers, overlapping and nested spells | a summary |
 | `describe_varying()` | (look) which columns vary within units | a summary |
 | `ensure_constant()` | sex, birth date and the like are constant within a unit | the data |
 | `ensure_unique()` | the key columns identify each row | the data |
@@ -145,6 +146,26 @@ ensure_no_overlap(addresses, cpr, start, end)
 Spells are closed intervals, and a missing end means the spell is
 ongoing. The reported rows carry an `overlap_id` that groups spells
 overlapping each other, the same idea as `dupid`.
+
+Before requiring that, look at how the spells relate to each other.
+`describe_spells()` takes each unit's spells in order and says, for each,
+how it relates to the earlier ones: after a gap, adjacent (starting the
+day after one ends, often a transfer recorded as two spells), touching on
+one shared day, overlapping, nested or a duplicate. In patient registers
+up to a quarter of the entries can be such transfers, and counting spells
+without merging them first inflates every count.
+
+```{r}
+admissions <- tibble(
+  cpr   = c("a", "a", "a", "b", "b", "c"),
+  start = as.Date(c("2020-01-01", "2020-01-11", "2020-03-01",
+                    "2020-01-01", "2020-01-05", "2021-06-01")),
+  end   = as.Date(c("2020-01-10", "2020-01-20", "2020-03-05",
+                    "2020-01-31", "2020-01-10", NA))
+)
+
+describe_spells(admissions, cpr, start, end)
+```
 
 ## Attributes of the unit: `describe_varying()` and `ensure_constant()`
 

@@ -81,29 +81,19 @@ ensure_no_overlap <- function(data, id, start, end,
 
 # Overlapping spells with an `overlap_id` per connected group of spells.
 # Spells are sorted by integer unit id and start (see group_ids()), not by
-# the id columns themselves; only the overlapping spells, usually few, are
-# sorted by those for the report.
+# the id columns themselves, and the compiled pass of describe_spells()
+# relates each to the unit's earlier spells: a spell opens a new group
+# unless it starts on or before the latest end among them, i.e. unless it
+# is touching, overlapping, nested or a duplicate. Only the overlapping
+# spells, usually few, are sorted by the id columns for the report.
 find_overlaps <- function(data, ids, start_col, end_col) {
-  start <- as.numeric(data[[start_col]])
-  rows  <- which(!is.na(start))
-  spells <- data.table::data.table(
-    unit = group_ids(data, ids)[rows], start = start[rows], row = rows
-  )
-  data.table::setorderv(spells, c("unit", "start"))
+  start <- spell_numbers(data[[start_col]], start_col)
+  end   <- spell_numbers(data[[end_col]], end_col)
+  spells <- spell_scan(group_ids(data, ids), start, end, !is.na(start))
   rows  <- spells$row
-  unit  <- spells$unit
-  start <- spells$start
-  ends  <- as.numeric(data[[end_col]])[rows]
-  ends[is.na(ends)] <- Inf
-  n     <- length(rows)
-
-  # A spell opens a new group unless it starts on or before the latest end
-  # among the unit's earlier spells
-  new_unit   <- c(TRUE, unit[-1] != unit[-n])[seq_len(n)]
-  latest_end <- cummax_by(ends, cumsum(new_unit))
-  new_group  <- new_unit | start > c(-Inf, latest_end[-n])[seq_len(n)]
-  group      <- cumsum(new_group)
-  hit        <- tabulate(group)[group] > 1
+  start <- spells$s
+  group <- cumsum(spells$rel <= 2L)
+  hit   <- tabulate(group)[group] > 1
 
   # Report in the order of the id columns and start, as setorderv() sorts
   hits <- data.table::setDT(c(
@@ -116,21 +106,4 @@ find_overlaps <- function(data, ids, start_col, end_col) {
   out <- tibble::as_tibble(data)[hits$.row, ]
   tibble::add_column(out, overlap_id = match(hits$.group, unique(hits$.group)),
                      .before = 1)
-}
-
-# cummax() within runs of `unit` (consecutive 1, 2, ...), in one vectorised
-# pass. A grouped cummax() calls R once per unit, which is slow for a
-# population of persons. Ranks keep the values small (Inf included), and an
-# offset per unit lifts each unit above the previous one, so a single global
-# cummax() cannot carry over between units. Beyond the exact range of a
-# double, it falls back to the grouped cummax().
-cummax_by <- function(x, unit) {
-  if (length(x) == 0) return(x)
-  values <- sort(unique(x))
-  if (max(unit) * (length(values) + 1) > 2^52) {
-    return(stats::ave(x, unit, FUN = cummax))
-  }
-  rank   <- match(x, values)
-  offset <- (unit - 1) * (length(values) + 1)
-  values[cummax(rank + offset) - offset]
 }

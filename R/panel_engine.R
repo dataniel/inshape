@@ -15,12 +15,16 @@
 # and nearly all different.
 
 panel_index <- function(data, ids, time_col, periods) {
-  time <- data[[time_col]]
-  periods <- if (is.null(periods)) unique(time[!is.na(time)]) else unique(periods)
+  # The time column goes through the engine once; its few distinct values
+  # are then matched to the periods, and the positions spread back to rows
+  time  <- data[[time_col]]
+  code  <- dense_codes(time)
+  value <- time[first_row_by(code, attr(code, "n"))]
+  periods <- if (is.null(periods)) value[!is.na(value)] else unique(periods)
   periods <- sort(periods)
   unit <- group_ids(data, ids)
   list(unit = as.integer(unit), n_units = attr(unit, "n"),
-       pos = match(time, periods), periods = periods)
+       pos = match(value, periods)[code], periods = periods)
 }
 
 # Whether the bit matrix is cheap: at most 128 MB, or no larger than the

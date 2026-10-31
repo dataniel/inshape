@@ -78,6 +78,20 @@ test_that("ensure_no_overlap() finds the same overlaps as in memory", {
   expect_equal(remote$overlap_id, c(1, 1, 2, 2, 2, 3, 3))
 })
 
+test_that("ensure_constant() finds the same units as in memory", {
+  persons <- data.frame(
+    cpr = c("a", "a", "b", "b", "c", "c", NA, NA),
+    sex = c("F", "F", "M", "F", "M", NA, "F", "M")
+  )
+  tbl <- local_duck(persons)
+  remote <- violations_of(ensure_constant(tbl, cpr, sex))
+  local  <- violations_of(ensure_constant(persons, cpr, sex))
+  key <- function(v) dplyr::arrange(v, cpr, sex)
+  expect_equal(key(remote), key(local))
+  expect_equal(unique(local$cpr), c(NA, "b"))
+  expect_message(ensure_constant(local_duck(persons[3:6, ][-1, ]), cpr, sex), "Constant")
+})
+
 test_that("a failed check on a database table can be dumped", {
   tbl <- local_duck(df)
   dir <- withr::local_tempdir()

@@ -295,6 +295,24 @@ SEXP lustrum_dense_ids(SEXP x, SEXP threads_) {
     return res;
 }
 
+/* The first row (1-based) of each group 1..n_groups, 0 for an empty
+   group: one forward pass */
+SEXP lustrum_first_rows(SEXP ids_, SEXP n_groups_) {
+    R_xlen_t n = XLENGTH(ids_);
+    int k = Rf_asInteger(n_groups_);
+    const int *ids = INTEGER(ids_);
+    SEXP res = PROTECT(Rf_allocVector(INTSXP, k));
+    int *out = INTEGER(res);
+    memset(out, 0, (size_t) k * sizeof(int));
+    for (R_xlen_t i = 0; i < n; i++) {
+        int g = ids[i];
+        if (g < 1 || g > k) continue;
+        if (out[g - 1] == 0) out[g - 1] = (int) i + 1;
+    }
+    UNPROTECT(1);
+    return res;
+}
+
 /* Dense ids of 64-bit keys, for the panel engine (src/panel.c) */
 int lustrum_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads) {
     return n < (1 << 17) ? dense_serial(K_U64, keys, n, out)

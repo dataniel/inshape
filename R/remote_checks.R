@@ -133,6 +133,24 @@ remote_overlaps <- function(tbl, ids, start_col, end_col) {
     sort_by(rlang::exprs(.data$overlap_id, !!start, !!end))
 }
 
+# Rows of the units where a column has two different non-missing values,
+# as varying_units() in memory: min() and max() skip NULL in SQL, so they
+# differ exactly then.
+remote_varying <- function(tbl, ids, cols) {
+  tests <- lapply(rlang::syms(cols), function(col) {
+    rlang::expr(min(!!col, na.rm = TRUE) != max(!!col, na.rm = TRUE))
+  })
+  units <- tbl |>
+    dplyr::group_by(!!!rlang::syms(ids)) |>
+    dplyr::summarise(.lustrum_bad = !!Reduce(function(a, b) rlang::expr(!!a | !!b), tests),
+                     .groups = "drop") |>
+    dplyr::filter(.data$.lustrum_bad) |>
+    dplyr::select(dplyr::all_of(ids))
+  tbl |>
+    dplyr::semi_join(units, by = ids, na_matches = "na") |>
+    sort_by(na_first(ids))
+}
+
 # The finders return their query unsorted, since a sorted query that is
 # counted or summarised makes dbplyr warn, and attach the sort order for
 # report_check() to apply when rows are fetched.

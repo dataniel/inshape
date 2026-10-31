@@ -19,12 +19,14 @@
 #'
 #' ## Where to start
 #'
-#' * [describe_key()] and [describe_panel()]: look at the structure before
-#'   choosing a rule.
+#' * [describe_key()], [describe_panel()] and [describe_varying()]: look at
+#'   the structure before choosing a rule.
 #' * [ensure_unique()]: a key identifies each row.
 #' * [ensure_balanced()]: every unit is observed in every period, or at
 #'   least has no gaps.
 #' * [ensure_no_overlap()]: a unit is in one spell at a time.
+#' * [ensure_constant()]: sex, birth date and the like do not change within a
+#'   unit.
 #' * [spells_to_panel()] and [add_spell_status()]: from spells to a panel.
 #'
 #' The `ensure_*()` functions are checkpoints: they warn or abort with the

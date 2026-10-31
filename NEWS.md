@@ -10,6 +10,9 @@
   before a rule is chosen: duplicated keys split into exact copies and
   conflicts by column, and the panel's units, gaps, entries, exits and
   participation patterns, in the spirit of Stata's `xtdescribe`.
+* New `describe_varying()` shows which columns vary within units, and
+  `ensure_constant()` requires columns such as sex or birth date to be
+  constant within each unit; a missing value is not a contradiction.
 * A compiled grouping engine: keys are compressed to integer ids by a
   partitioned, multi-threaded hash (`options(lustrum.threads = )`, default
   data.table's threads), and panels are checked as bit matrices. On 25

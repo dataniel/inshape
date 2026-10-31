@@ -23,6 +23,7 @@ reference:
     contents:
       - describe_key
       - describe_panel
+      - describe_varying
 
   - title: Checkpoints
     desc: >
@@ -33,6 +34,7 @@ reference:
       - ensure_unique
       - ensure_balanced
       - ensure_no_overlap
+      - ensure_constant
       - checkpoints
 
   - title: Spells and panels

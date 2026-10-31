@@ -35,7 +35,9 @@ pak::pak("dataniel/lustrum")
 | `add_spell_status()` | Status from spells on a panel you already have, at primo/ultimo or on a date |
 | `describe_key()` | How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in |
 | `describe_panel()` | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
+| `describe_varying()` | Which columns vary within units: constant, nearly constant (errors) and varying |
 | `ensure_balanced()` | Every unit observed in every period, or no gaps (`gaps_only`) |
+| `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
 | `ensure_unique()` | Key columns identify each row uniquely |
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |

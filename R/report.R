@@ -107,13 +107,12 @@ check_data_frame <- function(data, call = rlang::caller_env()) {
 # Group ids for the key columns, without sorting or copying them ----------
 #
 # Sorting a character key such as cpr is the expensive step on a population
-# register, and grouping does not need an order. R stores each distinct
-# string once, and data.table::chmatch() uses that to find, for every row,
-# the first row with the same string in one linear pass. The ids below are
-# built from that: dense integers 1..k in order of first appearance, with
-# NA as a value of its own, as in duplicated().
+# register, and grouping does not need an order. Each column is compressed
+# to dense integer ids 1..k by the compiled engine (src/group.c), with NA
+# as a value of its own, as in match(); see dense_codes().
 
-# Dense ids from "index of the first row with this value", in one pass.
+# Dense ids from "index of the first row with this value", in one pass:
+# the fallback for vectors the compiled engine does not take.
 dense_ids <- function(first) {
   head <- first == seq_along(first)
   map <- integer(length(first))
@@ -122,17 +121,20 @@ dense_ids <- function(first) {
 }
 
 # Per row, the id of its combination of `cols`. Columns are combined by
-# arithmetic, `(id - 1) * k + code`, and only re-numbered through match()
+# arithmetic, `(id - 1) * k + code`, and only re-numbered by the engine
 # when the id space would outgrow the data. The number of groups (or an
 # upper bound on it) is kept in the "n" attribute, for tabulate().
 group_ids <- function(data, cols) {
   n  <- nrow(data)
-  id <- rep.int(1L, n)
+  id <- NULL
   k  <- 1
   for (col in cols) {
     code <- dense_codes(data[[col]])
     kx   <- attr(code, "n")
-    if (k * kx <= 4 * n && k * kx <= .Machine$integer.max) {
+    if (is.null(id)) {
+      id <- code
+      k  <- kx
+    } else if (k * kx <= 4 * n && k * kx <= .Machine$integer.max) {
       id <- (id - 1L) * kx + code
       k  <- k * kx
     } else {
@@ -140,6 +142,7 @@ group_ids <- function(data, cols) {
       k  <- attr(id, "n")
     }
   }
+  if (is.null(id)) id <- rep.int(1L, n)
   structure(as.vector(id), n = k)
 }
 
@@ -173,12 +176,10 @@ min_by <- function(value, group, n_groups) {
 
 max_by <- function(value, group, n_groups) -min_by(-value, group, n_groups)
 
-# The first row of each group, by the same last-write-wins rule.
+# The first row of each group (0 for a group without rows), in one
+# compiled forward pass.
 first_row_by <- function(group, n_groups) {
-  out <- integer(n_groups)
-  rows <- rev(seq_along(group))
-  out[group[rows]] <- rows
-  out
+  .Call(C_lustrum_first_rows, as.integer(group), as.integer(n_groups))
 }
 
 # Reports a violation set: success alert when empty, otherwise warning or

@@ -5,6 +5,7 @@
 #include <R_ext/Visibility.h>
 
 SEXP lustrum_dense_ids(SEXP, SEXP);
+SEXP lustrum_first_rows(SEXP, SEXP);
 SEXP lustrum_panel_scan(SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_panel_missing(SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_spell_status(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -12,6 +13,7 @@ SEXP lustrum_spell_lookup(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef call_methods[] = {
     {"lustrum_dense_ids", (DL_FUNC) &lustrum_dense_ids, 2},
+    {"lustrum_first_rows", (DL_FUNC) &lustrum_first_rows, 2},
     {"lustrum_panel_scan", (DL_FUNC) &lustrum_panel_scan, 5},
     {"lustrum_panel_missing", (DL_FUNC) &lustrum_panel_missing, 5},
     {"lustrum_spell_status", (DL_FUNC) &lustrum_spell_status, 8},

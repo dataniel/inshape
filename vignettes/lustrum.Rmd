@@ -32,6 +32,8 @@ pipeline.
 |---|---|---|
 | `describe_key()` | (look) duplicated keys, exact copies vs. conflicts | a summary |
 | `describe_panel()` | (look) units, gaps, entries, exits, patterns | a summary |
+| `describe_varying()` | (look) which columns vary within units | a summary |
+| `ensure_constant()` | sex, birth date and the like are constant within a unit | the data |
 | `ensure_unique()` | the key columns identify each row | the data |
 | `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
 | `ensure_no_overlap()` | a unit's spells do not overlap | the data |
@@ -143,6 +145,33 @@ ensure_no_overlap(addresses, cpr, start, end)
 Spells are closed intervals, and a missing end means the spell is
 ongoing. The reported rows carry an `overlap_id` that groups spells
 overlapping each other, the same idea as `dupid`.
+
+## Attributes of the unit: `describe_varying()` and `ensure_constant()`
+
+Sex and birth date belong to the person, not to the year, yet a panel
+repeats them on every row, and a person with two values is an error,
+usually of linkage or of a correction applied to some years only.
+`describe_varying()` shows which columns vary within units, from the
+constant to the varying. A column that varies for a handful of units out
+of millions is rarely meant to vary:
+
+```{r}
+persons <- tibble(
+  cpr    = c("a", "a", "b", "b", "c", "c"),
+  year   = c(2020, 2021, 2020, 2021, 2020, 2021),
+  sex    = c("F", "F", "M", "F", "M", NA),
+  income = c(100, 120, 90, 95, 80, 85)
+)
+
+describe_varying(persons, cpr)
+```
+
+`ensure_constant()` turns that into a rule and lists every row of the units
+that break it. A missing value is not a contradiction, so `c` passes:
+
+```{r}
+ensure_constant(persons, cpr, sex)
+```
 
 ## From spells to a panel: `spells_to_panel()`
 

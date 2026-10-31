@@ -27,12 +27,14 @@ censuses, which suits a package about periods.
 
 \subsection{Where to start}{
 \itemize{
-\item \code{\link[=describe_key]{describe_key()}} and \code{\link[=describe_panel]{describe_panel()}}: look at the structure before
-choosing a rule.
+\item \code{\link[=describe_key]{describe_key()}}, \code{\link[=describe_panel]{describe_panel()}} and \code{\link[=describe_varying]{describe_varying()}}: look at
+the structure before choosing a rule.
 \item \code{\link[=ensure_unique]{ensure_unique()}}: a key identifies each row.
 \item \code{\link[=ensure_balanced]{ensure_balanced()}}: every unit is observed in every period, or at
 least has no gaps.
 \item \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}: a unit is in one spell at a time.
+\item \code{\link[=ensure_constant]{ensure_constant()}}: sex, birth date and the like do not change within a
+unit.
 \item \code{\link[=spells_to_panel]{spells_to_panel()}} and \code{\link[=add_spell_status]{add_spell_status()}}: from spells to a panel.
 }
 

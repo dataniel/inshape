@@ -1,0 +1,171 @@
+---
+title: "Get started with lustrum"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started with lustrum}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+library(lustrum)
+library(tibble)
+```
+
+Register microdata comes in a few shapes: one row per unit, one row per
+unit and period (a panel), or one row per spell with a start and an end.
+Every analysis assumes the shape is right, and the errors that break it are
+silent: a duplicated key multiplies rows in a join, a missing year looks
+like an exit, an overlapping spell gives a person two addresses at once.
+
+lustrum checks the shape before anything is built on it. The `ensure_*()`
+functions are *checkpoints*: each states one rule, warns or aborts with the
+rows that break it, and returns the data, so it sits in a pipeline.
+
+| Function | The rule | Returns |
+|---|---|---|
+| `ensure_unique()` | the key columns identify each row | the data |
+| `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
+| `ensure_no_overlap()` | a unit's spells do not overlap | the data |
+| `spells_to_panel()` | (conversion) spells to a period panel | a panel |
+| `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
+
+## Keys: `ensure_unique()`
+
+Duplicate keys are the most common error in register data, and the most
+costly one sits right before a join. A lookup table with a duplicated key
+makes `left_join()` multiply rows without a word. Check the key first:
+
+```{r}
+df <- tibble(
+  cvr  = c("11111111", "22222222", "11111111"),
+  year = c(2024, 2024, 2024)
+)
+
+df |>
+  ensure_unique(cvr, year, warn_msg = "Duplicate company-years")
+```
+
+The reported rows carry a `dupid`, so the copies in each group sit
+together.
+
+## Panels: `ensure_balanced()`
+
+A yearly register extract is a panel: one row per person (or company) and
+year. Whether it is *balanced*, every unit present in every year, decides
+which methods are valid and often reveals a broken extract.
+
+```{r}
+panel <- tibble(
+  cpr  = c("a", "a", "a", "b", "b", "c"),
+  year = c(2020, 2021, 2022, 2020, 2022, 2022)
+)
+
+ensure_balanced(panel, cpr, year)
+```
+
+Real populations are rarely balanced. People are born, die and migrate.
+What usually *should* hold is that a unit, once present, does not skip a
+year before it leaves. `gaps_only = TRUE` checks that: `c` entering in
+2022 is fine, `b` missing in 2021 is not.
+
+```{r}
+ensure_balanced(panel, cpr, year, gaps_only = TRUE)
+```
+
+By default the expected years are those found in the data, so a year that
+was never loaded goes unnoticed. State the years you expect to catch that
+as well:
+
+```{r, eval = FALSE}
+ensure_balanced(panel, cpr, year, periods = 2015:2024, gaps_only = TRUE)
+```
+
+## Spells: `ensure_no_overlap()`
+
+The other shape of register data is spells: address periods, employment,
+benefit periods. A person has only one address at a time, so overlapping
+spells within a person are an error:
+
+```{r}
+addresses <- tibble(
+  cpr   = c("a", "a", "b", "b"),
+  start = as.Date(c("2020-01-01", "2021-01-01", "2020-01-01", "2020-06-01")),
+  end   = as.Date(c("2020-12-31", NA,           "2020-06-30", "2021-12-31"))
+)
+
+ensure_no_overlap(addresses, cpr, start, end)
+```
+
+Spells are closed intervals, and a missing end means the spell is
+ongoing. The reported rows carry an `overlap_id` that groups spells
+overlapping each other, the same idea as `dupid`.
+
+## From spells to a panel: `spells_to_panel()`
+
+`spells_to_panel()` turns spells into one row per unit and year (or
+`by = "quarter"`/`"month"`), with the status at primo and ultimo. By
+default primo is the previous ultimo, so primo 2021 is the status on 31
+December 2020.
+
+In an education register the status is the *outcome* of the spell, passed
+or dropped out. With `status_is = "outcome"`, a running spell shows as
+`ongoing` and the outcome applies from the end date until a new spell
+starts:
+
+```{r}
+education <- data.frame(
+  cpr    = c("a", "a", "b"),
+  start  = as.Date(c("2018-08-15", "2021-08-15", "2019-08-15")),
+  end    = as.Date(c("2021-06-20", NA,           "2020-03-01")),
+  status = c("passed", "in progress", "dropped out")
+)
+
+education |>
+  spells_to_panel(cpr, start, end, status,
+                  from = 2018, to = 2022,
+                  status_is = "outcome", ongoing = "in progress")
+```
+
+With the default `status_is = "state"`, the status holds for the whole
+spell (enrolled, on leave) and is `NA` outside spells. `from` and `to` give
+every unit the same window, which makes a balanced panel.
+
+## Status on a panel you have: `add_spell_status()`
+
+Often the panel exists already, and the spells should only add a status to
+it. A `left_join(join_by(between()))` does that until the data gets messy:
+overlapping spells duplicate rows, and an ongoing spell with no end matches
+nothing. `add_spell_status()` keeps the rows of the panel exactly as they
+are and uses the rules of `spells_to_panel()`:
+
+```{r}
+population <- data.frame(cpr  = c("a", "a", "b", "c"),
+                         year = c(2020, 2021, 2020, 2020))
+
+population |>
+  add_spell_status(education, cpr, year, start, end, status,
+                   status_is = "outcome", ongoing = "in progress")
+```
+
+## Unattended pipelines and large registers
+
+Set a log file and a dump directory once at the top of a script, and every
+checkpoint appends a line to the log and writes its offending rows to a
+CSV file:
+
+```{r, eval = FALSE}
+options(
+  lustrum.log  = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
+  lustrum.dump = "log/violations"
+)
+```
+
+A failure signals a condition of class `lustrum_failure` that carries the
+rows, so a scheduled job can catch it. A DuckDB or Arrow table is checked
+where it lives, and only the count and a preview are fetched into R. See
+`?checkpoints` for both.

@@ -1,0 +1,8 @@
+^\.claude$
+^\.github$
+^LICENSE\.md$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^benchmarks$
+^README\.Rmd$

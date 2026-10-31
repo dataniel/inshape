@@ -1,0 +1,33 @@
+# R build artefacts
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+.Rproj.user/
+
+# Package build
+*.tar.gz
+*.zip
+/doc/
+/Meta/
+/inst/doc/
+
+# devtools check output
+/*.Rcheck/
+
+# pkgdown site (built and deployed to gh-pages by CI)
+/docs/
+
+# Claude Code
+.claude/
+
+# Native R compilation
+src/*.o
+src/*.dll
+src/*.so
+src/*.dylib
+src/*.a
+src/*.rds
+
+# Local profiling output
+/benchmarks/*-profile.out

@@ -1,0 +1,40 @@
+url: https://dataniel.github.io/lustrum
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference]
+    right: [github]
+  components:
+    github:
+      icon: fab fa-github
+      href: https://github.com/dataniel/lustrum
+
+home:
+  strip_header: true
+
+reference:
+  - title: Checkpoints
+    desc: >
+      Each checkpoint states one rule about the structure of the data,
+      warns or aborts with the offending rows, and returns its input, so it
+      can sit in a pipeline.
+    contents:
+      - ensure_unique
+      - ensure_balanced
+      - ensure_no_overlap
+      - checkpoints
+
+  - title: Spells and panels
+    desc: >
+      Convert spell data to a period panel, or add the status from spells
+      to a panel you already have.
+    contents:
+      - spells_to_panel
+      - add_spell_status
+
+  - title: Package
+    contents:
+      - lustrum-package

@@ -1,0 +1,35 @@
+Package: lustrum
+Title: Structure Checks for Register Microdata
+Version: 0.1.0
+Authors@R: person("Daniel", "Madsen", email = "danielmadsen@live.dk",
+    role = c("aut", "cre"))
+Description: Check that register microdata has the structure an analysis
+    assumes: unique keys, balanced panels without gaps, spells that do not
+    overlap, and turn spell data into period panels with primo and ultimo
+    status. Built for full-population registers: keys are grouped in one
+    linear pass without sorting them, spell lookups run in compiled code,
+    and database and Arrow tables are checked where they live.
+License: MIT + file LICENSE
+URL: https://dataniel.github.io/lustrum, https://github.com/dataniel/lustrum
+BugReports: https://github.com/dataniel/lustrum/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Imports:
+    cli,
+    data.table,
+    dplyr,
+    rlang,
+    tibble
+Suggests:
+    arrow,
+    DBI,
+    dbplyr,
+    duckdb,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    withr
+Config/Needs/website: pkgdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

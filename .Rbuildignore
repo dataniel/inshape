@@ -6,3 +6,4 @@
 ^pkgdown$
 ^benchmarks$
 ^README\.Rmd$
+^dev$

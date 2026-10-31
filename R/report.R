@@ -147,7 +147,7 @@ group_ids <- function(data, cols) {
     if (is.null(id)) {
       id <- code
       k  <- kx
-    } else if (k * kx <= 4 * n && k * kx <= .Machine$integer.max) {
+    } else if (as.double(k) * kx <= min(4 * n, .Machine$integer.max)) {
       id <- (id - 1L) * kx + code
       k  <- k * kx
     } else {
@@ -156,6 +156,9 @@ group_ids <- function(data, cols) {
     }
   }
   if (is.null(id)) id <- rep.int(1L, n)
+  # Ids straight from dense_codes() carry only "n" already; copying them
+  # to drop attributes would cost 4 bytes a row, also on a cache hit
+  if (identical(names(attributes(id)), "n") && identical(attr(id, "n"), k)) return(id)
   structure(as.vector(id), n = k)
 }
 

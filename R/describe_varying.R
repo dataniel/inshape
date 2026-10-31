@@ -16,9 +16,11 @@
 #' numbers.
 #'
 #' @section Why it is fast:
-#' Units are grouped once by the compiled engine. For each column, every
-#' row is compared with the first non-missing value of its unit, a single
-#' linear pass with no hashing or sorting of the column.
+#' Units are grouped once by the compiled engine, and reused from its
+#' cache when the same id column was checked before (see [checkpoints]).
+#' For each column, one compiled pass compares every row with the first
+#' non-missing value of its unit, with no hashing or sorting of the column
+#' and one memory word of state per unit.
 #'
 #' @param data A data frame or tibble.
 #' @param id Column(s) identifying the unit (tidy-select), e.g. `cpr`.
@@ -75,9 +77,23 @@ describe_varying <- function(data, id, ...) {
 # Per unit (1..n_units): whether column `x` has two different non-missing
 # values (varying), both missing and non-missing values (partly_missing),
 # or only missing values (all_missing). Every row is compared with the
-# first non-missing value of its unit.
+# first non-missing value of its unit, in one compiled pass (src/group.c);
+# columns it does not take, such as integer64, go through the same
+# comparison in R.
 varying_units <- function(x, unit, n_units) {
   if (is.factor(x)) x <- as.integer(x)
+  flag <- if (!inherits(x, "integer64")) {
+    .Call(C_lustrum_varying_units, x, unit, as.integer(n_units))
+  }
+  if (!is.null(flag)) {
+    has_value <- bitwAnd(flag, 2L) > 0L
+    has_na    <- bitwAnd(flag, 4L) > 0L
+    return(list(
+      varying        = bitwAnd(flag, 1L) > 0L,
+      partly_missing = has_value & has_na,
+      all_missing    = !has_value & has_na
+    ))
+  }
   missing <- is.na(x)
   has <- which(!missing)
   first <- first_row_by(unit[has], n_units)

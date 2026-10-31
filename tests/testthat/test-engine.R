@@ -100,6 +100,10 @@ test_that("several columns group by their combination", {
                    c = sample(c(1.5, NA), 2e5, TRUE))
   id <- group_ids(df, c("a", "b", "c"))
   expect_true(same_groups(id, paste(df$a, df$b, df$c)))
+
+  # Two keys with 100,000 values each: the product passes the integer range
+  wide <- data.frame(a = sample.int(1e5), b = sample.int(1e5))
+  expect_true(same_groups(group_ids(wide, c("a", "b")), paste(wide$a, wide$b)))
 })
 
 test_that("the bit matrix and the sorted path summarise a panel alike", {

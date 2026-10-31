@@ -54,7 +54,8 @@ ensure_constant <- function(data, id, ...,
     bad <- Reduce(`|`, lapply(cols, function(col) {
       varying_units(data[[col]], unit, n_units)$varying
     }))
-    hit <- which(bad[unit])
+    # Usually no unit varies, and then the rows are not looked up at all
+    hit <- if (any(bad)) which(bad[unit]) else integer()
     out <- tibble::as_tibble(data)[hit, ]
     # Missing ids first, as data.table sorts them and the database query does
     o <- do.call(order, c(unname(as.list(out[ids])),

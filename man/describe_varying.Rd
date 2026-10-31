@@ -41,9 +41,11 @@ numbers.
 }
 \section{Why it is fast}{
 
-Units are grouped once by the compiled engine. For each column, every
-row is compared with the first non-missing value of its unit, a single
-linear pass with no hashing or sorting of the column.
+Units are grouped once by the compiled engine, and reused from its
+cache when the same id column was checked before (see \link{checkpoints}).
+For each column, one compiled pass compares every row with the first
+non-missing value of its unit, with no hashing or sorting of the column
+and one memory word of state per unit.
 }
 
 \examples{

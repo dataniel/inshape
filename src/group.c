@@ -360,6 +360,79 @@ SEXP lustrum_first_rows(SEXP ids_, SEXP n_groups_) {
     return res;
 }
 
+/* Two strings with different CHARSXPs can still be equal when one is
+   marked latin1, bytes or native and the other UTF-8; compare their text
+   then, as R's own == does */
+static int strings_differ(SEXP a, SEXP b) {
+    if (a == b) return 0;
+    if (Rf_getCharCE(a) == Rf_getCharCE(b)) return 1;
+    return strcmp(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b)) != 0;
+}
+
+/* Per unit, whether column x varies within it, for describe_varying()
+   and ensure_constant(): one pass that compares every non-missing value
+   with the first non-missing value of its unit. Returns an integer per
+   unit with bit 1 set for two different values, bit 2 for a value and
+   bit 4 for a missing value (NA or NaN, as is.na()), or NULL for a type
+   it does not take. */
+#define V_VARYING 1
+#define V_VALUE 2
+#define V_MISSING 4
+
+SEXP lustrum_varying_units(SEXP x, SEXP unit_, SEXP n_units_) {
+    R_xlen_t n = XLENGTH(x);
+    int k = Rf_asInteger(n_units_);
+    if (TYPEOF(unit_) != INTSXP || XLENGTH(unit_) != n) {
+        Rf_error("Unit ids must be an integer vector as long as the column.");
+    }
+    const int *unit = INTEGER(unit_);
+    int type = TYPEOF(x);
+    if (type != STRSXP && type != INTSXP && type != LGLSXP && type != REALSXP) {
+        return R_NilValue;
+    }
+    /* Per unit, the row of its first value (1-based, 0 for none yet) in
+       the low 32 bits and the flags above, in one word: unit ids from the
+       hash are spread over the table, not in row order, so every row
+       touches its unit's word at random, and one word per unit means one
+       cache miss per row instead of two. The word a few rows ahead is
+       prefetched while the current row is compared. */
+    uint64_t *state = (uint64_t *) R_alloc(k > 0 ? k : 1, sizeof(uint64_t));
+    memset(state, 0, (size_t) k * sizeof(uint64_t));
+    const R_xlen_t ahead = 16;
+
+#define VARYING_PASS(IS_NA, DIFFERS)                                   \
+    for (R_xlen_t i = 0; i < n; i++) {                                  \
+        if (i + ahead < n) {                                            \
+            unsigned v = (unsigned) unit[i + ahead] - 1;                \
+            if (v < (unsigned) k) __builtin_prefetch(state + v, 1);     \
+        }                                                               \
+        int u = unit[i] - 1;                                            \
+        if ((unsigned) u >= (unsigned) k) continue;                     \
+        uint64_t s = state[u];                                          \
+        if (IS_NA) { state[u] = s | ((uint64_t) V_MISSING << 32); continue; } \
+        R_xlen_t r = (R_xlen_t) (uint32_t) s;                           \
+        if (r == 0) state[u] = s | (uint64_t) (i + 1) | ((uint64_t) V_VALUE << 32); \
+        else if (DIFFERS) state[u] = s | ((uint64_t) V_VARYING << 32);  \
+    }
+
+    if (type == STRSXP) {
+        const SEXP *px = STRING_PTR_RO(x);
+        VARYING_PASS(px[i] == NA_STRING, strings_differ(px[i], px[r - 1]))
+    } else if (type == REALSXP) {
+        const double *px = REAL(x);
+        VARYING_PASS(ISNAN(px[i]), px[i] != px[r - 1])
+    } else {
+        const int *px = INTEGER(x);
+        VARYING_PASS(px[i] == NA_INTEGER, px[i] != px[r - 1])
+    }
+#undef VARYING_PASS
+    SEXP res = PROTECT(Rf_allocVector(INTSXP, k));
+    int *flag = INTEGER(res);
+    for (int u = 0; u < k; u++) flag[u] = (int) (state[u] >> 32);
+    UNPROTECT(1);
+    return res;
+}
+
 /* Dense ids of 64-bit keys, for the panel engine (src/panel.c) */
 int lustrum_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads) {
     return n < (1 << 17) ? dense_serial(K_U64, keys, n, out)

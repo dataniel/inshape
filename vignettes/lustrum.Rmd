@@ -38,6 +38,7 @@ pipeline.
 | `ensure_unique()` | the key columns identify each row | the data |
 | `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
 | `ensure_no_overlap()` | a unit's spells do not overlap | the data |
+| `ensure_within()` | no rows after death or emigration, or before birth | the data |
 | `merge_spells()` | (conversion) spells recorded as several, merged | merged spells |
 | `spells_to_panel()` | (conversion) spells to a period panel | a panel |
 | `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
@@ -203,6 +204,25 @@ that break it. A missing value is not a contradiction, so `c` passes:
 
 ```{r}
 ensure_constant(persons, cpr, sex)
+```
+
+## Within a lifetime: `ensure_within()`
+
+Registers are updated at different times, so a linked extract can hold a
+person after death or emigration, or income before birth. `ensure_within()`
+requires each row to lie between its own bounds, usually joined on from the
+population register. A yearly row counts by the year, so the year of death
+itself is fine:
+
+```{r}
+panel <- tibble(
+  cpr   = c("a", "a", "a", "b", "b"),
+  year  = c(2022, 2023, 2024, 2022, 2023),
+  born  = as.Date(c("1950-04-01", "1950-04-01", "1950-04-01", "2023-01-10", "2023-01-10")),
+  death = as.Date(c("2023-05-01", "2023-05-01", "2023-05-01", NA, NA))
+)
+
+ensure_within(panel, year, from = born, to = death)
 ```
 
 ## From spells to a panel: `spells_to_panel()`

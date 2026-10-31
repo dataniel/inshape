@@ -92,6 +92,27 @@ test_that("ensure_constant() finds the same units as in memory", {
   expect_message(ensure_constant(local_duck(persons[3:6, ][-1, ]), cpr, sex), "Constant")
 })
 
+test_that("ensure_within() finds the same rows as in memory", {
+  panel <- data.frame(
+    cpr   = c("a", "a", "a", "b", "b", "c"),
+    year  = c(2022L, 2023L, 2024L, 2022L, 2023L, NA),
+    day   = as.Date(c("2022-06-01", "2023-06-01", "2024-06-01", "2022-06-01", "2023-06-01", NA)),
+    born  = as.Date(c("1950-04-01", "1950-04-01", "1950-04-01", "2023-01-10", "2023-01-10", NA)),
+    death = as.Date(c("2023-05-01", "2023-05-01", "2023-05-01", NA, NA, "2020-01-01"))
+  )
+  tbl <- local_duck(panel)
+  key <- function(v) dplyr::arrange(v, cpr, year)
+  for (time in c("year", "day")) {
+    remote <- violations_of(ensure_within(tbl, dplyr::all_of(time), from = born, to = death))
+    local  <- violations_of(ensure_within(panel, dplyr::all_of(time), from = born, to = death))
+    expect_equal(key(remote), key(local), info = time)
+  }
+  remote <- violations_of(ensure_within(tbl, year, to = death))
+  expect_equal(remote$outside, "after death")
+  expect_message(ensure_within(local_duck(panel[4:5, ]), year, to = death),
+                 "All rows: year until death")
+})
+
 test_that("a failed check on a database table can be dumped", {
   tbl <- local_duck(df)
   dir <- withr::local_tempdir()

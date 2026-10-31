@@ -27,6 +27,8 @@
 #' * [ensure_no_overlap()]: a unit is in one spell at a time.
 #' * [ensure_constant()]: sex, birth date and the like do not change within a
 #'   unit.
+#' * [ensure_within()]: no one is observed after death or emigration, or
+#'   before birth.
 #' * [merge_spells()]: one spell recorded as several, merged into one.
 #' * [spells_to_panel()] and [add_spell_status()]: from spells to a panel.
 #'

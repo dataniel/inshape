@@ -111,5 +111,6 @@ their end in \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}.
 }
 }
 \seealso{
-\code{\link[=ensure_unique]{ensure_unique()}}, \code{\link[=ensure_balanced]{ensure_balanced()}}, \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}
+\code{\link[=ensure_unique]{ensure_unique()}}, \code{\link[=ensure_balanced]{ensure_balanced()}}, \code{\link[=ensure_no_overlap]{ensure_no_overlap()}},
+\code{\link[=ensure_constant]{ensure_constant()}}, \code{\link[=ensure_within]{ensure_within()}}
 }

@@ -108,6 +108,24 @@ fejl <- tryCatch(
 fejl
 
 
+# Ingen observationer efter død/udvandring eller før fødsel. Datoerne kommer
+# typisk fra befolkningsregistret og joines på. Her dør/udvandrer dem, der
+# forsvinder før 2023, i deres sidste år; 6 af dem har fået en række for
+# meget, som når en død registreres efter udtrækket.
+afgang <- personer |>
+  filter(sidste < 2023) |>
+  transmute(cpr, udgaaet = as.Date(paste0(sidste, "-06-30")))
+efter_doed <- slice_sample(afgang, n = 6)
+med_afgang <- ryddet |>
+  bind_rows(semi_join(ryddet, efter_doed, by = "cpr") |>
+              slice_max(aar, n = 1, by = cpr) |>
+              mutate(aar = aar + 1L)) |>
+  left_join(afgang, by = "cpr")
+
+# Året for død tæller med (personen levede en del af det); året efter ikke
+ensure_within(med_afgang, aar, from = foedt, to = udgaaet)
+
+
 # 4. Forløb: én række pr. forløb med start og slut --------------------------
 
 forloeb <- personer |>

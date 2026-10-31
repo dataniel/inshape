@@ -151,6 +151,45 @@ remote_varying <- function(tbl, ids, cols) {
     sort_by(na_first(ids))
 }
 
+# Rows outside their bounds, as find_outside() in memory. A comparison with
+# NULL is NULL, which WHERE drops, so missing bounds are open without a
+# test of their own. A date compared with a year counts by its year.
+remote_outside <- function(tbl, time_col, from_col, to_col) {
+  proto <- dplyr::collect(utils::head(
+    dplyr::select(tbl, dplyr::all_of(c(time_col, from_col, to_col))), 0L))
+  is_date <- function(col) inherits(proto[[col]], c("Date", "POSIXt"))
+  con <- dbplyr::remote_con(tbl)
+  on_scale <- function(col, other) {
+    if (is_date(col) && !is_date(other)) {
+      dbplyr::sql(paste0("EXTRACT(YEAR FROM ", DBI::dbQuoteIdentifier(con, col), ")"))
+    } else {
+      rlang::sym(col)
+    }
+  }
+  before <- if (length(from_col)) {
+    rlang::expr(!!on_scale(time_col, from_col) < !!on_scale(from_col, time_col))
+  }
+  after <- if (length(to_col)) {
+    rlang::expr(!!on_scale(time_col, to_col) > !!on_scale(to_col, time_col))
+  }
+  test <- if (is.null(before)) after else if (is.null(after)) before
+          else rlang::expr(!!before | !!after)
+  label <- if (is.null(before)) {
+    paste("after", to_col)
+  } else if (is.null(after)) {
+    paste("before", from_col)
+  } else {
+    rlang::expr(dplyr::case_when(!!before ~ !!paste("before", from_col),
+                                 TRUE ~ !!paste("after", to_col)))
+  }
+  tbl |>
+    dplyr::select(!dplyr::any_of("outside")) |>
+    dplyr::filter(!!test) |>
+    dplyr::mutate(outside = !!label) |>
+    dplyr::relocate("outside") |>
+    sort_by(c(rlang::exprs(.data$outside), na_first(time_col)))
+}
+
 # The finders return their query unsorted, since a sorted query that is
 # counted or summarised makes dbplyr warn, and attach the sort order for
 # report_check() to apply when rows are fetched.

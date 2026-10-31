@@ -35,6 +35,8 @@ least has no gaps.
 \item \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}: a unit is in one spell at a time.
 \item \code{\link[=ensure_constant]{ensure_constant()}}: sex, birth date and the like do not change within a
 unit.
+\item \code{\link[=ensure_within]{ensure_within()}}: no one is observed after death or emigration, or
+before birth.
 \item \code{\link[=merge_spells]{merge_spells()}}: one spell recorded as several, merged into one.
 \item \code{\link[=spells_to_panel]{spells_to_panel()}} and \code{\link[=add_spell_status]{add_spell_status()}}: from spells to a panel.
 }

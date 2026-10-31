@@ -102,7 +102,8 @@
 #'   reads Danish letters correctly). Defaults to `getOption("lustrum.dump")`.
 #'
 #' @name checkpoints
-#' @seealso [ensure_unique()], [ensure_balanced()], [ensure_no_overlap()]
+#' @seealso [ensure_unique()], [ensure_balanced()], [ensure_no_overlap()],
+#'   [ensure_constant()], [ensure_within()]
 NULL
 
 

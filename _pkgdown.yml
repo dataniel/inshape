@@ -36,6 +36,7 @@ reference:
       - ensure_balanced
       - ensure_no_overlap
       - ensure_constant
+      - ensure_within
       - checkpoints
 
   - title: Spells and panels

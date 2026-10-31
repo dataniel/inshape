@@ -16,6 +16,11 @@
   spells that end before they start. `ensure_no_overlap()` shares its
   compiled pass over the sorted spells, and went from 6.0 to 2.8 seconds on
   25 million spells.
+* New `ensure_within()` requires each row to lie within its unit's
+  lifetime: no observations after death or emigration, or before birth.
+  A year compared with a date counts by the date's year, and a missing
+  bound is open. A compiled pass checks 25 million rows against birth and
+  death dates in under half a second.
 * New `merge_spells()` merges spells recorded as several: back to back
   (transfers), overlapping, or less than `max_gap` days apart, optionally
   only when they agree in `by` columns such as the employer. It shares the

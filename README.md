@@ -41,6 +41,7 @@ pak::pak("dataniel/lustrum")
 | `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
 | `ensure_unique()` | Key columns identify each row uniquely |
+| `ensure_within()` | No rows after death or emigration, or before birth: each row within its unit's lifetime |
 | `merge_spells()` | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
 

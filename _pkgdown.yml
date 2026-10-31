@@ -40,9 +40,10 @@ reference:
 
   - title: Spells and panels
     desc: >
-      Convert spell data to a period panel, or add the status from spells
-      to a panel you already have.
+      Merge spells recorded as several, convert spell data to a period
+      panel, or add the status from spells to a panel you already have.
     contents:
+      - merge_spells
       - spells_to_panel
       - add_spell_status
 

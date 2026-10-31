@@ -38,7 +38,9 @@
 #' # b has two addresses in June 2020
 #' ensure_no_overlap(addresses, cpr, start, end)
 #'
-#' @seealso [ensure_balanced()] for yearly panels, [checkpoints].
+#' @seealso [describe_spells()] to see how spells relate first,
+#'   [merge_spells()] when overlapping spells are one spell recorded
+#'   twice, [ensure_balanced()] for yearly panels, [checkpoints].
 #'
 #' @export
 ensure_no_overlap <- function(data, id, start, end,

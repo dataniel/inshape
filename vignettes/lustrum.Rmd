@@ -38,6 +38,7 @@ pipeline.
 | `ensure_unique()` | the key columns identify each row | the data |
 | `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
 | `ensure_no_overlap()` | a unit's spells do not overlap | the data |
+| `merge_spells()` | (conversion) spells recorded as several, merged | merged spells |
 | `spells_to_panel()` | (conversion) spells to a period panel | a panel |
 | `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
 
@@ -165,6 +166,16 @@ admissions <- tibble(
 )
 
 describe_spells(admissions, cpr, start, end)
+```
+
+`merge_spells()` merges them: by default spells that overlap or follow the
+next day become one, from the first start to the latest end, and
+`n_spells` counts what was merged. `max_gap = 30` also merges spells less
+than a month apart, a readmission counted as the same episode, and `by`
+merges only spells that agree in a column such as the employer:
+
+```{r}
+merge_spells(admissions, cpr, start, end)
 ```
 
 ## Attributes of the unit: `describe_varying()` and `ensure_constant()`

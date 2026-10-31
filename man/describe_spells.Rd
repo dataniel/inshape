@@ -40,8 +40,8 @@ with the latest end among the unit's earlier spells:
 \item \code{gap}: it starts after a gap. The gap lengths are summarised.
 \item \code{adjacent}: it starts the day (or period) after an earlier spell ends.
 Two adjacent spells are often one spell recorded twice, e.g. a
-transfer between wards or employers, and may need merging before
-spells are counted.
+transfer between wards or employers, and may need merging with
+\code{\link[=merge_spells]{merge_spells()}} before spells are counted.
 \item \code{touching}: it starts on the day an earlier spell ends. Spells are
 closed intervals, so the two share that day and overlap by one day,
 the usual way a discharge and a readmission on the same day look.
@@ -82,6 +82,7 @@ describe_spells(admissions, cpr, start, end)
 
 }
 \seealso{
+\code{\link[=merge_spells]{merge_spells()}} to merge adjacent and overlapping spells,
 \code{\link[=ensure_no_overlap]{ensure_no_overlap()}} to require spells not to overlap,
 \code{\link[=spells_to_panel]{spells_to_panel()}} to turn spells into a panel.
 }

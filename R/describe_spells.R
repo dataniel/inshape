@@ -14,8 +14,8 @@
 #' * `gap`: it starts after a gap. The gap lengths are summarised.
 #' * `adjacent`: it starts the day (or period) after an earlier spell ends.
 #'   Two adjacent spells are often one spell recorded twice, e.g. a
-#'   transfer between wards or employers, and may need merging before
-#'   spells are counted.
+#'   transfer between wards or employers, and may need merging with
+#'   [merge_spells()] before spells are counted.
 #' * `touching`: it starts on the day an earlier spell ends. Spells are
 #'   closed intervals, so the two share that day and overlap by one day,
 #'   the usual way a discharge and a readmission on the same day look.
@@ -64,7 +64,8 @@
 #' # a: a transfer on 11 January, then a gap; b: a nested spell; c: ongoing
 #' describe_spells(admissions, cpr, start, end)
 #'
-#' @seealso [ensure_no_overlap()] to require spells not to overlap,
+#' @seealso [merge_spells()] to merge adjacent and overlapping spells,
+#'   [ensure_no_overlap()] to require spells not to overlap,
 #'   [spells_to_panel()] to turn spells into a panel.
 #'
 #' @export
@@ -136,7 +137,9 @@ spell_scan <- function(unit, start, end, usable) {
   ok <- which(usable)
   ends <- end[ok]
   ends[is.na(ends)] <- .Machine$integer.max
-  spells <- data.table::data.table(u = unit[ok], s = start[ok], e = ends, row = ok)
+  # setDT() on a list: the columns are new already, and data.table() would
+  # copy them again
+  spells <- data.table::setDT(list(u = unit[ok], s = start[ok], e = ends, row = ok))
   data.table::setorderv(spells, c("u", "s", "e"), order = c(1L, 1L, -1L))
   res <- .Call(C_lustrum_spell_relations, spells$u, spells$s, spells$e)
   data.table::set(spells, j = "rel", value = res[[1]])

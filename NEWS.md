@@ -16,6 +16,11 @@
   spells that end before they start. `ensure_no_overlap()` shares its
   compiled pass over the sorted spells, and went from 6.0 to 2.8 seconds on
   25 million spells.
+* New `merge_spells()` merges spells recorded as several: back to back
+  (transfers), overlapping, or less than `max_gap` days apart, optionally
+  only when they agree in `by` columns such as the employer. It shares the
+  compiled pass of `describe_spells()` and merges 25 million spells in
+  about 5.5 seconds.
 * New `describe_varying()` shows which columns vary within units, and
   `ensure_constant()` requires columns such as sex or birth date to be
   constant within each unit; a missing value is not a contradiction. Both

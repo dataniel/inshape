@@ -27,6 +27,7 @@
 #' * [ensure_no_overlap()]: a unit is in one spell at a time.
 #' * [ensure_constant()]: sex, birth date and the like do not change within a
 #'   unit.
+#' * [merge_spells()]: one spell recorded as several, merged into one.
 #' * [spells_to_panel()] and [add_spell_status()]: from spells to a panel.
 #'
 #' The `ensure_*()` functions are checkpoints: they warn or abort with the
@@ -57,4 +58,4 @@ NULL
 
 # data.table uses non-standard evaluation; declare its symbols so R CMD
 # check does not flag them as undefined globals.
-utils::globalVariables(c(".end", ".unit", ".start"))
+utils::globalVariables(c(".end", ".unit", ".start", "e"))

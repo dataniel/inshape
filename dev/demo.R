@@ -144,6 +144,17 @@ forloeb <- bind_rows(
 # to gange, som skal lægges sammen før man tæller forløb.
 describe_spells(forloeb, cpr, start, slut)
 
+# Læg overførslerne sammen: forløb, der overlapper eller starter dagen
+# efter, bliver ét. n_spells tæller, hvor mange der blev lagt sammen.
+samlet <- merge_spells(forloeb, cpr, start, slut)
+samlet |> count(n_spells)
+
+# Kun forløb med samme status, og med op til 14 dages pause imellem
+merge_spells(forloeb, cpr, start, slut, by = status, max_gap = 14)
+
+# Efter sammenlægningen er der ingen overførsler eller overlap tilbage
+describe_spells(samlet, cpr, start, slut)$relations
+
 # Kræv at forløb ikke overlapper: overlappende forløb deler et overlap_id.
 # Det igangværende forløb (slut = NA) overlapper alt, der starter efter det.
 ensure_no_overlap(forloeb, cpr, start, slut)

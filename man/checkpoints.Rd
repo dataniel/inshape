@@ -27,7 +27,7 @@ are written there as a timestamped CSV file (UTF-8 with BOM, so Excel
 reads Danish letters correctly). Defaults to \code{getOption("lustrum.dump")}.}
 }
 \description{
-The \verb{expect_*()} functions are checkpoints: each states a rule about the
+The \verb{ensure_*()} functions are checkpoints: each states a rule about the
 structure of the data, warns or aborts with the offending rows when it is
 broken, and returns \code{data} invisibly, so it can sit in the middle of a
 pipeline. This page documents what they share.
@@ -67,6 +67,20 @@ cross for an abort (shown as \code{v} below):
 \if{html}{\out{<div class="sourceCode">}}\preformatted{2026-06-11 09:00:03 | v | Unique on cpr, year | 0 rows
 2026-06-11 09:00:03 | ! | Gaps in panel | 3 rows | log/violations/20260611_090003_Gaps_in_panel.csv
 }\if{html}{\out{</div>}}
+}
+
+\subsection{Several checks on the same columns}{
+
+Every check, and every \verb{describe_*()} function, starts by compressing
+the key columns to integer ids, and on a population register that is
+the largest single step. A script usually checks the same key several
+times, so the ids of the last three large columns (from 100,000 rows)
+are kept for the session and reused when the same column is checked
+again. A column is recognised by its content, read in one parallel pass
+that costs a fraction of the compression, never by its name: a column
+changed in any way, also in place by data.table, is compressed anew.
+The ids take 4 bytes per row; \code{options(lustrum.cache = FALSE)} turns the
+cache off and frees it at the next check.
 }
 
 \subsection{Database and Arrow tables}{

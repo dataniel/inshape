@@ -1,6 +1,6 @@
 #' Checkpoints: shared arguments, logging and database tables
 #'
-#' The `expect_*()` functions are checkpoints: each states a rule about the
+#' The `ensure_*()` functions are checkpoints: each states a rule about the
 #' structure of the data, warns or aborts with the offending rows when it is
 #' broken, and returns `data` invisibly, so it can sit in the middle of a
 #' pipeline. This page documents what they share.
@@ -43,6 +43,19 @@
 #' 2026-06-11 09:00:03 | v | Unique on cpr, year | 0 rows
 #' 2026-06-11 09:00:03 | ! | Gaps in panel | 3 rows | log/violations/20260611_090003_Gaps_in_panel.csv
 #' ```
+#'
+#' ## Several checks on the same columns
+#'
+#' Every check, and every `describe_*()` function, starts by compressing
+#' the key columns to integer ids, and on a population register that is
+#' the largest single step. A script usually checks the same key several
+#' times, so the ids of the last three large columns (from 100,000 rows)
+#' are kept for the session and reused when the same column is checked
+#' again. A column is recognised by its content, read in one parallel pass
+#' that costs a fraction of the compression, never by its name: a column
+#' changed in any way, also in place by data.table, is compressed anew.
+#' The ids take 4 bytes per row; `options(lustrum.cache = FALSE)` turns the
+#' cache off and frees it at the next check.
 #'
 #' ## Database and Arrow tables
 #'
@@ -93,7 +106,7 @@
 NULL
 
 
-# Shared engine for the expect_*() checkpoints ----------------------------
+# Shared engine for the ensure_*() checkpoints ----------------------------
 
 check_data_frame <- function(data, call = rlang::caller_env()) {
   if (!is.data.frame(data)) {
@@ -154,15 +167,55 @@ lustrum_threads <- function() {
 
 # Dense ids of one vector, with the number of distinct values in "n". The
 # compiled hash (src/group.c) does it in one pass; vectors it does not take
-# (latin1 strings, lists, integer64) go through match().
+# (latin1 strings, lists, integer64) go through match(). Large vectors are
+# looked up in the cache first; see dense_cache.
 dense_codes <- function(x) {
   if (is.factor(x)) x <- as.integer(x)
-  code <- if (!inherits(x, "integer64")) .Call(C_lustrum_dense_ids, x, lustrum_threads())
-  if (is.null(code)) {
-    code <- dense_ids(if (is.character(x)) data.table::chmatch(x, x) else match(x, x))
-    attr(code, "n") <- max(code, 0L)
+  if (inherits(x, "integer64")) return(dense_codes_match(x))
+  use_cache <- isTRUE(getOption("lustrum.cache", TRUE))
+  if (!use_cache && length(dense_cache$codes) > 0) cache_clear()
+  key <- if (use_cache && length(x) >= cache_min_rows) {
+    .Call(C_lustrum_fingerprint, x, lustrum_threads())
   }
+  if (!is.null(key) && !is.null(code <- dense_cache$codes[[key]])) return(code)
+  code <- .Call(C_lustrum_dense_ids, x, lustrum_threads()) %||% dense_codes_match(x)
+  if (!is.null(key)) cache_put(key, code)
   code
+}
+
+dense_codes_match <- function(x) {
+  code <- dense_ids(if (is.character(x)) data.table::chmatch(x, x) else match(x, x))
+  attr(code, "n") <- max(code, 0L)
+  code
+}
+
+# Cache of dense ids ----------------------------------------------------
+#
+# Compressing the key, a cpr column on a population register, is the one
+# step every check repeats, and a pipeline checks the same column again and
+# again: ensure_unique(), then ensure_balanced(), then describe_varying().
+# The ids of the last few large columns are kept, keyed by a fingerprint of
+# the column's content (src/group.c): its type, length and a checksum of
+# every value in order, one parallel pass that costs a small part of the
+# compression itself. A column changed in any way, even in place by
+# data.table, gets another fingerprint, so stale ids are never used.
+# Integer columns with a small range, years and codes, are compressed as
+# fast as they are fingerprinted and are not kept.
+dense_cache <- new.env(parent = emptyenv())
+dense_cache$codes <- list()
+cache_min_rows <- 1e5
+cache_size <- 3
+
+# Newest last; the oldest beyond cache_size are dropped
+cache_put <- function(key, code) {
+  codes <- dense_cache$codes
+  codes[[key]] <- NULL
+  codes[[key]] <- code
+  dense_cache$codes <- utils::tail(codes, cache_size)
+}
+
+cache_clear <- function() {
+  dense_cache$codes <- list()
 }
 
 # Last write wins in `x[i] <- v`, so writing in descending order of `value`

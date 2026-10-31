@@ -295,6 +295,53 @@ SEXP lustrum_dense_ids(SEXP x, SEXP threads_) {
     return res;
 }
 
+/* A fingerprint of a vector's content for the cache of dense ids in
+   dense_codes(): type, length and a 64-bit checksum, as one string. The
+   checksum sums a mix of each element with its position, so it changes
+   with any value or order and runs in parallel in one pass. Strings are
+   summed by their CHARSXP pointer: equal pointers mean equal strings, so
+   equal fingerprints mean equal groups. Returns NULL for vectors the cache
+   should skip: other types, and integers with a range small enough for
+   dense_direct(), which is as fast as the checksum itself. */
+SEXP lustrum_fingerprint(SEXP x, SEXP threads_) {
+    R_xlen_t n = XLENGTH(x);
+    int threads = Rf_asInteger(threads_);
+    if (threads < 1) threads = 1;
+    int type;
+    const void *px;
+    switch (TYPEOF(x)) {
+    case STRSXP:  type = K_STR;  px = (const void *) STRING_PTR_RO(x); break;
+    case INTSXP:
+    case LGLSXP:  type = K_INT;  px = (const void *) INTEGER(x); break;
+    case REALSXP: type = K_U64;  px = (const void *) REAL(x); break;
+    default: return R_NilValue;
+    }
+    uint64_t sum = 0;
+    int lo = INT_MAX, hi = INT_MIN;
+#ifdef _OPENMP
+#pragma omp parallel for num_threads(threads) schedule(static) reduction(+:sum) reduction(min:lo) reduction(max:hi)
+#endif
+    for (R_xlen_t i = 0; i < n; i++) {
+        uint64_t k = key_at(type, px, i);
+        sum += mix64(k ^ ((uint64_t) i * 0x9e3779b97f4a7c15ULL));
+        if (type == K_INT) {
+            int v = (int) (uint32_t) k;
+            if (v != NA_INTEGER) {
+                if (v < lo) lo = v;
+                if (v > hi) hi = v;
+            }
+        }
+    }
+    if (type == K_INT) {
+        double range = lo > hi ? 1 : (double) hi - lo + 1;
+        if (!(range > 4.0 * n + 1024 || range > 1e8)) return R_NilValue;
+    }
+    char buf[64];
+    snprintf(buf, sizeof buf, "%d %.0f %016llx", TYPEOF(x), (double) n,
+             (unsigned long long) sum);
+    return Rf_mkString(buf);
+}
+
 /* The first row (1-based) of each group 1..n_groups, 0 for an empty
    group: one forward pass */
 SEXP lustrum_first_rows(SEXP ids_, SEXP n_groups_) {

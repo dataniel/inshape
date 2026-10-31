@@ -4,7 +4,7 @@
 same_groups <- function(a, b) identical(match(a, a), match(b, b))
 
 dense <- function(x, threads = 2L) {
-  withr::local_options(lustrum.threads = threads)
+  withr::local_options(lustrum.threads = threads, lustrum.cache = FALSE)
   dense_codes(x)
 }
 
@@ -57,6 +57,41 @@ test_that("large vectors take the partitioned path, the same for any threads", {
 
   r <- sample(c(runif(1e4), NA, NaN, 0, -0), n, replace = TRUE)
   expect_true(same_groups(dense(r), r))
+})
+
+test_that("the cache reuses ids only for a column with the same content", {
+  cache_clear()
+  withr::defer(cache_clear())
+  set.seed(3)
+  n <- 2e5
+  df <- data.frame(cpr = sprintf("%010d", sample.int(1e9, n, TRUE)),
+                   r = runif(n), year = sample(2000:2020, n, TRUE))
+  first <- dense_codes(df$cpr)
+  expect_length(dense_cache$codes, 1)
+  expect_identical(dense_codes(df$cpr), first)
+  # An equal copy has the same content, so the same ids
+  expect_identical(dense_codes(paste0(df$cpr, "")), first)
+
+  # Changed in place, as data.table does, it is grouped anew
+  data.table::set(df, i = 2L, j = "cpr", value = df$cpr[1])
+  again <- dense_codes(df$cpr)
+  expect_true(same_groups(again, df$cpr))
+  expect_equal(attr(again, "n"), attr(first, "n") - 1L)
+
+  # The same values in another order are another column
+  rev_cpr <- rev(df$cpr)
+  expect_true(same_groups(dense_codes(rev_cpr), rev_cpr))
+
+  # Years are compressed directly and not kept; the oldest entry goes
+  dense_codes(df$year)
+  dense_codes(df$r)
+  expect_length(dense_cache$codes, 3)
+  expect_false(any(vapply(dense_cache$codes, identical, logical(1), first)))
+
+  withr::local_options(lustrum.cache = FALSE)
+  cache_clear()
+  dense_codes(df$cpr)
+  expect_length(dense_cache$codes, 0)
 })
 
 test_that("several columns group by their combination", {

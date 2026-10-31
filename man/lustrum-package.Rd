@@ -27,8 +27,8 @@ censuses, which suits a package about periods.
 
 \subsection{Where to start}{
 \itemize{
-\item \code{\link[=describe_key]{describe_key()}}, \code{\link[=describe_panel]{describe_panel()}} and \code{\link[=describe_varying]{describe_varying()}}: look at
-the structure before choosing a rule.
+\item \code{\link[=describe_key]{describe_key()}}, \code{\link[=describe_panel]{describe_panel()}}, \code{\link[=describe_spells]{describe_spells()}} and
+\code{\link[=describe_varying]{describe_varying()}}: look at the structure before choosing a rule.
 \item \code{\link[=ensure_unique]{ensure_unique()}}: a key identifies each row.
 \item \code{\link[=ensure_balanced]{ensure_balanced()}}: every unit is observed in every period, or at
 least has no gaps.

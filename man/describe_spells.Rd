@@ -60,6 +60,15 @@ out of the rest.
 years or month numbers, compared by that unit.
 }
 }
+\section{Why it is fast}{
+
+Units are compressed to integer ids by the compiled engine, the spells
+are sorted once by data.table's multi-threaded radix sort, and one
+compiled pass then relates each spell to the earlier ones, reading memory
+in order. Counts and lengths are read from counts per day, never from
+sorting millions of values.
+}
+
 \examples{
 admissions <- data.frame(
   cpr   = c("a", "a", "a", "b", "b", "c"),

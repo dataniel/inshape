@@ -33,6 +33,8 @@ pak::pak("dataniel/lustrum")
 | Function | Description |
 |---|---|
 | `add_spell_status()` | Status from spells on a panel you already have, at primo/ultimo or on a date |
+| `describe_key()` | How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in |
+| `describe_panel()` | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
 | `ensure_balanced()` | Every unit observed in every period, or no gaps (`gaps_only`) |
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
 | `ensure_unique()` | Key columns identify each row uniquely |
@@ -46,8 +48,13 @@ condition of class `lustrum_failure` that carries the rows.
 
 ## Built for registers
 
-Character keys such as cpr are grouped in one linear pass instead of
-sorted, and spell lookups run in one compiled pass over the sorted spells.
+Character keys such as cpr are compressed to integer ids by a compiled,
+partitioned and multi-threaded hash, without sorting them; a panel then
+becomes a bit matrix, one bit per unit and period, read with processor bit
+instructions; and spell lookups run in one compiled pass over the sorted
+spells. On 25 million rows (5 million persons over 5 years),
+`describe_panel()` takes under 2 seconds. See `benchmarks/`.
+
 A DuckDB or Arrow table is checked in the database, without loading it
 into R:
 

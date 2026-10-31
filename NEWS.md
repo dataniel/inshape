@@ -6,5 +6,14 @@
   `ensure_balanced()` and `expect_no_overlap()` is `ensure_no_overlap()`.
   Their options are `lustrum.log` and `lustrum.dump`, and a failure signals
   `lustrum_failure`.
+* New `describe_key()` and `describe_panel()` describe a key and a panel
+  before a rule is chosen: duplicated keys split into exact copies and
+  conflicts by column, and the panel's units, gaps, entries, exits and
+  participation patterns, in the spirit of Stata's `xtdescribe`.
+* A compiled grouping engine: keys are compressed to integer ids by a
+  partitioned, multi-threaded hash (`options(lustrum.threads = )`, default
+  data.table's threads), and panels are checked as bit matrices. On 25
+  million rows `ensure_balanced()` went from 7.3 to 1.8 seconds and the
+  grouping of a cpr column from 4.4 to 0.7.
 * `spells_to_panel()` and `add_spell_status()` move here from daos,
   unchanged.

@@ -1,8 +1,6 @@
 #define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Rdynload.h>
-#include <R_ext/Visibility.h>
 #include <limits.h>
 
 /* Status of each unit at the primo and ultimo point of each period.
@@ -142,16 +140,4 @@ SEXP lustrum_spell_lookup(SEXP start, SEXP end, SEXP groups, SEXP qgroups,
     SET_VECTOR_ELT(out, 1, Rf_ScalarInteger(ambiguous));
     UNPROTECT(1);
     return out;
-}
-
-static const R_CallMethodDef call_methods[] = {
-    {"lustrum_spell_status", (DL_FUNC) &lustrum_spell_status, 8},
-    {"lustrum_spell_lookup", (DL_FUNC) &lustrum_spell_lookup, 6},
-    {NULL, NULL, 0}
-};
-
-void attribute_visible R_init_lustrum(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, call_methods, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
-    R_forceSymbols(dll, TRUE);
 }

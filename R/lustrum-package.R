@@ -19,6 +19,8 @@
 #'
 #' ## Where to start
 #'
+#' * [describe_key()] and [describe_panel()]: look at the structure before
+#'   choosing a rule.
 #' * [ensure_unique()]: a key identifies each row.
 #' * [ensure_balanced()]: every unit is observed in every period, or at
 #'   least has no gaps.

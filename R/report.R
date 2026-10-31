@@ -130,20 +130,36 @@ group_ids <- function(data, cols) {
   id <- rep.int(1L, n)
   k  <- 1
   for (col in cols) {
-    x <- data[[col]]
-    if (is.factor(x)) x <- as.integer(x)
-    code <- dense_ids(if (is.character(x)) data.table::chmatch(x, x) else match(x, x))
-    kx   <- max(code, 0L)
+    code <- dense_codes(data[[col]])
+    kx   <- attr(code, "n")
     if (k * kx <= 4 * n && k * kx <= .Machine$integer.max) {
       id <- (id - 1L) * kx + code
       k  <- k * kx
     } else {
-      id <- (id - 1) * kx + code
-      id <- dense_ids(match(id, id))
-      k  <- max(id, 0L)
+      id <- dense_codes((id - 1) * kx + code)
+      k  <- attr(id, "n")
     }
   }
-  structure(id, n = k)
+  structure(as.vector(id), n = k)
+}
+
+# Threads for the compiled engine: data.table's setting unless
+# options(lustrum.threads = ) says otherwise
+lustrum_threads <- function() {
+  as.integer(getOption("lustrum.threads", data.table::getDTthreads()))
+}
+
+# Dense ids of one vector, with the number of distinct values in "n". The
+# compiled hash (src/group.c) does it in one pass; vectors it does not take
+# (latin1 strings, lists, integer64) go through match().
+dense_codes <- function(x) {
+  if (is.factor(x)) x <- as.integer(x)
+  code <- if (!inherits(x, "integer64")) .Call(C_lustrum_dense_ids, x, lustrum_threads())
+  if (is.null(code)) {
+    code <- dense_ids(if (is.character(x)) data.table::chmatch(x, x) else match(x, x))
+    attr(code, "n") <- max(code, 0L)
+  }
+  code
 }
 
 # Last write wins in `x[i] <- v`, so writing in descending order of `value`

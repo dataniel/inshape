@@ -16,6 +16,14 @@ home:
   strip_header: true
 
 reference:
+  - title: Describe
+    desc: >
+      Look at the structure before choosing a rule. Each returns a summary
+      that prints, and judges nothing.
+    contents:
+      - describe_key
+      - describe_panel
+
   - title: Checkpoints
     desc: >
       Each checkpoint states one rule about the structure of the data,

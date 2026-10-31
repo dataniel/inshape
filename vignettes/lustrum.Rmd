@@ -22,17 +22,56 @@ Every analysis assumes the shape is right, and the errors that break it are
 silent: a duplicated key multiplies rows in a join, a missing year looks
 like an exit, an overlapping spell gives a person two addresses at once.
 
-lustrum checks the shape before anything is built on it. The `ensure_*()`
-functions are *checkpoints*: each states one rule, warns or aborts with the
-rows that break it, and returns the data, so it sits in a pipeline.
+lustrum checks the shape before anything is built on it, in two steps.
+The `describe_*()` functions look at the structure and judge nothing; the
+`ensure_*()` functions are *checkpoints*: each states one rule, warns or
+aborts with the rows that break it, and returns the data, so it sits in a
+pipeline.
 
 | Function | The rule | Returns |
 |---|---|---|
+| `describe_key()` | (look) duplicated keys, exact copies vs. conflicts | a summary |
+| `describe_panel()` | (look) units, gaps, entries, exits, patterns | a summary |
 | `ensure_unique()` | the key columns identify each row | the data |
 | `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
 | `ensure_no_overlap()` | a unit's spells do not overlap | the data |
 | `spells_to_panel()` | (conversion) spells to a period panel | a panel |
 | `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
+
+## Look first: `describe_panel()` and `describe_key()`
+
+A rule is easier to choose when you have seen the data. `describe_panel()`
+summarises a panel in one pass: how many units are observed throughout,
+who enters and leaves when, where the gaps are, and which participation
+patterns are common, as Stata's `xtdescribe` does.
+
+```{r}
+persons <- tibble(
+  cpr  = c("a", "a", "a", "b", "b", "c", "d", "d", "d", "d"),
+  year = c(2020, 2021, 2022, 2020, 2022, 2022, 2020, 2021, 2022, 2022)
+)
+
+describe_panel(persons, cpr, year)
+```
+
+A period with no units, or a sudden fall in `units`, is the sign of a
+broken extract. The counts are there to use as well, e.g.
+`describe_panel(persons, cpr, year)$by_period`.
+
+`describe_key()` looks at a key. When it is not unique, the question is
+what the duplicates are: exact copies, which can be dropped, or rows that
+disagree, which need a rule. It tells them apart and names the columns the
+copies disagree in:
+
+```{r}
+firms <- tibble(
+  cvr      = c("1", "1", "2", "2", "3"),
+  year     = 2024,
+  industry = c("A", "A", "B", "C", "A")
+)
+
+describe_key(firms, cvr, year)
+```
 
 ## Keys: `ensure_unique()`
 

@@ -172,11 +172,17 @@ spells_to_panel <- function(data, id, start, end, status,
 # Spell rows as integer days, without unusable rows, sorted by unit and
 # start: `first` is each unit's first row and `groups` the 0-based offsets
 # the C code walks
-prepare_spells <- function(data, ids, start_col, end_col) {
+#
+# `uid` is an optional integer id per row standing in for the id columns:
+# spells are then sorted on it instead of on the ids themselves (a
+# character cpr sorts slowly), and units come in the order of `uid`.
+prepare_spells <- function(data, ids, start_col, end_col, uid = NULL) {
   s <- spell_days(data[[start_col]], start_col)
   e <- spell_days(data[[end_col]], end_col)
 
-  keys <- data.table::as.data.table(data)[, ids, with = FALSE]
+  keys <- if (is.null(uid)) data.table::as.data.table(data)[, ids, with = FALSE] else
+    data.table::data.table(.uid = uid)
+  if (!is.null(uid)) ids <- ".uid"
   data.table::set(keys, j = ".start", value = s)
   data.table::set(keys, j = ".end", value = e)
   data.table::set(keys, j = ".row", value = seq_len(nrow(data)))

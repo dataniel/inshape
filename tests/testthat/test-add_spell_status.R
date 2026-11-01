@@ -59,6 +59,22 @@ test_that("rows are never added, dropped or reordered", {
   expect_equal(got$s_ultimo, c(NA, "long", NA, NA))
 })
 
+test_that("several id columns, and ids of different classes, find their spells", {
+  jobs <- data.frame(cvr = c(1, 1, 2), lbnr = c("x", "y", "x"),
+                     start = d(c("2020-01-01", "2020-01-01", "2019-01-01")),
+                     end = d(c("2020-12-31", NA, "2019-12-31")), s = c("a", "b", "c"))
+  panel <- data.frame(cvr = c(2, 1, 1, 3, NA), lbnr = c("x", "y", "x", "x", "x"),
+                      year = c(2019, 2021, 2020, 2020, 2020))
+  got <- add_spell_status(panel, jobs, c(cvr, lbnr), year, start, end, s, when = "ultimo")
+  expect_equal(got$s_ultimo, c("c", "b", "a", NA, NA))
+
+  # a factor id in data against a character id in spells goes through a join
+  panel$lbnr <- factor(panel$lbnr)
+  expect_equal(add_spell_status(panel, jobs, c(cvr, lbnr), year, start, end, s,
+                                when = "ultimo")$s_ultimo,
+               got$s_ultimo)
+})
+
 test_that("overlaps: latest start with a message, or an error", {
   x <- data.frame(id = "a", start = d(c("2020-01-01", "2020-03-01")),
                   end = d(c("2021-12-31", "2020-12-31")), s = c("long", "short"))

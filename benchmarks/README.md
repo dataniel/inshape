@@ -74,18 +74,18 @@ Median seconds of three repetitions, content cache off:
 
 | Function | Rows | Seconds |
 | --- | ---: | ---: |
-| `describe_key(cpr, year)` | 4.5M | 0.16 |
-| `describe_panel(cpr, year)` | 4.5M | 0.16 |
-| `describe_varying(cpr)` | 4.5M | 0.36 |
+| `describe_key(cpr, year)` | 4.5M | 0.17 |
+| `describe_panel(cpr, year)` | 4.5M | 0.14 |
+| `describe_varying(cpr)` | 4.5M | 0.39 |
 | `describe_codes(kommune, year)` | 4.5M | 0.10 |
-| `describe_changes(old, new, cpr, year)` | 4.5M | 0.81 |
+| `describe_changes(old, new, cpr, year)` | 4.5M | 0.80 |
 | `describe_spells(cpr, start, end)` | 2.5M | 0.31 |
 | `ensure_unique(cpr, year)` | 4.5M | 0.17 |
-| `ensure_balanced(gaps_only = TRUE)` | 4.5M | 0.13 |
-| `ensure_constant(cpr, sex, born)` | 4.5M | 0.22 |
+| `ensure_balanced(gaps_only = TRUE)` | 4.5M | 0.12 |
+| `ensure_constant(cpr, sex, born)` | 4.5M | 0.20 |
 | `ensure_within(year, from = born, to = left)` | 4.5M | 0.16 |
-| `ensure_codes(kommune, codes)` | 4.5M | 0.04 |
-| `ensure_no_overlap(cpr, start, end)` | 2.5M | 0.21 |
-| `merge_spells(cpr, start, end)` | 2.5M | 0.52 |
-| `spells_to_panel(from = 2016, to = 2020)` | 2.5M | 1.74 |
-| `add_spell_status()` onto the panel | 4.5M | 4.41 |
+| `ensure_codes(kommune, codes)` | 4.5M | 0.03 |
+| `ensure_no_overlap(cpr, start, end)` | 2.5M | 0.20 |
+| `merge_spells(cpr, start, end)` | 2.5M | 0.55 |
+| `spells_to_panel(from = 2016, to = 2020)` | 2.5M | 1.80 |
+| `add_spell_status()` onto the panel | 4.5M | 1.83 |

@@ -127,14 +127,32 @@ add_spell_status <- function(data, spells, id, at, start, end, status,
                      "i" = "Choose another {.arg name}."))
   }
 
-  prep <- prepare_spells(spells, ids, start_col, end_col)
+  # The spell unit of each row of data, NA when the unit has no spells. The
+  # ids of data and spells are compressed together in one hash pass, so
+  # neither the sort of the spells nor the lookup touches a character cpr.
+  # Id columns of different classes are left to a join, which converts.
+  same_class <- all(vapply(ids, function(col) {
+    identical(class(data[[col]]), class(spells[[col]]))
+  }, logical(1)))
+  if (same_class) {
+    n_data <- nrow(data)
+    both <- lapply(ids, function(col) c(data[[col]], spells[[col]]))
+    names(both) <- ids
+    uid  <- group_ids(data.table::setDT(both), ids)
+    prep <- prepare_spells(spells, ids, start_col, end_col,
+                           uid = uid[n_data + seq_len(nrow(spells))])
+    unit_at <- rep(NA_integer_, attr(uid, "n"))
+    unit_at[prep$keys$.uid[prep$first]] <- seq_along(prep$first)
+    unit_of <- unit_at[uid[seq_len(n_data)]]
+    rm(both, uid)
+  } else {
+    prep  <- prepare_spells(spells, ids, start_col, end_col)
+    units <- prep$keys[prep$first, ids, with = FALSE]
+    data.table::set(units, j = ".unit", value = seq_along(prep$first))
+    rows <- data.table::as.data.table(data)[, ids, with = FALSE]
+    unit_of <- units[rows, on = ids, .unit]
+  }
   keys <- prep$keys
-
-  # The spell unit of each row of data, NA when the unit has no spells
-  units <- keys[prep$first, ids, with = FALSE]
-  data.table::set(units, j = ".unit", value = seq_along(prep$first))
-  rows <- data.table::as.data.table(data)[, ids, with = FALSE]
-  unit_of <- units[rows, on = ids, .unit]
 
   values <- spells[[status_col]][keys$.row]
   ambiguous <- 0L

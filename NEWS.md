@@ -8,7 +8,8 @@
 * inshape is for interactive review of registers and writes nothing to
   disk: the offending rows are personal data. A failure shows the count and
   the first rows at the console and carries all of them on the condition,
-  in memory. There is no `log` or `dump` argument and no option for them.
+  in memory. There is no `log` or `dump` argument, and no options: nothing
+  is kept between calls either, and the engine runs on data.table's threads.
   See "Personal data" in `?checkpoints`.
 * New `describe_key()` and `describe_panel()` describe a key and a panel
   before a rule is chosen: duplicated keys split into exact copies and
@@ -49,14 +50,8 @@
 * Grouping by several key columns no longer fails when the product of
   their numbers of values passes the integer range.
 * A compiled grouping engine: keys are compressed to integer ids by a
-  partitioned, multi-threaded hash (`options(inshape.threads = )`, default
-  data.table's threads), and panels are checked as bit matrices. On 25
-  million rows `ensure_balanced()` went from 7.3 to 1.8 seconds and the
+  partitioned hash on data.table's threads, and panels are checked as bit
+  matrices. On 25 million rows `ensure_balanced()` went from 7.3 to 1.8 seconds and the
   grouping of a cpr column from 4.4 to 0.7.
-* The ids of the last three large key columns are kept for the session and
-  reused when the same column is checked again, recognised by a checksum of
-  its content (`options(inshape.cache = FALSE)` turns it off). On 25 million
-  rows each further check of a cpr column saves the 0.15–0.2 seconds of
-  compressing it; see `?checkpoints`.
 * `spells_to_panel()` and `add_spell_status()` move here from daos,
   unchanged.

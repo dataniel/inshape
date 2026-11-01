@@ -57,18 +57,15 @@ and its data agreement to decide, not the package.
 }
 }
 
-\subsection{Several checks on the same columns}{
+\subsection{Speed}{
 
 Every check, and every \verb{describe_*()} function, starts by compressing
-the key columns to integer ids, and on a population register that is
-the largest single step. A script usually checks the same key several
-times, so the ids of the last three large columns (from 100,000 rows)
-are kept for the session and reused when the same column is checked
-again. A column is recognised by its content, read in one parallel pass
-that costs a fraction of the compression, never by its name: a column
-changed in any way, also in place by data.table, is compressed anew.
-The ids take 4 bytes per row; \code{options(inshape.cache = FALSE)} turns the
-cache off and frees it at the next check.
+the key columns to integer ids with a compiled, multi-threaded hash,
+without sorting them. Nothing is kept between calls, so each check
+compresses its columns anew; even so, \code{\link[=ensure_unique]{ensure_unique()}} on 5 million
+rows takes about 0.2 seconds (see the benchmarks in the repository). The
+engine uses as many threads as data.table, set with
+\code{\link[data.table:setDTthreads]{data.table::setDTthreads()}}.
 }
 
 \subsection{Database and Arrow tables}{

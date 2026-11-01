@@ -68,7 +68,7 @@ compared by that unit.
 \section{Why it is fast}{
 
 It shares the compiled pass of \code{\link[=describe_spells]{describe_spells()}}: units are compressed
-to integer ids (and reused from the cache, see \link{checkpoints}), spells are
+to integer ids (see \link{checkpoints}), spells are
 sorted once by data.table's radix sort, and one sequential pass relates
 each spell to the earlier ones. The result is not sorted by the id
 columns, which on a population register means sorting millions of

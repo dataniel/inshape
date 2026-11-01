@@ -61,7 +61,7 @@ test_that("gap counts agree with ensure_balanced()", {
 })
 
 test_that("very long panels leave out the patterns", {
-  withr::local_options(inshape.bits = FALSE)
+  local_mocked_bindings(panel_fits_bits = function(...) FALSE)
   p <- describe_panel(panel, cpr, year)
   expect_equal(nrow(p$patterns), 0)
   expect_equal(p$n_gap_cells, 1)

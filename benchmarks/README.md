@@ -25,17 +25,16 @@ session details in `checkpoints-session.txt`.
 
 Median seconds of three repetitions in alternating order, on the
 Windows/R system recorded in `checkpoints-session.txt` (R 4.6.1, 10
-threads). *After* is cold: the content cache of dense ids is off, as on
-the first check of new data. *Warm* is a later check on the same,
-unchanged columns, with the cache filled.
+threads). Nothing is kept between calls, so each check groups its key
+from scratch.
 
-| Case | Before | After | Warm | Speedup |
-| --- | ---: | ---: | ---: | ---: |
-| `ensure_unique(cpr, year)`, no duplicates | 5.36 | 0.16 | 0.10 | 34x |
-| `ensure_unique(cpr, year)`, 10,000 duplicates | 5.14 | 0.20 | 0.16 | 26x |
-| `ensure_balanced(cpr, year)`, 10,000 gaps | 2.60 | 0.14 | 0.09 | 19x |
-| `ensure_balanced(gaps_only = TRUE)`, 10,000 gaps | 2.78 | 0.14 | 0.09 | 20x |
-| `ensure_no_overlap(cpr, start, end)` | 1.92 | 0.30 | 0.27 | 6.4x |
+| Case | Before | After | Speedup |
+| --- | ---: | ---: | ---: |
+| `ensure_unique(cpr, year)`, no duplicates | 5.36 | 0.16 | 34x |
+| `ensure_unique(cpr, year)`, 10,000 duplicates | 5.14 | 0.20 | 26x |
+| `ensure_balanced(cpr, year)`, 10,000 gaps | 2.60 | 0.14 | 19x |
+| `ensure_balanced(gaps_only = TRUE)`, 10,000 gaps | 2.78 | 0.14 | 20x |
+| `ensure_no_overlap(cpr, start, end)` | 1.92 | 0.30 | 6.4x |
 
 The gain comes from never sorting the character key: rows are grouped in
 one parallel pass of a compiled hash table, panels are checked in a bit
@@ -70,7 +69,7 @@ key, the later one with 1% of incomes corrected and 0.1% of rows gone.
 Results are in `functions-results.csv`, session details in
 `functions-session.txt`.
 
-Median seconds of three repetitions, content cache off:
+Median seconds of three repetitions:
 
 | Function | Rows | Seconds |
 | --- | ---: | ---: |

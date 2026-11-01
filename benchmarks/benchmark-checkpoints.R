@@ -69,9 +69,8 @@ for (case in names(cases)) {
   x <- inputs[[cases[[case]][[2]]]]()
   stopifnot(same(violations(f(baseline, x)), violations(f(current, x))))
 
-  # Cold: the content cache of dense ids is off, so every repetition
-  # groups the key from scratch, as the first check on new data does
-  options(inshape.cache = FALSE)
+  # Nothing is kept between calls, so every repetition groups the key
+  # from scratch
   times <- matrix(NA_real_, 3L, 2L)
   for (rep in 1:3) {
     for (impl in if (rep %% 2) 1:2 else 2:1) {
@@ -80,18 +79,9 @@ for (case in names(cases)) {
       times[rep, impl] <- system.time(suppressWarnings(f(api, x)))[["elapsed"]]
     }
   }
-  # Warm: a later check on the same, unchanged columns
-  options(inshape.cache = TRUE)
-  suppressWarnings(f(current, x))
-  warm <- vapply(1:3, function(i) {
-    gc()
-    system.time(suppressWarnings(f(current, x)))[["elapsed"]]
-  }, numeric(1))
-  options(inshape.cache = FALSE)
 
   row <- data.frame(rows = nrow(x), case = case,
-                    before = median(times[, 1]), after = median(times[, 2]),
-                    warm = median(warm))
+                    before = median(times[, 1]), after = median(times[, 2]))
   row$speedup <- row$before / row$after
   rows[[length(rows) + 1L]] <- row
   print(row, row.names = FALSE)
@@ -99,7 +89,6 @@ for (case in names(cases)) {
   write.csv(do.call(rbind, rows), "benchmarks/checkpoints-results.csv", row.names = FALSE)
   rm(x)
 }
-writeLines(c("Median of 3 repetitions in alternating order, cache off;",
-             "warm = median of 3 with the content cache filled.",
+writeLines(c("Median of 3 repetitions in alternating order.",
              "Violations checked against the frozen snapshot before timing.",
              capture.output(sessionInfo())), "benchmarks/checkpoints-session.txt")

@@ -36,18 +36,15 @@
 #'   dropped. Whether any of them are stored, and where, is for the analysis
 #'   and its data agreement to decide, not the package.
 #'
-#' ## Several checks on the same columns
+#' ## Speed
 #'
 #' Every check, and every `describe_*()` function, starts by compressing
-#' the key columns to integer ids, and on a population register that is
-#' the largest single step. A script usually checks the same key several
-#' times, so the ids of the last three large columns (from 100,000 rows)
-#' are kept for the session and reused when the same column is checked
-#' again. A column is recognised by its content, read in one parallel pass
-#' that costs a fraction of the compression, never by its name: a column
-#' changed in any way, also in place by data.table, is compressed anew.
-#' The ids take 4 bytes per row; `options(inshape.cache = FALSE)` turns the
-#' cache off and frees it at the next check.
+#' the key columns to integer ids with a compiled, multi-threaded hash,
+#' without sorting them. Nothing is kept between calls, so each check
+#' compresses its columns anew; even so, [ensure_unique()] on 5 million
+#' rows takes about 0.2 seconds (see the benchmarks in the repository). The
+#' engine uses as many threads as data.table, set with
+#' [data.table::setDTthreads()].
 #'
 #' ## Database and Arrow tables
 #'
@@ -154,68 +151,30 @@ group_ids <- function(data, cols) {
   }
   if (is.null(id)) id <- rep.int(1L, n)
   # Ids straight from dense_codes() carry only "n" already; copying them
-  # to drop attributes would cost 4 bytes a row, also on a cache hit
+  # to drop attributes would cost 4 bytes a row
   if (identical(names(attributes(id)), "n") && identical(attr(id, "n"), k)) return(id)
   structure(as.vector(id), n = k)
 }
 
-# Threads for the compiled engine: data.table's setting unless
-# options(inshape.threads = ) says otherwise
+# Threads for the compiled engine: data.table's setting
 inshape_threads <- function() {
-  as.integer(getOption("inshape.threads", data.table::getDTthreads()))
+  as.integer(data.table::getDTthreads())
 }
 
 # Dense ids of one vector, with the number of distinct values in "n". The
 # compiled hash (src/group.c) does it in one pass; vectors it does not take
-# (latin1 strings, lists, integer64) go through match(). Large vectors are
-# looked up in the cache first; see dense_cache.
+# (latin1 strings, lists, integer64) go through match(). Nothing is kept
+# between calls.
 dense_codes <- function(x) {
   if (is.factor(x)) x <- as.integer(x)
   if (inherits(x, "integer64")) return(dense_codes_match(x))
-  use_cache <- isTRUE(getOption("inshape.cache", TRUE))
-  if (!use_cache && length(dense_cache$codes) > 0) cache_clear()
-  key <- if (use_cache && length(x) >= cache_min_rows) {
-    .Call(C_inshape_fingerprint, x, inshape_threads())
-  }
-  if (!is.null(key) && !is.null(code <- dense_cache$codes[[key]])) return(code)
-  code <- .Call(C_inshape_dense_ids, x, inshape_threads()) %||% dense_codes_match(x)
-  if (!is.null(key)) cache_put(key, code)
-  code
+  .Call(C_inshape_dense_ids, x, inshape_threads()) %||% dense_codes_match(x)
 }
 
 dense_codes_match <- function(x) {
   code <- dense_ids(if (is.character(x)) data.table::chmatch(x, x) else match(x, x))
   attr(code, "n") <- max(code, 0L)
   code
-}
-
-# Cache of dense ids ----------------------------------------------------
-#
-# Compressing the key, a cpr column on a population register, is the one
-# step every check repeats, and a pipeline checks the same column again and
-# again: ensure_unique(), then ensure_balanced(), then describe_varying().
-# The ids of the last few large columns are kept, keyed by a fingerprint of
-# the column's content (src/group.c): its type, length and a checksum of
-# every value in order, one parallel pass that costs a small part of the
-# compression itself. A column changed in any way, even in place by
-# data.table, gets another fingerprint, so stale ids are never used.
-# Integer columns with a small range, years and codes, are compressed as
-# fast as they are fingerprinted and are not kept.
-dense_cache <- new.env(parent = emptyenv())
-dense_cache$codes <- list()
-cache_min_rows <- 1e5
-cache_size <- 3
-
-# Newest last; the oldest beyond cache_size are dropped
-cache_put <- function(key, code) {
-  codes <- dense_cache$codes
-  codes[[key]] <- NULL
-  codes[[key]] <- code
-  dense_cache$codes <- utils::tail(codes, cache_size)
-}
-
-cache_clear <- function() {
-  dense_cache$codes <- list()
 }
 
 # Last write wins in `x[i] <- v`, so writing in descending order of `value`

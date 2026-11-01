@@ -1,5 +1,5 @@
 1000000 persons: 4514528 person-years, 2502474 spells.
-Median of 3 repetitions, content cache off.
+Median of 3 repetitions.
 Threads: 10
 R version 4.6.1 (2026-06-24 ucrt)
 Platform: x86_64-w64-mingw32/x64

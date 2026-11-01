@@ -1,5 +1,4 @@
-Median of 3 repetitions in alternating order, cache off;
-warm = median of 3 with the content cache filled.
+Median of 3 repetitions in alternating order.
 Violations checked against the frozen snapshot before timing.
 R version 4.6.1 (2026-06-24 ucrt)
 Platform: x86_64-w64-mingw32/x64

@@ -253,8 +253,7 @@ if (requireNamespace("duckdb", quietly = TRUE) && requireNamespace("dbplyr", qui
 # 7. Hastighed på et register i fuld størrelse (valgfrit) -------------------
 #
 # Sæt stor <- TRUE for 25 mio. personår (5 mio. personer i 5 år). Kræver
-# omkring 4 GB fri hukommelse. Andet tjek af samme cpr-kolonne genbruger
-# de komprimerede id'er (options(inshape.cache = FALSE) slår det fra).
+# omkring 4 GB fri hukommelse.
 
 stor <- FALSE
 if (stor) {

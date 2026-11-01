@@ -4,7 +4,8 @@
 same_groups <- function(a, b) identical(match(a, a), match(b, b))
 
 dense <- function(x, threads = 2L) {
-  withr::local_options(inshape.threads = threads, inshape.cache = FALSE)
+  old <- data.table::setDTthreads(threads)
+  withr::defer(data.table::setDTthreads(old))
   dense_codes(x)
 }
 
@@ -59,39 +60,23 @@ test_that("large vectors take the partitioned path, the same for any threads", {
   expect_true(same_groups(dense(r), r))
 })
 
-test_that("the cache reuses ids only for a column with the same content", {
-  cache_clear()
-  withr::defer(cache_clear())
+test_that("a column changed in place, as data.table does, is grouped anew", {
   set.seed(3)
   n <- 2e5
-  df <- data.frame(cpr = sprintf("%010d", sample.int(1e9, n, TRUE)),
-                   r = runif(n), year = sample(2000:2020, n, TRUE))
+  df <- data.frame(cpr = sprintf("%010d", sample.int(1e9, n, TRUE)))
   first <- dense_codes(df$cpr)
-  expect_length(dense_cache$codes, 1)
-  expect_identical(dense_codes(df$cpr), first)
-  # An equal copy has the same content, so the same ids
-  expect_identical(dense_codes(paste0(df$cpr, "")), first)
-
-  # Changed in place, as data.table does, it is grouped anew
   data.table::set(df, i = 2L, j = "cpr", value = df$cpr[1])
   again <- dense_codes(df$cpr)
   expect_true(same_groups(again, df$cpr))
   expect_equal(attr(again, "n"), attr(first, "n") - 1L)
+})
 
-  # The same values in another order are another column
-  rev_cpr <- rev(df$cpr)
-  expect_true(same_groups(dense_codes(rev_cpr), rev_cpr))
-
-  # Years are compressed directly and not kept; the oldest entry goes
-  dense_codes(df$year)
-  dense_codes(df$r)
-  expect_length(dense_cache$codes, 3)
-  expect_false(any(vapply(dense_cache$codes, identical, logical(1), first)))
-
-  withr::local_options(inshape.cache = FALSE)
-  cache_clear()
-  dense_codes(df$cpr)
-  expect_length(dense_cache$codes, 0)
+test_that("nothing is kept in the package between calls", {
+  ns <- asNamespace("inshape")
+  before <- lapply(mget(ls(ns, all.names = TRUE), envir = ns), \(x) if (is.environment(x)) as.list(x))
+  ensure_unique(data.frame(cpr = sprintf("%010d", 1:2e5)), cpr)
+  after <- lapply(mget(ls(ns, all.names = TRUE), envir = ns), \(x) if (is.environment(x)) as.list(x))
+  expect_identical(after, before)
 })
 
 test_that("several columns group by their combination", {
@@ -114,7 +99,10 @@ test_that("the bit matrix and the sorted path summarise a panel alike", {
                         t  = sample.int(n_per, 5000, TRUE))
     ix <- panel_index(panel, "id", "t", NULL)
     bits <- panel_cells(ix)
-    withr::with_options(list(inshape.bits = FALSE), sorted <- panel_cells(ix))
+    local({
+      local_mocked_bindings(panel_fits_bits = function(...) FALSE)
+      sorted <<- panel_cells(ix)
+    })
     for (part in c("n_seen", "lo", "hi", "runs")) {
       expect_identical(bits[[part]], sorted[[part]], info = paste(part, n_per))
     }

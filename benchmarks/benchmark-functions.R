@@ -2,11 +2,11 @@
 # Or select the number of persons:
 #      Rscript benchmarks/benchmark-functions.R 200000
 # Synthetic inputs only. Times every exported function on population-sized
-# data shaped like a register, in memory, with the content cache off: each
-# call is the first look at new data. There is no baseline; the point is
+# data shaped like a register, in memory. Nothing is kept between calls,
+# so each call is a first look at the data. There is no baseline; the point is
 # what a full-population check costs.
 pkgload::load_all(quiet = TRUE)
-options(cli.default_handler = function(...) invisible(), inshape.cache = FALSE)
+options(cli.default_handler = function(...) invisible())
 set.seed(42)
 
 persons <- as.integer(commandArgs(trailingOnly = TRUE))
@@ -113,6 +113,6 @@ for (case in names(cases)) {
 }
 writeLines(c(sprintf("%d persons: %d person-years, %d spells.",
                      persons, nrow(panel), nrow(spells)),
-             "Median of 3 repetitions, content cache off.",
+             "Median of 3 repetitions.",
              paste("Threads:", inshape_threads()),
              capture.output(sessionInfo())), "benchmarks/functions-session.txt")

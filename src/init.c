@@ -6,7 +6,6 @@
 
 SEXP inshape_dense_ids(SEXP, SEXP);
 SEXP inshape_first_rows(SEXP, SEXP);
-SEXP inshape_fingerprint(SEXP, SEXP);
 SEXP inshape_varying_units(SEXP, SEXP, SEXP);
 SEXP inshape_outside(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP inshape_pair_changes(SEXP, SEXP, SEXP, SEXP);
@@ -19,7 +18,6 @@ SEXP inshape_spell_relations(SEXP, SEXP, SEXP);
 static const R_CallMethodDef call_methods[] = {
     {"inshape_dense_ids", (DL_FUNC) &inshape_dense_ids, 2},
     {"inshape_first_rows", (DL_FUNC) &inshape_first_rows, 2},
-    {"inshape_fingerprint", (DL_FUNC) &inshape_fingerprint, 2},
     {"inshape_varying_units", (DL_FUNC) &inshape_varying_units, 3},
     {"inshape_outside", (DL_FUNC) &inshape_outside, 7},
     {"inshape_pair_changes", (DL_FUNC) &inshape_pair_changes, 4},

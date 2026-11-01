@@ -31,7 +31,7 @@ panel_index <- function(data, ids, time_col, periods) {
 # position vector it is built from
 panel_fits_bits <- function(n_units, n_per, n_rows) {
   bytes <- n_units * ((n_per + 63) %/% 64) * 8
-  isTRUE(getOption("inshape.bits", TRUE)) && bytes <= max(2^27, 8 * n_rows)
+  bytes <= max(2^27, 8 * n_rows)
 }
 
 # Per unit (1..n_units): n_seen, lo, hi (NA when unseen), runs, pattern

@@ -1,16 +1,16 @@
-#' lustrum: structure checks for register microdata
+#' inshape: structure checks for register microdata
 #'
 #' Register microdata comes in a few shapes: one row per unit, one row per
 #' unit and period (a panel), or one row per spell with a start and an end.
 #' Every analysis assumes the shape is right: no duplicated persons, no
 #' missing years in the middle of a panel, no person with two addresses at
-#' once. lustrum checks those assumptions, fast enough for full-population
-#' registers. See `vignette("lustrum")`.
+#' once. inshape checks those assumptions, fast enough for full-population
+#' registers. See `vignette("inshape")`.
 #'
 #' ## The name
 #'
 #' In Rome the censors registered every citizen, and each census was closed
-#' by the *lustrum*: a ceremony that purified the people just counted,
+#' by the *inshape*: a ceremony that purified the people just counted,
 #' before the register was accepted. This package is that last step for
 #' register data, a registration of the registrations: are the keys
 #' unique, the panels whole, the spells consistent, before anyone builds on
@@ -54,7 +54,7 @@
 "_PACKAGE"
 
 #' @importFrom rlang %||% := .data
-#' @useDynLib lustrum, .registration = TRUE, .fixes = "C_"
+#' @useDynLib inshape, .registration = TRUE, .fixes = "C_"
 NULL
 
 # data.table only applies its own `[` syntax in packages that declare

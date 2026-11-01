@@ -1,8 +1,8 @@
 ---
-title: "Get started with lustrum"
+title: "Get started with inshape"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Get started with lustrum}
+  %\VignetteIndexEntry{Get started with inshape}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment  = "#>"
 )
-library(lustrum)
+library(inshape)
 library(tibble)
 ```
 
@@ -22,7 +22,7 @@ Every analysis assumes the shape is right, and the errors that break it are
 silent: a duplicated key multiplies rows in a join, a missing year looks
 like an exit, an overlapping spell gives a person two addresses at once.
 
-lustrum checks the shape before anything is built on it, in two steps.
+inshape checks the shape before anything is built on it, in two steps.
 The `describe_*()` functions look at the structure and judge nothing; the
 `ensure_*()` functions are *checkpoints*: each states one rule, warns or
 aborts with the rows that break it, and returns the data, so it sits in a
@@ -320,12 +320,12 @@ CSV file:
 
 ```{r, eval = FALSE}
 options(
-  lustrum.log  = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
-  lustrum.dump = "log/violations"
+  inshape.log  = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
+  inshape.dump = "log/violations"
 )
 ```
 
-A failure signals a condition of class `lustrum_failure` that carries the
+A failure signals a condition of class `inshape_failure` that carries the
 rows, so a scheduled job can catch it. A DuckDB or Arrow table is checked
 where it lives, and only the count and a preview are fetched into R. See
 `?checkpoints` for both.

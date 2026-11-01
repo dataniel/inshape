@@ -15,7 +15,7 @@ new <- data.frame(
 
 test_that("keys that came and went and values that changed are counted", {
   ch <- describe_changes(old, new, cpr, year)
-  expect_s3_class(ch, "lustrum_changes")
+  expect_s3_class(ch, "inshape_changes")
   expect_equal(c(ch$n_old, ch$n_new, ch$n_kept, ch$n_added, ch$n_removed), c(5, 5, 4, 1, 1))
   expect_equal(ch$added$cpr, "f")
   expect_equal(ch$removed$cpr, "c")

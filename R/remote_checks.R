@@ -32,7 +32,7 @@ is_remote <- function(data) !is.data.frame(data)
 select_names <- function(data, ...) colnames(dplyr::select(data, ...))
 
 remote_nrow <- function(x) {
-  n <- dplyr::pull(dplyr::summarise(dplyr::ungroup(x), .lustrum_n = dplyr::n()))
+  n <- dplyr::pull(dplyr::summarise(dplyr::ungroup(x), .inshape_n = dplyr::n()))
   as.numeric(n)
 }
 
@@ -74,24 +74,24 @@ remote_panel_gaps <- function(tbl, ids, time_col, periods, gaps_only) {
     periods <- sort(unique(periods))
     obs <- dplyr::filter(obs, .data[[time_col]] %in% !!periods)
   }
-  per <- tibble::tibble(!!time_col := periods, .lustrum_pos = seq_along(periods))
+  per <- tibble::tibble(!!time_col := periods, .inshape_pos = seq_along(periods))
   per <- dbplyr::copy_inline(dbplyr::remote_con(tbl), per)
   obs <- dplyr::inner_join(dplyr::distinct(obs), per, by = time_col)
 
   units <- obs |>
     dplyr::group_by(!!!rlang::syms(ids)) |>
-    dplyr::summarise(.lustrum_n  = dplyr::n(),
-                     .lustrum_lo = min(.data$.lustrum_pos, na.rm = TRUE),
-                     .lustrum_hi = max(.data$.lustrum_pos, na.rm = TRUE),
+    dplyr::summarise(.inshape_n  = dplyr::n(),
+                     .inshape_lo = min(.data$.inshape_pos, na.rm = TRUE),
+                     .inshape_hi = max(.data$.inshape_pos, na.rm = TRUE),
                      .groups = "drop")
   if (!gaps_only) {
-    units <- dplyr::mutate(units, .lustrum_lo = 1L, .lustrum_hi = !!length(periods))
+    units <- dplyr::mutate(units, .inshape_lo = 1L, .inshape_hi = !!length(periods))
   }
 
   units |>
-    dplyr::filter(.data$.lustrum_n < .data$.lustrum_hi - .data$.lustrum_lo + 1L) |>
+    dplyr::filter(.data$.inshape_n < .data$.inshape_hi - .data$.inshape_lo + 1L) |>
     dplyr::cross_join(per) |>
-    dplyr::filter(.data$.lustrum_pos >= .data$.lustrum_lo, .data$.lustrum_pos <= .data$.lustrum_hi) |>
+    dplyr::filter(.data$.inshape_pos >= .data$.inshape_lo, .data$.inshape_pos <= .data$.inshape_hi) |>
     dplyr::select(dplyr::all_of(c(ids, time_col))) |>
     dplyr::anti_join(dplyr::select(obs, dplyr::all_of(c(ids, time_col))),
                      by = c(ids, time_col), na_matches = "na") |>
@@ -111,25 +111,25 @@ remote_overlaps <- function(tbl, ids, start_col, end_col) {
     dbplyr::window_order(!!start, !!end) |>
     dbplyr::window_frame(-Inf, -1) |>
     dplyr::mutate(
-      .lustrum_prev_end  = max(!!end, na.rm = TRUE),
-      .lustrum_prev_open = max(dplyr::if_else(is.na(!!end), 1L, 0L), na.rm = TRUE)
+      .inshape_prev_end  = max(!!end, na.rm = TRUE),
+      .inshape_prev_open = max(dplyr::if_else(is.na(!!end), 1L, 0L), na.rm = TRUE)
     ) |>
     dplyr::mutate(
-      .lustrum_new = dplyr::if_else(
-        dplyr::coalesce(.data$.lustrum_prev_open, 0L) == 1L, 0L,
-        dplyr::if_else(is.na(.data$.lustrum_prev_end) | !!start > .data$.lustrum_prev_end, 1L, 0L)
+      .inshape_new = dplyr::if_else(
+        dplyr::coalesce(.data$.inshape_prev_open, 0L) == 1L, 0L,
+        dplyr::if_else(is.na(.data$.inshape_prev_end) | !!start > .data$.inshape_prev_end, 1L, 0L)
       )
     ) |>
-    dplyr::mutate(.lustrum_grp = cumsum(.data$.lustrum_new)) |>
+    dplyr::mutate(.inshape_grp = cumsum(.data$.inshape_new)) |>
     # the frame would otherwise carry into n() below
     dbplyr::window_frame(-Inf, Inf) |>
-    dplyr::group_by(!!!rlang::syms(c(ids, ".lustrum_grp"))) |>
+    dplyr::group_by(!!!rlang::syms(c(ids, ".inshape_grp"))) |>
     dplyr::filter(dplyr::n() > 1L) |>
     dplyr::ungroup()
 
   spells |>
-    dplyr::mutate(overlap_id = !!sql_dense_rank(spells, c(ids, ".lustrum_grp"))) |>
-    dplyr::select(!dplyr::starts_with(".lustrum_")) |>
+    dplyr::mutate(overlap_id = !!sql_dense_rank(spells, c(ids, ".inshape_grp"))) |>
+    dplyr::select(!dplyr::starts_with(".inshape_")) |>
     sort_by(rlang::exprs(.data$overlap_id, !!start, !!end))
 }
 
@@ -142,9 +142,9 @@ remote_varying <- function(tbl, ids, cols) {
   })
   units <- tbl |>
     dplyr::group_by(!!!rlang::syms(ids)) |>
-    dplyr::summarise(.lustrum_bad = !!Reduce(function(a, b) rlang::expr(!!a | !!b), tests),
+    dplyr::summarise(.inshape_bad = !!Reduce(function(a, b) rlang::expr(!!a | !!b), tests),
                      .groups = "drop") |>
-    dplyr::filter(.data$.lustrum_bad) |>
+    dplyr::filter(.data$.inshape_bad) |>
     dplyr::select(dplyr::all_of(ids))
   tbl |>
     dplyr::semi_join(units, by = ids, na_matches = "na") |>
@@ -193,7 +193,7 @@ remote_outside <- function(tbl, time_col, from_col, to_col) {
 # The finders return their query unsorted, since a sorted query that is
 # counted or summarised makes dbplyr warn, and attach the sort order for
 # report_check() to apply when rows are fetched.
-sort_by <- function(query, order) structure(query, lustrum_order = order)
+sort_by <- function(query, order) structure(query, inshape_order = order)
 
 # Sort keys putting NULL first, as data.table sorts NA, for arrange(). The
 # CASE form works on every backend; NULLS FIRST does not (SQL Server).

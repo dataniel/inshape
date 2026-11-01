@@ -1,14 +1,14 @@
-# Rundtur i lustrum med opdigtede registerdata
+# Rundtur i inshape med opdigtede registerdata
 #
 # Kør afsnit for afsnit (Ctrl+Enter i RStudio/Positron). Data er tilfældige,
 # men fejlene er lagt ind med vilje, så hver funktion har noget at finde.
 # Kommentaren over hvert kald siger, hvad du bør se.
 
 # Indlæs pakken: installeret, ellers direkte fra mappen
-if (requireNamespace("lustrum", quietly = TRUE)) {
-  library(lustrum)
+if (requireNamespace("inshape", quietly = TRUE)) {
+  library(inshape)
 } else {
-  pkgload::load_all("C:/Users/danie/projekter/strukt")
+  pkgload::load_all("C:/Users/danie/projekter/inshape")
 }
 library(dplyr)
 set.seed(2026)
@@ -103,7 +103,7 @@ ryddet |>
 # En fejl som betingelse: rækkerne kan gemmes i et planlagt job
 fejl <- tryCatch(
   ensure_unique(panel, cpr, aar, abort_msg = "Dublerede personår"),
-  lustrum_failure = function(e) e$violations
+  inshape_failure = function(e) e$violations
 )
 fejl
 
@@ -232,10 +232,10 @@ ryddet |>
 
 # 6. Log og dump til uovervågede kørsler ------------------------------------
 
-mappe <- file.path(tempdir(), "lustrum-demo")
+mappe <- file.path(tempdir(), "inshape-demo")
 options(
-  lustrum.log  = file.path(mappe, "tjek.log"),
-  lustrum.dump = file.path(mappe, "fejl")
+  inshape.log  = file.path(mappe, "tjek.log"),
+  inshape.dump = file.path(mappe, "fejl")
 )
 suppressWarnings({
   ensure_unique(panel, cpr, aar, warn_msg = "Dublerede personår")
@@ -244,7 +244,7 @@ suppressWarnings({
 })
 cat(readLines(file.path(mappe, "tjek.log")), sep = "\n")
 list.files(file.path(mappe, "fejl"))
-options(lustrum.log = NULL, lustrum.dump = NULL)
+options(inshape.log = NULL, inshape.dump = NULL)
 
 
 # 7. Samme tjek i DuckDB, uden at hente data ind i R ------------------------
@@ -271,7 +271,7 @@ if (requireNamespace("duckdb", quietly = TRUE) && requireNamespace("dbplyr", qui
 #
 # Sæt stor <- TRUE for 25 mio. personår (5 mio. personer i 5 år). Kræver
 # omkring 4 GB fri hukommelse. Andet tjek af samme cpr-kolonne genbruger
-# de komprimerede id'er (options(lustrum.cache = FALSE) slår det fra).
+# de komprimerede id'er (options(inshape.cache = FALSE) slår det fra).
 
 stor <- FALSE
 if (stor) {

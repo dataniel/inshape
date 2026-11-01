@@ -14,7 +14,7 @@ describe_key(data, ...)
 which counts fully duplicated rows.}
 }
 \value{
-An object of class \code{lustrum_key}, printed as a summary. It is a
+An object of class \code{inshape_key}, printed as a summary. It is a
 list with \code{key} (the column names), the counts \code{n_rows}, \code{n_keys}
 (distinct keys), \code{n_dup_keys}, \code{n_dup_rows} (rows sharing a key) and
 \code{n_exact} (duplicated keys whose copies are identical in every

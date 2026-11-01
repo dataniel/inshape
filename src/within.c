@@ -41,7 +41,7 @@ static inline double mapped(values_t x, R_xlen_t i, const double *lut, R_xlen_t 
     return lut[(R_xlen_t) k];
 }
 
-SEXP lustrum_outside(SEXP time, SEXP bound, SEXP upper_, SEXP t_lut_, SEXP t_lo_,
+SEXP inshape_outside(SEXP time, SEXP bound, SEXP upper_, SEXP t_lut_, SEXP t_lo_,
                      SEXP b_lut_, SEXP b_lo_) {
     R_xlen_t n = XLENGTH(time);
     if (XLENGTH(bound) != n) Rf_error("Time and bound must have the same length.");

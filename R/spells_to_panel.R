@@ -146,7 +146,7 @@ spells_to_panel <- function(data, id, start, end, status,
     first_days[-length(first_days)] - 1L
 
   base <- if (length(codes)) min(codes) else 0L
-  res <- .Call(C_lustrum_spell_status, keys$.start, keys$.end,
+  res <- .Call(C_inshape_spell_status, keys$.start, keys$.end,
                as.integer(groups), as.integer(lo - base), as.integer(hi - base),
                primo_days, ultimo_days, status_is == "outcome")
 
@@ -238,7 +238,7 @@ period_bound <- function(x, per_year, arg) {
   as.integer(x) * per_year + if (arg == "to") per_year - 1L else 0L
 }
 
-# Status values from the indices returned by C_lustrum_spell_status
+# Status values from the indices returned by C_inshape_spell_status
 status_values <- function(values, idx, status_is, ongoing) {
   running <- which(idx == 0L)
   idx[running] <- NA_integer_

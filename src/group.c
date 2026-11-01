@@ -269,7 +269,7 @@ static SEXP dense_result(SEXP res, int n_ids) {
     return res;
 }
 
-SEXP lustrum_dense_ids(SEXP x, SEXP threads_) {
+SEXP inshape_dense_ids(SEXP x, SEXP threads_) {
     R_xlen_t n = XLENGTH(x);
     if (n > INT_MAX - 1) Rf_error("Too many rows for the grouping engine.");
     int threads = Rf_asInteger(threads_);
@@ -303,7 +303,7 @@ SEXP lustrum_dense_ids(SEXP x, SEXP threads_) {
    equal fingerprints mean equal groups. Returns NULL for vectors the cache
    should skip: other types, and integers with a range small enough for
    dense_direct(), which is as fast as the checksum itself. */
-SEXP lustrum_fingerprint(SEXP x, SEXP threads_) {
+SEXP inshape_fingerprint(SEXP x, SEXP threads_) {
     R_xlen_t n = XLENGTH(x);
     int threads = Rf_asInteger(threads_);
     if (threads < 1) threads = 1;
@@ -344,7 +344,7 @@ SEXP lustrum_fingerprint(SEXP x, SEXP threads_) {
 
 /* The first row (1-based) of each group 1..n_groups, 0 for an empty
    group: one forward pass */
-SEXP lustrum_first_rows(SEXP ids_, SEXP n_groups_) {
+SEXP inshape_first_rows(SEXP ids_, SEXP n_groups_) {
     R_xlen_t n = XLENGTH(ids_);
     int k = Rf_asInteger(n_groups_);
     const int *ids = INTEGER(ids_);
@@ -379,7 +379,7 @@ static int strings_differ(SEXP a, SEXP b) {
 #define V_VALUE 2
 #define V_MISSING 4
 
-SEXP lustrum_varying_units(SEXP x, SEXP unit_, SEXP n_units_) {
+SEXP inshape_varying_units(SEXP x, SEXP unit_, SEXP n_units_) {
     R_xlen_t n = XLENGTH(x);
     int k = Rf_asInteger(n_units_);
     if (TYPEOF(unit_) != INTSXP || XLENGTH(unit_) != n) {
@@ -437,7 +437,7 @@ SEXP lustrum_varying_units(SEXP x, SEXP unit_, SEXP n_units_) {
    describe_changes(): 0 equal (two missing values are equal), 1 a changed
    value, 2 a value that went missing, 3 a missing value that was filled
    in. a and b have the same type; NULL for a type it does not take. */
-SEXP lustrum_pair_changes(SEXP a, SEXP b, SEXP ia_, SEXP ib_) {
+SEXP inshape_pair_changes(SEXP a, SEXP b, SEXP ia_, SEXP ib_) {
     R_xlen_t n = XLENGTH(ia_);
     int type = TYPEOF(a);
     if (TYPEOF(b) != type || XLENGTH(ib_) != n) return R_NilValue;
@@ -471,7 +471,7 @@ SEXP lustrum_pair_changes(SEXP a, SEXP b, SEXP ia_, SEXP ib_) {
 }
 
 /* Dense ids of 64-bit keys, for the panel engine (src/panel.c) */
-int lustrum_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads) {
+int inshape_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads) {
     return n < (1 << 17) ? dense_serial(K_U64, keys, n, out)
                          : dense_partitioned(K_U64, keys, n, out, threads);
 }

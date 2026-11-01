@@ -6,7 +6,7 @@ persons <- data.frame(
 
 test_that("each code's first and last period and skipped periods are counted", {
   cd <- describe_codes(persons, kom, year)
-  expect_s3_class(cd, "lustrum_codes")
+  expect_s3_class(cd, "inshape_codes")
   expect_equal(cd$n_codes, 6)
   codes <- cd$codes
   expect_equal(codes$code, c("95", "955", "956", "957", "960", "965"))
@@ -40,11 +40,11 @@ test_that("the summary prints", {
 
 test_that("ensure_codes() reports values outside the code list", {
   valid <- c("955", "956", "957", "960", "965")
-  cnd <- rlang::catch_cnd(ensure_codes(persons, kom, valid), "lustrum_failure")
+  cnd <- rlang::catch_cnd(ensure_codes(persons, kom, valid), "inshape_failure")
   expect_equal(cnd$violations$kom, "95")
   expect_match(conditionMessage(cnd), "Codes not in the code list: kom")
 
-  cnd <- rlang::catch_cnd(ensure_codes(persons, kom, valid, na_ok = FALSE), "lustrum_failure")
+  cnd <- rlang::catch_cnd(ensure_codes(persons, kom, valid, na_ok = FALSE), "inshape_failure")
   expect_equal(cnd$violations$kom, c(NA, "95"))
   expect_match(conditionMessage(cnd), "2 rows in 2 groups")
 
@@ -53,7 +53,7 @@ test_that("ensure_codes() reports values outside the code list", {
 
 test_that("ensure_codes() compares text as text and takes factors and numbers", {
   df <- data.frame(kom = c("0955", "955"), n = c(1, 2), f = factor(c("x", "y")))
-  cnd <- rlang::catch_cnd(ensure_codes(df, kom, 955), "lustrum_failure")
+  cnd <- rlang::catch_cnd(ensure_codes(df, kom, 955), "inshape_failure")
   expect_equal(cnd$violations$kom, "0955")
   expect_message(ensure_codes(df, n, 1:2), "Valid codes")
   expect_warning(ensure_codes(df, f, "x"), "Codes not in")

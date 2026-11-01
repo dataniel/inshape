@@ -45,7 +45,7 @@
 #' @param start,end Columns with the first and last day (or period) of each
 #'   spell. A missing `end` means an ongoing spell.
 #'
-#' @return An object of class `lustrum_spells`, printed as a summary. It is
+#' @return An object of class `inshape_spells`, printed as a summary. It is
 #'   a list with the counts `n_rows`, `n_spells` (usable spells), `n_units`,
 #'   `n_missing_start`, `n_end_before_start`, `n_ongoing`, `n_single`
 #'   (spells of one day or period) and `n_units_overlapping` (units with a
@@ -129,7 +129,7 @@ describe_spells <- function(data, id, start, end) {
       starts = spread_counts(starts_by, periods),
       ends   = spread_counts(ends_by, periods)
     )
-  ), class = "lustrum_spells")
+  ), class = "inshape_spells")
 }
 
 # The usable spells sorted by unit, start and longest first, with each
@@ -143,7 +143,7 @@ spell_scan <- function(unit, start, end, usable) {
   # copy them again
   spells <- data.table::setDT(list(u = unit[ok], s = start[ok], e = ends, row = ok))
   data.table::setorderv(spells, c("u", "s", "e"), order = c(1L, 1L, -1L))
-  res <- .Call(C_lustrum_spell_relations, spells$u, spells$s, spells$e)
+  res <- .Call(C_inshape_spell_relations, spells$u, spells$s, spells$e)
   data.table::set(spells, j = "rel", value = res[[1]])
   data.table::set(spells, j = "gap", value = res[[2]])
   spells
@@ -217,7 +217,7 @@ summary_of_counts <- function(counts) {
 }
 
 #' @export
-print.lustrum_spells <- function(x, ...) {
+print.inshape_spells <- function(x, ...) {
   cli::cat_rule(paste0("Spells: ", x$start, " to ", x$end, " per ", toString(x$ids)))
   cli::cat_line(count(x$n_rows, "row"), ", ", count(x$n_spells, "usable spell"),
                 ", ", count(x$n_units, "unit"))

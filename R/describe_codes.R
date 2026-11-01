@@ -31,7 +31,7 @@
 #' @param time The period column (one column), e.g. `year`.
 #' @param periods Expected periods. Defaults to those observed in `data`.
 #'
-#' @return An object of class `lustrum_codes`, printed as a summary. It is a
+#' @return An object of class `inshape_codes`, printed as a summary. It is a
 #'   list with the counts `n_rows`, `n_codes`, `n_every_period`,
 #'   `n_with_gaps`, `n_missing` (rows with a missing code),
 #'   `n_missing_time` and `n_outside`, the `periods`, and two tibbles:
@@ -115,7 +115,7 @@ describe_codes <- function(data, code, time, periods = NULL) {
     n_outside      = sum(!missing_time) - sum(!is.na(ix$pos)),
     codes          = codes,
     by_period      = by_period
-  ), class = "lustrum_codes")
+  ), class = "inshape_codes")
 }
 
 # The observed code-periods with their rows: counted in one tabulate()
@@ -137,7 +137,7 @@ code_periods <- function(unit, pos, n_units, n_per) {
 }
 
 #' @export
-print.lustrum_codes <- function(x, ...) {
+print.inshape_codes <- function(x, ...) {
   per <- x$periods
   span <- if (length(per)) paste0(", ", format(per[1]), "-", format(per[length(per)])) else ""
   cli::cat_rule(paste0("Codes: ", x$code, " by ", x$time))

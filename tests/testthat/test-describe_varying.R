@@ -8,7 +8,7 @@ persons <- data.frame(
 
 test_that("columns are counted by units that vary, partly or wholly missing", {
   v <- describe_varying(persons, cpr)
-  expect_s3_class(v, "lustrum_varying")
+  expect_s3_class(v, "inshape_varying")
   expect_equal(v$n_units, 4)
   cols <- v$columns
   sex <- cols[cols$column == "sex", ]
@@ -76,7 +76,7 @@ test_that("the summary prints", {
 
 test_that("ensure_constant() reports every row of the units that vary", {
   cnd <- rlang::catch_cnd(ensure_constant(persons, cpr, sex),
-                          classes = "lustrum_failure")
+                          classes = "inshape_failure")
   expect_equal(cnd$violations$cpr, c("b", "b"))
   expect_equal(names(cnd$violations)[1:2], c("cpr", "sex"))
   expect_match(conditionMessage(cnd), "Varies within units: sex per cpr")
@@ -90,7 +90,7 @@ test_that("ensure_constant() passes when only missing values differ", {
 
 test_that("ensure_constant() checks several columns, and aborts on request", {
   cnd <- rlang::catch_cnd(ensure_constant(persons, cpr, sex, income),
-                          classes = "lustrum_failure")
+                          classes = "inshape_failure")
   expect_equal(unique(cnd$violations$cpr), c("a", "b", "c"))
   expect_error(ensure_constant(persons, cpr, sex, abort_msg = "Sex changes"),
                "Sex changes")

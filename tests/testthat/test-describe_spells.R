@@ -11,7 +11,7 @@ relations <- function(x) stats::setNames(x$relations$spells, x$relations$relatio
 
 test_that("each spell is related to the unit's earlier spells", {
   s <- describe_spells(admissions, cpr, start, end)
-  expect_s3_class(s, "lustrum_spells")
+  expect_s3_class(s, "inshape_spells")
   r <- relations(s)
   expect_equal(r[["adjacent"]], 1)    # a: 11 January after 10 January
   expect_equal(r[["gap"]], 1)         # a: March

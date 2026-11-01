@@ -52,8 +52,8 @@ ensure_unique <- function(data, ...,
                           success_msg = NULL,
                           warn_msg    = NULL,
                           abort_msg   = NULL,
-                          log         = getOption("lustrum.log"),
-                          dump        = getOption("lustrum.dump")) {
+                          log         = getOption("inshape.log"),
+                          dump        = getOption("inshape.dump")) {
 
   tbl <- check_table(data)
   key_cols <- if (...length() > 0) select_names(tbl, ...)

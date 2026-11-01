@@ -6,7 +6,7 @@
 # call is the first look at new data. There is no baseline; the point is
 # what a full-population check costs.
 pkgload::load_all(quiet = TRUE)
-options(cli.default_handler = function(...) invisible(), lustrum.cache = FALSE)
+options(cli.default_handler = function(...) invisible(), inshape.cache = FALSE)
 set.seed(42)
 
 persons <- as.integer(commandArgs(trailingOnly = TRUE))
@@ -114,5 +114,5 @@ for (case in names(cases)) {
 writeLines(c(sprintf("%d persons: %d person-years, %d spells.",
                      persons, nrow(panel), nrow(spells)),
              "Median of 3 repetitions, content cache off.",
-             paste("Threads:", lustrum_threads()),
+             paste("Threads:", inshape_threads()),
              capture.output(sessionInfo())), "benchmarks/functions-session.txt")

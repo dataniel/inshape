@@ -73,8 +73,8 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
                           success_msg = NULL,
                           warn_msg    = NULL,
                           abort_msg   = NULL,
-                          log         = getOption("lustrum.log"),
-                          dump        = getOption("lustrum.dump")) {
+                          log         = getOption("inshape.log"),
+                          dump        = getOption("inshape.dump")) {
 
   tbl      <- check_table(data)
   time_col <- select_names(tbl, {{ time }})
@@ -156,7 +156,7 @@ outside_rows <- function(time, bound, side, time_col, bound_col, call = rlang::c
     b_lo  <- year_floor(b)
     b_lut <- year_days(b, b_lo, last = side == "to")
   }
-  rows <- .Call(C_lustrum_outside, t, b, side == "to", t_lut, t_lo, b_lut, b_lo)
+  rows <- .Call(C_inshape_outside, t, b, side == "to", t_lut, t_lo, b_lut, b_lo)
   if (is.null(rows)) {
     col <- if (is.null(t_lut)) bound_col else time_col
     cli::cli_abort("{.var {col}} is compared with dates, so it must hold whole years.",

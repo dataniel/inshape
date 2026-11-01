@@ -107,8 +107,8 @@ test_that("ensure_codes() on DuckDB finds the same rows as in memory", {
   tbl <- local_duck(t = panel)
   valid <- c("955", "956", "957")
   for (na_ok in c(TRUE, FALSE)) {
-    remote <- rlang::catch_cnd(ensure_codes(tbl, kom, valid, na_ok = na_ok), "lustrum_failure")
-    local  <- rlang::catch_cnd(ensure_codes(panel, kom, valid, na_ok = na_ok), "lustrum_failure")
+    remote <- rlang::catch_cnd(ensure_codes(tbl, kom, valid, na_ok = na_ok), "inshape_failure")
+    local  <- rlang::catch_cnd(ensure_codes(panel, kom, valid, na_ok = na_ok), "inshape_failure")
     key <- function(v) dplyr::arrange(tibble::as_tibble(v), cpr, year, sex, kom)
     expect_equal(key(dplyr::collect(remote$violations)), key(local$violations))
   }

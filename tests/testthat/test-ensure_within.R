@@ -8,7 +8,7 @@ panel <- data.frame(
 
 test_that("years after the year of death and before the year of birth are reported", {
   cnd <- rlang::catch_cnd(ensure_within(panel, year, from = born, to = death),
-                          classes = "lustrum_failure")
+                          classes = "inshape_failure")
   v <- cnd$violations
   expect_equal(v$cpr, c("a", "b"))
   expect_equal(v$year, c(2024, 2022))
@@ -30,12 +30,12 @@ test_that("dates are compared by day, and a year bound by year", {
     since = 2020
   )
   cnd <- rlang::catch_cnd(ensure_within(visits, day, from = since, to = death),
-                          classes = "lustrum_failure")
+                          classes = "inshape_failure")
   expect_equal(cnd$violations$day, as.Date(c("2023-05-02", "2019-12-31")))
   expect_equal(cnd$violations$outside, c("after death", "before since"))
 
   years <- data.frame(year = 2010:2012, first = 2011L)
-  cnd <- rlang::catch_cnd(ensure_within(years, year, from = first), classes = "lustrum_failure")
+  cnd <- rlang::catch_cnd(ensure_within(years, year, from = first), classes = "inshape_failure")
   expect_equal(cnd$violations$year, 2010L)
   expect_match(conditionMessage(cnd), "year from first")
 })
@@ -70,6 +70,6 @@ test_that("a year compared with a date must be whole", {
 test_that("a date bound by year counts the whole year as within", {
   d <- data.frame(day = as.Date(c("2019-12-31", "2020-01-01", "2024-12-31", "2025-01-01")),
                   from = 2020L, to = 2024L)
-  cnd <- rlang::catch_cnd(ensure_within(d, day, from = from, to = to), classes = "lustrum_failure")
+  cnd <- rlang::catch_cnd(ensure_within(d, day, from = from, to = to), classes = "inshape_failure")
   expect_equal(cnd$violations$day, as.Date(c("2019-12-31", "2025-01-01")))
 })

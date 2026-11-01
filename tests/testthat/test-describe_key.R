@@ -7,7 +7,7 @@ firms <- data.frame(
 
 test_that("duplicated keys are counted with their copies", {
   k <- describe_key(firms, cvr, year)
-  expect_s3_class(k, "lustrum_key")
+  expect_s3_class(k, "inshape_key")
   expect_equal(k$key, c("cvr", "year"))
   expect_equal(k$n_rows, 8)
   expect_equal(k$n_keys, 4)

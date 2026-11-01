@@ -20,11 +20,11 @@ message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
 
 \item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("lustrum.log")}.}
+automatically. Defaults to \code{getOption("inshape.log")}.}
 
 \item{dump}{Optional directory. When the check fails, the offending rows
 are written there as a timestamped CSV file (UTF-8 with BOM, so Excel
-reads Danish letters correctly). Defaults to \code{getOption("lustrum.dump")}.}
+reads Danish letters correctly). Defaults to \code{getOption("inshape.dump")}.}
 }
 \description{
 The \verb{ensure_*()} functions are checkpoints: each states a rule about the
@@ -38,13 +38,13 @@ a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
 braces are not interpolated.
 
-A failed check signals a condition of class \code{lustrum_failure} (a warning or
+A failed check signals a condition of class \code{inshape_failure} (a warning or
 an error) that carries the offending rows in its \code{violations} field.
 Scheduled pipelines can catch it and keep the rows:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{tryCatch(
   ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-  lustrum_failure = \\(e) saveRDS(e$violations, "duplicates.rds")
+  inshape_failure = \\(e) saveRDS(e$violations, "duplicates.rds")
 )
 }\if{html}{\out{</div>}}
 \subsection{Logging and dumping}{
@@ -55,8 +55,8 @@ option, so a script can switch them on once at the top instead of
 repeating the path in every check:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{options(
-  lustrum.log  = format(Sys.time(), "log/\%Y\%m\%d_\%H\%M\%S_checks.log"),
-  lustrum.dump = "log/violations"
+  inshape.log  = format(Sys.time(), "log/\%Y\%m\%d_\%H\%M\%S_checks.log"),
+  inshape.dump = "log/violations"
 )
 }\if{html}{\out{</div>}}
 
@@ -79,7 +79,7 @@ are kept for the session and reused when the same column is checked
 again. A column is recognised by its content, read in one parallel pass
 that costs a fraction of the compression, never by its name: a column
 changed in any way, also in place by data.table, is compressed anew.
-The ids take 4 bytes per row; \code{options(lustrum.cache = FALSE)} turns the
+The ids take 4 bytes per row; \code{options(inshape.cache = FALSE)} turns the
 cache off and frees it at the next check.
 }
 

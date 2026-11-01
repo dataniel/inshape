@@ -30,7 +30,7 @@
 #' the counts are fetched, and `added`, `removed` and `changed` stay
 #' queries, to `dplyr::collect()` when needed.
 #'
-#' @return An object of class `lustrum_changes`, printed as a summary. It is
+#' @return An object of class `inshape_changes`, printed as a summary. It is
 #'   a list with the counts `n_old`, `n_new`, `n_kept` (keys in both),
 #'   `n_added`, `n_removed` and `n_changed` (kept keys with any changed
 #'   column); `columns_added`, `columns_removed` and `type_changed`
@@ -141,7 +141,7 @@ describe_changes <- function(old, new, ...) {
     added           = tibble::as_tibble(lapply(unclass(new)[key], `[`, added)),
     removed         = tibble::as_tibble(lapply(unclass(old)[key], `[`, removed)),
     changed         = changed
-  ), class = "lustrum_changes")
+  ), class = "inshape_changes")
 }
 
 # Two columns as vectors of one type that compare as R's == does: factors
@@ -162,7 +162,7 @@ aligned <- function(a, b) {
 # compiled pass (src/group.c), or in R for types the pass does not take
 pair_changes <- function(a, b, ia, ib) {
   v <- aligned(a, b)
-  code <- .Call(C_lustrum_pair_changes, v$a, v$b, as.integer(ia), as.integer(ib))
+  code <- .Call(C_inshape_pair_changes, v$a, v$b, as.integer(ia), as.integer(ib))
   if (!is.null(code)) return(code)
   x <- v$a[ia]
   y <- v$b[ib]
@@ -176,7 +176,7 @@ pair_changes <- function(a, b, ia, ib) {
 }
 
 #' @export
-print.lustrum_changes <- function(x, ...) {
+print.inshape_changes <- function(x, ...) {
   cli::cat_rule(paste0("Changes by ", toString(x$key)))
   cli::cat_line(count(x$n_old, "row"), " before, ", count(x$n_new, "row"), " now, ",
                 count(x$n_kept, "key"), " in both")

@@ -44,16 +44,16 @@ remote_periods <- function(tbl, time_col, periods) {
     periods <- dplyr::pull(dplyr::distinct(dplyr::filter(tbl, !is.na(!!time)), !!time))
   }
   periods <- sort(unique(periods))
-  per <- tibble::tibble(!!time_col := periods, .lustrum_pos = seq_along(periods))
+  per <- tibble::tibble(!!time_col := periods, .inshape_pos = seq_along(periods))
   list(periods = periods, table = dbplyr::copy_inline(dbplyr::remote_con(tbl), per))
 }
 
 # Counts per value of one column of a lazy table, as two vectors
 count_by <- function(query, col) {
-  counts <- fetch(dplyr::count(query, .data[[col]], name = ".lustrum_count"))
+  counts <- fetch(dplyr::count(query, .data[[col]], name = ".inshape_count"))
   counts <- counts[!is.na(counts[[col]]), ]
   counts <- counts[order(counts[[col]]), ]
-  list(value = counts[[col]], n = int_or_na(counts$.lustrum_count))
+  list(value = counts[[col]], n = int_or_na(counts$.inshape_count))
 }
 
 
@@ -61,24 +61,24 @@ count_by <- function(query, col) {
 
 remote_describe_key <- function(tbl, key) {
   keys <- rlang::syms(key)
-  per_key <- dplyr::count(tbl, !!!keys, name = ".lustrum_n")
+  per_key <- dplyr::count(tbl, !!!keys, name = ".inshape_n")
   sums <- fetch_sums(dplyr::summarise(per_key,
     n_keys     = dplyr::n(),
-    n_dup_keys = sum(!!flag(rlang::expr(.data$.lustrum_n > 1L)), na.rm = TRUE),
-    n_dup_rows = sum(dplyr::if_else(.data$.lustrum_n > 1L, .data$.lustrum_n, 0), na.rm = TRUE)
+    n_dup_keys = sum(!!flag(rlang::expr(.data$.inshape_n > 1L)), na.rm = TRUE),
+    n_dup_rows = sum(dplyr::if_else(.data$.inshape_n > 1L, .data$.inshape_n, 0), na.rm = TRUE)
   ))
-  by_copies <- count_by(dplyr::filter(per_key, .data$.lustrum_n > 1L), ".lustrum_n")
+  by_copies <- count_by(dplyr::filter(per_key, .data$.inshape_n > 1L), ".inshape_n")
 
   # Per duplicated key and column: the distinct values, a missing value
   # counting as one of them
   other <- setdiff(colnames(tbl), key)
-  dups <- dplyr::semi_join(tbl, dplyr::filter(per_key, .data$.lustrum_n > 1L),
+  dups <- dplyr::semi_join(tbl, dplyr::filter(per_key, .data$.inshape_n > 1L),
                            by = key, na_matches = "na")
   differs <- lapply(other, function(col) {
     x <- rlang::sym(col)
     flag(rlang::expr(!!count_distinct(tbl, col) + max(!!flag(rlang::expr(is.na(!!x))), na.rm = TRUE) > 1L))
   })
-  names(differs) <- paste0(".lustrum_d", seq_along(other))
+  names(differs) <- paste0(".inshape_d", seq_along(other))
   n_differ <- rep(0, length(other))
   n_exact <- sums[["n_dup_keys"]]
   if (length(other) && sums[["n_dup_keys"]] > 0) {
@@ -86,16 +86,16 @@ remote_describe_key <- function(tbl, key) {
     any_diff <- Reduce(function(a, b) rlang::expr(!!a + !!b), rlang::syms(names(differs)))
     totals <- fetch_sums(dplyr::summarise(per_dup,
       !!!lapply(rlang::syms(names(differs)), function(d) rlang::expr(sum(!!d, na.rm = TRUE))),
-      .lustrum_exact = sum(!!flag(rlang::expr(!!any_diff == 0L)), na.rm = TRUE)
+      .inshape_exact = sum(!!flag(rlang::expr(!!any_diff == 0L)), na.rm = TRUE)
     ))
     n_differ <- totals[seq_along(other)]
-    n_exact <- totals[[".lustrum_exact"]]
+    n_exact <- totals[[".inshape_exact"]]
   }
   ord <- order(-n_differ, seq_along(other))
   ord <- ord[n_differ[ord] > 0]
 
   missing <- fetch_sums(dplyr::summarise(tbl,
-    .lustrum_rows = dplyr::n(),
+    .inshape_rows = dplyr::n(),
     !!!lapply(keys, function(k) rlang::expr(sum(!!flag(rlang::expr(is.na(!!k))), na.rm = TRUE)))
   ))
 
@@ -109,7 +109,7 @@ remote_describe_key <- function(tbl, key) {
     copies     = tibble::tibble(copies = int_or_na(by_copies$value), keys = by_copies$n),
     conflicts  = tibble::tibble(column = other[ord], keys = int_or_na(n_differ[ord])),
     missing    = tibble::tibble(column = key, rows = int_or_na(missing[-1]))
-  ), class = "lustrum_key")
+  ), class = "inshape_key")
 }
 
 
@@ -119,19 +119,19 @@ remote_describe_key <- function(tbl, key) {
 # presence and, for up to 52 periods, the periods as a bit pattern, from
 # the distinct unit-periods
 remote_units <- function(cells, ids, n_per) {
-  pos <- rlang::sym(".lustrum_pos")
+  pos <- rlang::sym(".inshape_pos")
   runs <- cells |>
     dplyr::group_by(!!!rlang::syms(ids)) |>
     dbplyr::window_order(!!pos) |>
-    dplyr::mutate(.lustrum_new = dplyr::if_else(
+    dplyr::mutate(.inshape_new = dplyr::if_else(
       is.na(dplyr::lag(!!pos)) | dplyr::lag(!!pos) != !!pos - 1L, 1L, 0L))
   summary <- rlang::exprs(
-    .lustrum_seen = dplyr::n(),
-    .lustrum_lo   = min(!!pos, na.rm = TRUE),
-    .lustrum_hi   = max(!!pos, na.rm = TRUE),
-    .lustrum_runs = sum(.data$.lustrum_new, na.rm = TRUE)
+    .inshape_seen = dplyr::n(),
+    .inshape_lo   = min(!!pos, na.rm = TRUE),
+    .inshape_hi   = max(!!pos, na.rm = TRUE),
+    .inshape_runs = sum(.data$.inshape_new, na.rm = TRUE)
   )
-  if (n_per <= 52) summary$.lustrum_pattern <- rlang::expr(sum(2^(!!pos - 1L), na.rm = TRUE))
+  if (n_per <= 52) summary$.inshape_pattern <- rlang::expr(sum(2^(!!pos - 1L), na.rm = TRUE))
   dplyr::summarise(runs, !!!summary, .groups = "drop")
 }
 
@@ -143,7 +143,7 @@ remote_describe_panel <- function(tbl, ids, time_col, periods, keep) {
 
   obs <- dplyr::inner_join(dplyr::select(tbl, dplyr::all_of(c(ids, time_col))),
                            pr$table, by = time_col)
-  cells <- dplyr::count(obs, !!!rlang::syms(ids), .data$.lustrum_pos, name = ".lustrum_n")
+  cells <- dplyr::count(obs, !!!rlang::syms(ids), .data$.inshape_pos, name = ".inshape_n")
   units <- remote_units(cells, ids, n_per)
 
   any_na_id <- Reduce(function(a, b) rlang::expr(!!a | !!b),
@@ -154,15 +154,15 @@ remote_describe_panel <- function(tbl, ids, time_col, periods, keep) {
     n_missing_time = sum(!!flag(rlang::expr(is.na(!!time))), na.rm = TRUE)
   ))
   n_in <- fetch_sums(dplyr::summarise(cells,
-    n_in = sum(.data$.lustrum_n, na.rm = TRUE),
-    n_dup_cells = sum(!!flag(rlang::expr(.data$.lustrum_n > 1L)), na.rm = TRUE),
-    n_dup_rows = sum(.data$.lustrum_n - 1L, na.rm = TRUE)
+    n_in = sum(.data$.inshape_n, na.rm = TRUE),
+    n_dup_cells = sum(!!flag(rlang::expr(.data$.inshape_n > 1L)), na.rm = TRUE),
+    n_dup_rows = sum(.data$.inshape_n - 1L, na.rm = TRUE)
   ))
   per_unit <- fetch_sums(dplyr::summarise(units,
     n_units = dplyr::n(),
-    n_complete = sum(!!flag(rlang::expr(.data$.lustrum_seen == !!n_per)), na.rm = TRUE),
-    n_with_gaps = sum(!!flag(rlang::expr(.data$.lustrum_hi - .data$.lustrum_lo + 1L > .data$.lustrum_seen)), na.rm = TRUE),
-    n_gap_cells = sum(.data$.lustrum_hi - .data$.lustrum_lo + 1L - .data$.lustrum_seen, na.rm = TRUE)
+    n_complete = sum(!!flag(rlang::expr(.data$.inshape_seen == !!n_per)), na.rm = TRUE),
+    n_with_gaps = sum(!!flag(rlang::expr(.data$.inshape_hi - .data$.inshape_lo + 1L > .data$.inshape_seen)), na.rm = TRUE),
+    n_gap_cells = sum(.data$.inshape_hi - .data$.inshape_lo + 1L - .data$.inshape_seen, na.rm = TRUE)
   ))
 
   spread <- function(counts) {
@@ -170,24 +170,24 @@ remote_describe_panel <- function(tbl, ids, time_col, periods, keep) {
     out[counts$value] <- counts$n
     out
   }
-  entries <- spread(count_by(units, ".lustrum_lo"))
-  exits   <- spread(count_by(units, ".lustrum_hi"))
-  seen    <- spread(count_by(cells, ".lustrum_pos"))
+  entries <- spread(count_by(units, ".inshape_lo"))
+  exits   <- spread(count_by(units, ".inshape_hi"))
+  seen    <- spread(count_by(cells, ".inshape_pos"))
   spanning <- cumsum(entries) - (cumsum(exits) - exits)
-  by_runs <- count_by(units, ".lustrum_runs")
+  by_runs <- count_by(units, ".inshape_runs")
 
   patterns <- tibble::tibble(pattern = character(), units = integer(), share = numeric())
   if (n_per <= 52 && keep > 0 && per_unit[["n_units"]] > 0) {
     top <- fetch(utils::head(dplyr::arrange(
-      dplyr::count(units, .data$.lustrum_pattern, name = ".lustrum_n"),
-      dplyr::desc(.data$.lustrum_n), .data$.lustrum_pattern), keep))
-    bits <- lapply(as.numeric(top$.lustrum_pattern), function(p) {
+      dplyr::count(units, .data$.inshape_pattern, name = ".inshape_n"),
+      dplyr::desc(.data$.inshape_n), .data$.inshape_pattern), keep))
+    bits <- lapply(as.numeric(top$.inshape_pattern), function(p) {
       floor(p / 2^(seq_len(n_per) - 1)) %% 2 == 1
     })
     patterns <- tibble::tibble(
       pattern = vapply(bits, function(b) paste(ifelse(b, "1", "."), collapse = ""), character(1)),
-      units   = int_or_na(top$.lustrum_n),
-      share   = as.numeric(top$.lustrum_n) / per_unit[["n_units"]]
+      units   = int_or_na(top$.inshape_n),
+      share   = as.numeric(top$.inshape_n) / per_unit[["n_units"]]
     )
   }
 
@@ -214,7 +214,7 @@ remote_describe_panel <- function(tbl, ids, time_col, periods, keep) {
     ),
     runs           = tibble::tibble(runs = int_or_na(by_runs$value), units = by_runs$n),
     patterns       = patterns
-  ), class = "lustrum_panel")
+  ), class = "inshape_panel")
 }
 
 remote_describe_codes <- function(tbl, code_col, time_col, periods) {
@@ -227,18 +227,18 @@ remote_describe_codes <- function(tbl, code_col, time_col, periods) {
   obs <- dplyr::inner_join(dplyr::select(tbl, dplyr::all_of(c(code_col, time_col))),
                            pr$table, by = time_col)
   coded <- dplyr::filter(obs, !is.na(!!code))
-  cells <- dplyr::count(coded, !!code, .data$.lustrum_pos, name = ".lustrum_n")
+  cells <- dplyr::count(coded, !!code, .data$.inshape_pos, name = ".inshape_n")
   per_code <- dplyr::summarise(dplyr::group_by(cells, !!code),
-    .lustrum_rows = sum(.data$.lustrum_n, na.rm = TRUE),
-    .lustrum_seen = dplyr::n(),
-    .lustrum_lo   = min(.data$.lustrum_pos, na.rm = TRUE),
-    .lustrum_hi   = max(.data$.lustrum_pos, na.rm = TRUE),
+    .inshape_rows = sum(.data$.inshape_n, na.rm = TRUE),
+    .inshape_seen = dplyr::n(),
+    .inshape_lo   = min(.data$.inshape_pos, na.rm = TRUE),
+    .inshape_hi   = max(.data$.inshape_pos, na.rm = TRUE),
     .groups = "drop")
   codes <- fetch(per_code)
   codes <- codes[order(codes[[code_col]], method = "radix"), ]
-  lo <- int_or_na(codes$.lustrum_lo)
-  hi <- int_or_na(codes$.lustrum_hi)
-  seen <- int_or_na(codes$.lustrum_seen)
+  lo <- int_or_na(codes$.inshape_lo)
+  hi <- int_or_na(codes$.inshape_hi)
+  seen <- int_or_na(codes$.inshape_seen)
 
   rows <- fetch_sums(dplyr::summarise(tbl,
     n_rows = dplyr::n(),
@@ -269,16 +269,16 @@ remote_describe_codes <- function(tbl, code_col, time_col, periods) {
       last    = periods[hi],
       periods = seen,
       gaps    = hi - lo + 1L - seen,
-      rows    = int_or_na(codes$.lustrum_rows)
+      rows    = int_or_na(codes$.inshape_rows)
     ),
     by_period      = tibble::tibble(
       period  = periods,
-      codes   = spread(count_by(cells, ".lustrum_pos")),
+      codes   = spread(count_by(cells, ".inshape_pos")),
       new     = replace(tabulate(lo, n_per), 1, NA),
       gone    = replace(tabulate(hi + 1L, n_per), 1, NA),
-      missing = spread(count_by(dplyr::filter(obs, is.na(!!code)), ".lustrum_pos"))
+      missing = spread(count_by(dplyr::filter(obs, is.na(!!code)), ".inshape_pos"))
     )
-  ), class = "lustrum_codes")
+  ), class = "inshape_codes")
 }
 
 
@@ -290,37 +290,37 @@ remote_describe_varying <- function(tbl, ids, cols) {
     stats::setNames(list(
       count_distinct(tbl, cols[k]),
       rlang::expr(sum(!!flag(rlang::expr(is.na(!!col))), na.rm = TRUE))
-    ), paste0(c(".lustrum_v", ".lustrum_m"), k))
+    ), paste0(c(".inshape_v", ".inshape_m"), k))
   }), recursive = FALSE)
   per_unit <- dplyr::summarise(dplyr::group_by(tbl, !!!rlang::syms(ids)), !!!stats,
                                .groups = "drop")
   sums <- unlist(lapply(seq_along(cols), function(k) {
-    v <- rlang::sym(paste0(".lustrum_v", k))
-    m <- rlang::sym(paste0(".lustrum_m", k))
+    v <- rlang::sym(paste0(".inshape_v", k))
+    m <- rlang::sym(paste0(".inshape_m", k))
     stats::setNames(list(
       rlang::expr(sum(!!flag(rlang::expr(!!v > 1L)), na.rm = TRUE)),
       rlang::expr(sum(!!flag(rlang::expr(!!v >= 1L & !!m > 0L)), na.rm = TRUE)),
       rlang::expr(sum(!!flag(rlang::expr(!!v == 0L)), na.rm = TRUE))
-    ), paste0(c(".lustrum_var", ".lustrum_part", ".lustrum_all"), k))
+    ), paste0(c(".inshape_var", ".inshape_part", ".inshape_all"), k))
   }), recursive = FALSE)
-  totals <- fetch_sums(dplyr::summarise(per_unit, .lustrum_units = dplyr::n(), !!!sums))
-  n_units <- totals[[".lustrum_units"]]
+  totals <- fetch_sums(dplyr::summarise(per_unit, .inshape_units = dplyr::n(), !!!sums))
+  n_units <- totals[[".inshape_units"]]
   at <- function(prefix) {
     int_or_na(totals[paste0(prefix, seq_along(cols))])
   }
-  varying <- at(".lustrum_var")
-  all_missing <- at(".lustrum_all")
+  varying <- at(".inshape_var")
+  all_missing <- at(".inshape_all")
   with_value <- n_units - all_missing
   columns <- tibble::tibble(
     column         = cols,
     varying        = varying,
     share          = ifelse(with_value == 0, NA_real_, varying / with_value),
-    partly_missing = at(".lustrum_part"),
+    partly_missing = at(".inshape_part"),
     all_missing    = all_missing
   )
   columns <- columns[order(columns$share, columns$column, na.last = TRUE), ]
   structure(list(ids = ids, n_units = int_or_na(n_units), columns = columns),
-            class = "lustrum_varying")
+            class = "inshape_varying")
 }
 
 
@@ -343,50 +343,50 @@ remote_describe_spells <- function(tbl, ids, start_col, end_col) {
     n_end_before_start = sum(!!flag(rlang::expr(!is.na(!!s) & !is.na(!!e) & !!e < !!s)), na.rm = TRUE)
   ))
   usable <- dplyr::filter(tbl, !is.na(!!s) & (is.na(!!e) | !!e >= !!s))
-  usable <- dplyr::mutate(usable, .lustrum_e = dplyr::coalesce(!!e, !!far),
-                          .lustrum_open = !!flag(rlang::expr(is.na(!!e))))
+  usable <- dplyr::mutate(usable, .inshape_e = dplyr::coalesce(!!e, !!far),
+                          .inshape_open = !!flag(rlang::expr(is.na(!!e))))
   rel <- usable |>
     dplyr::group_by(!!!rlang::syms(ids)) |>
     # desc() as a bare call, which dbplyr translates; a namespaced one fails
-    dbplyr::window_order(!!s, !!rlang::call2("desc", rlang::sym(".lustrum_e"))) |>
+    dbplyr::window_order(!!s, !!rlang::call2("desc", rlang::sym(".inshape_e"))) |>
     dbplyr::window_frame(-Inf, -1) |>
-    dplyr::mutate(.lustrum_cover = max(.data$.lustrum_e, na.rm = TRUE)) |>
+    dplyr::mutate(.inshape_cover = max(.data$.inshape_e, na.rm = TRUE)) |>
     dbplyr::window_frame(-Inf, Inf) |>
-    dplyr::mutate(.lustrum_ps = dplyr::lag(!!s), .lustrum_pe = dplyr::lag(.data$.lustrum_e)) |>
+    dplyr::mutate(.inshape_ps = dplyr::lag(!!s), .inshape_pe = dplyr::lag(.data$.inshape_e)) |>
     dplyr::ungroup() |>
-    dplyr::mutate(.lustrum_rel = dplyr::case_when(
-      is.na(.data$.lustrum_cover) ~ 0L,
-      !!s == .data$.lustrum_ps & .data$.lustrum_e == .data$.lustrum_pe ~ 6L,
-      .data$.lustrum_e <= .data$.lustrum_cover ~ 5L,
-      !!s < .data$.lustrum_cover ~ 4L,
-      !!s == .data$.lustrum_cover ~ 3L,
-      !!s == .data$.lustrum_cover + 1L ~ 2L,
+    dplyr::mutate(.inshape_rel = dplyr::case_when(
+      is.na(.data$.inshape_cover) ~ 0L,
+      !!s == .data$.inshape_ps & .data$.inshape_e == .data$.inshape_pe ~ 6L,
+      .data$.inshape_e <= .data$.inshape_cover ~ 5L,
+      !!s < .data$.inshape_cover ~ 4L,
+      !!s == .data$.inshape_cover ~ 3L,
+      !!s == .data$.inshape_cover + 1L ~ 2L,
       TRUE ~ 1L
     ))
-  rel <- dplyr::mutate(rel, .lustrum_gap = dplyr::if_else(
-    .data$.lustrum_rel == 1L, !!s - .data$.lustrum_cover - 1L, NA))
+  rel <- dplyr::mutate(rel, .inshape_gap = dplyr::if_else(
+    .data$.inshape_rel == 1L, !!s - .data$.inshape_cover - 1L, NA))
 
-  relations <- count_by(rel, ".lustrum_rel")
+  relations <- count_by(rel, ".inshape_rel")
   counts <- integer(7)
   counts[relations$value + 1L] <- relations$n
-  overlapping <- dplyr::distinct(dplyr::filter(rel, .data$.lustrum_rel >= 3L), !!!rlang::syms(ids))
-  closed <- dplyr::filter(usable, .data$.lustrum_open == 0L)
-  closed <- dplyr::mutate(closed, .lustrum_len = !!e - !!s + 1L)
+  overlapping <- dplyr::distinct(dplyr::filter(rel, .data$.inshape_rel >= 3L), !!!rlang::syms(ids))
+  closed <- dplyr::filter(usable, .data$.inshape_open == 0L)
+  closed <- dplyr::mutate(closed, .inshape_len = !!e - !!s + 1L)
   spells <- fetch_sums(dplyr::summarise(usable,
     n_spells = dplyr::n(),
-    n_ongoing = sum(.data$.lustrum_open, na.rm = TRUE)
+    n_ongoing = sum(.data$.inshape_open, na.rm = TRUE)
   ))
   n_single <- fetch_sums(dplyr::summarise(closed,
     n = sum(!!flag(rlang::expr(!!e == !!s)), na.rm = TRUE)))[[1]]
 
-  per_unit <- count_by(dplyr::count(usable, !!!rlang::syms(ids), name = ".lustrum_k"), ".lustrum_k")
+  per_unit <- count_by(dplyr::count(usable, !!!rlang::syms(ids), name = ".inshape_k"), ".inshape_k")
   year_of <- function(col) {
     if (is_date) dbplyr::sql(paste0("EXTRACT(YEAR FROM ",
                                     DBI::dbQuoteIdentifier(dbplyr::remote_con(tbl), col), ")"))
     else rlang::sym(col)
   }
-  starts_by <- count_by(dplyr::mutate(usable, .lustrum_y = !!year_of(start_col)), ".lustrum_y")
-  ends_by   <- count_by(dplyr::mutate(closed, .lustrum_y = !!year_of(end_col)), ".lustrum_y")
+  starts_by <- count_by(dplyr::mutate(usable, .inshape_y = !!year_of(start_col)), ".inshape_y")
+  ends_by   <- count_by(dplyr::mutate(closed, .inshape_y = !!year_of(end_col)), ".inshape_y")
   starts_by$value <- int_or_na(starts_by$value)
   ends_by$value   <- int_or_na(ends_by$value)
   periods <- sort(unique(c(starts_by$value, ends_by$value)))
@@ -408,15 +408,15 @@ remote_describe_spells <- function(tbl, ids, start_col, end_col) {
       relation = c("gap", "adjacent", "touching", "overlapping", "nested", "duplicate"),
       spells   = counts[-1]
     ),
-    gaps      = summary_of_counts(count_by(rel, ".lustrum_gap")),
-    lengths   = summary_of_counts(count_by(closed, ".lustrum_len")),
+    gaps      = summary_of_counts(count_by(rel, ".inshape_gap")),
+    lengths   = summary_of_counts(count_by(closed, ".inshape_len")),
     spells_per_unit = tibble::tibble(spells = int_or_na(per_unit$value), units = per_unit$n),
     by_year   = tibble::tibble(
       year   = periods,
       starts = spread_counts(starts_by, periods),
       ends   = spread_counts(ends_by, periods)
     )
-  ), class = "lustrum_spells")
+  ), class = "inshape_spells")
 }
 
 
@@ -436,7 +436,7 @@ remote_changes <- function(old, new, ...) {
   keys <- rlang::syms(key)
   for (side in list(list("old", old), list("new", new))) {
     n_dup <- fetch_sums(dplyr::summarise(dplyr::filter(
-      dplyr::count(side[[2]], !!!keys, name = ".lustrum_n"), .data$.lustrum_n > 1L), n = dplyr::n()))[[1]]
+      dplyr::count(side[[2]], !!!keys, name = ".inshape_n"), .data$.inshape_n > 1L), n = dplyr::n()))[[1]]
     if (n_dup > 0) {
       cli::cli_abort(c("The key {.var {key}} is not unique in {.arg {side[[1]]}}.",
                        "i" = "See the duplicates with {.code describe_key({side[[1]]}, {toString(key)})}."))
@@ -459,17 +459,17 @@ remote_changes <- function(old, new, ...) {
     cols <- stats::setNames(shared, paste0(shared, suffix))
     dplyr::select(tbl, dplyr::all_of(key), dplyr::all_of(cols))
   }
-  kept <- dplyr::inner_join(rename_side(old, ".lustrum_old"), rename_side(new, ".lustrum_new"),
+  kept <- dplyr::inner_join(rename_side(old, ".inshape_old"), rename_side(new, ".inshape_new"),
                             by = key, na_matches = "na")
   value <- function(col, suffix) {
     name <- paste0(col, suffix)
     if (!col %in% as_text) return(rlang::sym(name))
-    proto <- if (suffix == ".lustrum_old") proto_old else proto_new
+    proto <- if (suffix == ".inshape_old") proto_old else proto_new
     as_text_sql(kept, name, is.numeric(proto[[col]]))
   }
   conds <- lapply(shared, function(col) {
-    a <- value(col, ".lustrum_old")
-    b <- value(col, ".lustrum_new")
+    a <- value(col, ".inshape_old")
+    b <- value(col, ".inshape_new")
     list(changed = rlang::expr(!is.na(!!a) & !is.na(!!b) & !!a != !!b),
          went    = rlang::expr(!is.na(!!a) & is.na(!!b)),
          filled  = rlang::expr(is.na(!!a) & !is.na(!!b)))
@@ -479,17 +479,17 @@ remote_changes <- function(old, new, ...) {
 
   sums <- unlist(lapply(seq_along(shared), function(k) {
     stats::setNames(lapply(conds[[k]], function(cd) rlang::expr(sum(!!flag(cd), na.rm = TRUE))),
-                    paste0(c(".lustrum_c", ".lustrum_w", ".lustrum_f"), k))
+                    paste0(c(".inshape_c", ".inshape_w", ".inshape_f"), k))
   }), recursive = FALSE)
-  totals <- fetch_sums(dplyr::summarise(dplyr::mutate(kept, .lustrum_k = !!n_columns),
-    .lustrum_kept = dplyr::n(),
-    .lustrum_changed = sum(!!flag(rlang::expr(.data$.lustrum_k > 0L)), na.rm = TRUE),
+  totals <- fetch_sums(dplyr::summarise(dplyr::mutate(kept, .inshape_k = !!n_columns),
+    .inshape_kept = dplyr::n(),
+    .inshape_changed = sum(!!flag(rlang::expr(.data$.inshape_k > 0L)), na.rm = TRUE),
     !!!sums))
-  n_kept <- totals[[".lustrum_kept"]]
+  n_kept <- totals[[".inshape_kept"]]
   at <- function(prefix) int_or_na(totals[paste0(prefix, seq_along(shared))])
   columns <- tibble::tibble(
-    column = shared, changed = at(".lustrum_c"), went_missing = at(".lustrum_w"),
-    filled_in = at(".lustrum_f")
+    column = shared, changed = at(".inshape_c"), went_missing = at(".inshape_w"),
+    filled_in = at(".inshape_f")
   )
   any_change <- columns$changed + columns$went_missing + columns$filled_in
   columns$share <- if (n_kept > 0) any_change / n_kept else rep(NA_real_, length(shared))
@@ -510,7 +510,7 @@ remote_changes <- function(old, new, ...) {
     n_kept          = int_or_na(n_kept),
     n_added         = count_rows(added),
     n_removed       = count_rows(removed),
-    n_changed       = int_or_na(totals[[".lustrum_changed"]]),
+    n_changed       = int_or_na(totals[[".inshape_changed"]]),
     columns_added   = setdiff(colnames(new), colnames(old)),
     columns_removed = setdiff(colnames(old), colnames(new)),
     type_changed    = type_changed,
@@ -518,7 +518,7 @@ remote_changes <- function(old, new, ...) {
     added           = added,
     removed         = removed,
     changed         = changed
-  ), class = "lustrum_changes")
+  ), class = "inshape_changes")
 }
 
 

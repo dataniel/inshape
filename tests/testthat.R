@@ -1,4 +1,4 @@
 library(testthat)
-library(lustrum)
+library(inshape)
 
-test_check("lustrum")
+test_check("inshape")

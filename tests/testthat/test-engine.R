@@ -4,7 +4,7 @@
 same_groups <- function(a, b) identical(match(a, a), match(b, b))
 
 dense <- function(x, threads = 2L) {
-  withr::local_options(lustrum.threads = threads, lustrum.cache = FALSE)
+  withr::local_options(inshape.threads = threads, inshape.cache = FALSE)
   dense_codes(x)
 }
 
@@ -88,7 +88,7 @@ test_that("the cache reuses ids only for a column with the same content", {
   expect_length(dense_cache$codes, 3)
   expect_false(any(vapply(dense_cache$codes, identical, logical(1), first)))
 
-  withr::local_options(lustrum.cache = FALSE)
+  withr::local_options(inshape.cache = FALSE)
   cache_clear()
   dense_codes(df$cpr)
   expect_length(dense_cache$codes, 0)
@@ -114,7 +114,7 @@ test_that("the bit matrix and the sorted path summarise a panel alike", {
                         t  = sample.int(n_per, 5000, TRUE))
     ix <- panel_index(panel, "id", "t", NULL)
     bits <- panel_cells(ix)
-    withr::with_options(list(lustrum.bits = FALSE), sorted <- panel_cells(ix))
+    withr::with_options(list(inshape.bits = FALSE), sorted <- panel_cells(ix))
     for (part in c("n_seen", "lo", "hi", "runs")) {
       expect_identical(bits[[part]], sorted[[part]], info = paste(part, n_per))
     }

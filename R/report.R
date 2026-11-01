@@ -10,14 +10,14 @@
 #' would stay in memory until the next failure. Messages are shown literally:
 #' braces are not interpolated.
 #'
-#' A failed check signals a condition of class `lustrum_failure` (a warning or
+#' A failed check signals a condition of class `inshape_failure` (a warning or
 #' an error) that carries the offending rows in its `violations` field.
 #' Scheduled pipelines can catch it and keep the rows:
 #'
 #' ```r
 #' tryCatch(
 #'   ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-#'   lustrum_failure = \(e) saveRDS(e$violations, "duplicates.rds")
+#'   inshape_failure = \(e) saveRDS(e$violations, "duplicates.rds")
 #' )
 #' ```
 #'
@@ -30,8 +30,8 @@
 #'
 #' ```r
 #' options(
-#'   lustrum.log  = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
-#'   lustrum.dump = "log/violations"
+#'   inshape.log  = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
+#'   inshape.dump = "log/violations"
 #' )
 #' ```
 #'
@@ -54,7 +54,7 @@
 #' again. A column is recognised by its content, read in one parallel pass
 #' that costs a fraction of the compression, never by its name: a column
 #' changed in any way, also in place by data.table, is compressed anew.
-#' The ids take 4 bytes per row; `options(lustrum.cache = FALSE)` turns the
+#' The ids take 4 bytes per row; `options(inshape.cache = FALSE)` turns the
 #' cache off and frees it at the next check.
 #'
 #' ## Database and Arrow tables
@@ -105,10 +105,10 @@
 #'   message when the rule is broken. If `NULL` (default), a warning is
 #'   issued instead.
 #' @param log Optional path to a log file. The directory is created
-#'   automatically. Defaults to `getOption("lustrum.log")`.
+#'   automatically. Defaults to `getOption("inshape.log")`.
 #' @param dump Optional directory. When the check fails, the offending rows
 #'   are written there as a timestamped CSV file (UTF-8 with BOM, so Excel
-#'   reads Danish letters correctly). Defaults to `getOption("lustrum.dump")`.
+#'   reads Danish letters correctly). Defaults to `getOption("inshape.dump")`.
 #'
 #' @name checkpoints
 #' @seealso [ensure_unique()], [ensure_balanced()], [ensure_no_overlap()],
@@ -173,9 +173,9 @@ group_ids <- function(data, cols) {
 }
 
 # Threads for the compiled engine: data.table's setting unless
-# options(lustrum.threads = ) says otherwise
-lustrum_threads <- function() {
-  as.integer(getOption("lustrum.threads", data.table::getDTthreads()))
+# options(inshape.threads = ) says otherwise
+inshape_threads <- function() {
+  as.integer(getOption("inshape.threads", data.table::getDTthreads()))
 }
 
 # Dense ids of one vector, with the number of distinct values in "n". The
@@ -185,13 +185,13 @@ lustrum_threads <- function() {
 dense_codes <- function(x) {
   if (is.factor(x)) x <- as.integer(x)
   if (inherits(x, "integer64")) return(dense_codes_match(x))
-  use_cache <- isTRUE(getOption("lustrum.cache", TRUE))
+  use_cache <- isTRUE(getOption("inshape.cache", TRUE))
   if (!use_cache && length(dense_cache$codes) > 0) cache_clear()
   key <- if (use_cache && length(x) >= cache_min_rows) {
-    .Call(C_lustrum_fingerprint, x, lustrum_threads())
+    .Call(C_inshape_fingerprint, x, inshape_threads())
   }
   if (!is.null(key) && !is.null(code <- dense_cache$codes[[key]])) return(code)
-  code <- .Call(C_lustrum_dense_ids, x, lustrum_threads()) %||% dense_codes_match(x)
+  code <- .Call(C_inshape_dense_ids, x, inshape_threads()) %||% dense_codes_match(x)
   if (!is.null(key)) cache_put(key, code)
   code
 }
@@ -245,11 +245,11 @@ max_by <- function(value, group, n_groups) -min_by(-value, group, n_groups)
 # The first row of each group (0 for a group without rows), in one
 # compiled forward pass.
 first_row_by <- function(group, n_groups) {
-  .Call(C_lustrum_first_rows, as.integer(group), as.integer(n_groups))
+  .Call(C_inshape_first_rows, as.integer(group), as.integer(n_groups))
 }
 
 # Reports a violation set: success alert when empty, otherwise warning or
-# error of class `lustrum_failure` carrying the rows. `key` names the
+# error of class `inshape_failure` carrying the rows. `key` names the
 # columns the rule is about; they are moved to the front so a narrow console
 # cuts the other columns, not these. `group` names a column grouping the rows
 # (`dupid`, `overlap_id`), counted in the summary. `call` defaults to the
@@ -278,7 +278,7 @@ report_check <- function(violations, success_msg, fail_msg, abort,
 
   if (remote) {
     # Sorted only now, for the rows that are fetched; see sort_by()
-    order <- attr(violations, "lustrum_order")
+    order <- attr(violations, "inshape_order")
     violations <- dplyr::relocate(violations, dplyr::any_of(c(group, key)))
     if (length(order) > 0) violations <- dplyr::arrange(violations, !!!order)
     shown <- dplyr::collect(utils::head(violations, preview_n))
@@ -298,11 +298,11 @@ report_check <- function(violations, success_msg, fail_msg, abort,
           else "{n} row{?s} in {n_groups} group{?s}:",
     preview_rows(shown, n = preview_n),
     if (!is.null(dump_file)) c("i" = "All rows written to {.path {dump_file}}.")
-    else if (n > preview_n) c("i" = "Set {.arg dump} or {.code options(lustrum.dump = )} to write all rows to a CSV file.")
+    else if (n > preview_n) c("i" = "Set {.arg dump} or {.code options(inshape.dump = )} to write all rows to a CSV file.")
   )
 
   signal <- if (abort) cli::cli_abort else cli::cli_warn
-  signal(bullets, class = "lustrum_failure", violations = violations,
+  signal(bullets, class = "inshape_failure", violations = violations,
          call = call)
   invisible(FALSE)
 }

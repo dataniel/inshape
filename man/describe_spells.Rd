@@ -16,7 +16,7 @@ or Arrow table: see \emph{Database tables} in \link{checkpoints}.}
 spell. A missing \code{end} means an ongoing spell.}
 }
 \value{
-An object of class \code{lustrum_spells}, printed as a summary. It is
+An object of class \code{inshape_spells}, printed as a summary. It is
 a list with the counts \code{n_rows}, \code{n_spells} (usable spells), \code{n_units},
 \code{n_missing_start}, \code{n_end_before_start}, \code{n_ongoing}, \code{n_single}
 (spells of one day or period) and \code{n_units_overlapping} (units with a

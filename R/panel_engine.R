@@ -31,7 +31,7 @@ panel_index <- function(data, ids, time_col, periods) {
 # position vector it is built from
 panel_fits_bits <- function(n_units, n_per, n_rows) {
   bytes <- n_units * ((n_per + 63) %/% 64) * 8
-  isTRUE(getOption("lustrum.bits", TRUE)) && bytes <= max(2^27, 8 * n_rows)
+  isTRUE(getOption("inshape.bits", TRUE)) && bytes <= max(2^27, 8 * n_rows)
 }
 
 # Per unit (1..n_units): n_seen, lo, hi (NA when unseen), runs, pattern
@@ -42,15 +42,15 @@ panel_fits_bits <- function(n_units, n_per, n_rows) {
 panel_cells <- function(ix) {
   n_per <- length(ix$periods)
   if (panel_fits_bits(ix$n_units, n_per, length(ix$pos))) {
-    sc <- .Call(C_lustrum_panel_scan, ix$unit, ix$pos,
-                as.integer(ix$n_units), as.integer(n_per), lustrum_threads())
+    sc <- .Call(C_inshape_panel_scan, ix$unit, ix$pos,
+                as.integer(ix$n_units), as.integer(n_per), inshape_threads())
     bytes <- ((n_per + 63L) %/% 64L) * 8L
     sc$bits_of <- function(u) {
       raw <- sc$bits[(u - 1) * bytes + seq_len(bytes)]
       as.logical(rawToBits(raw))[seq_len(n_per)]
     }
     sc$missing <- function(units, lo, hi) {
-      .Call(C_lustrum_panel_missing, sc$bits, as.integer(n_per),
+      .Call(C_inshape_panel_missing, sc$bits, as.integer(n_per),
             as.integer(units), as.integer(lo), as.integer(hi))
     }
     return(sc)

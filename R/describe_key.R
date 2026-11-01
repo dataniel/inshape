@@ -17,7 +17,7 @@
 #' @param ... Key columns (tidy-select). If omitted, all columns are used,
 #'   which counts fully duplicated rows.
 #'
-#' @return An object of class `lustrum_key`, printed as a summary. It is a
+#' @return An object of class `inshape_key`, printed as a summary. It is a
 #'   list with `key` (the column names), the counts `n_rows`, `n_keys`
 #'   (distinct keys), `n_dup_keys`, `n_dup_rows` (rows sharing a key) and
 #'   `n_exact` (duplicated keys whose copies are identical in every
@@ -83,11 +83,11 @@ describe_key <- function(data, ...) {
       rows   = vapply(unclass(data)[key], function(x) sum(is.na(x)), integer(1),
                       USE.NAMES = FALSE)
     )
-  ), class = "lustrum_key")
+  ), class = "inshape_key")
 }
 
 #' @export
-print.lustrum_key <- function(x, ...) {
+print.inshape_key <- function(x, ...) {
   cli::cat_rule(paste0("Key: ", toString(x$key)))
   cli::cat_line(count(x$n_rows, "row"), ", ", count(x$n_keys, "distinct key"))
   cli::cat_line()

@@ -67,8 +67,8 @@ ensure_balanced <- function(data, id, time,
                             success_msg = NULL,
                             warn_msg    = NULL,
                             abort_msg   = NULL,
-                            log         = getOption("lustrum.log"),
-                            dump        = getOption("lustrum.dump")) {
+                            log         = getOption("inshape.log"),
+                            dump        = getOption("inshape.dump")) {
 
   tbl      <- check_table(data)
   ids      <- select_names(tbl, {{ id }})

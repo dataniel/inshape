@@ -13,7 +13,7 @@ database tables on the same connection (see \emph{Database tables}).}
 \item{...}{Key columns (tidy-select), e.g. \verb{cpr, year}, present in both.}
 }
 \value{
-An object of class \code{lustrum_changes}, printed as a summary. It is
+An object of class \code{inshape_changes}, printed as a summary. It is
 a list with the counts \code{n_old}, \code{n_new}, \code{n_kept} (keys in both),
 \code{n_added}, \code{n_removed} and \code{n_changed} (kept keys with any changed
 column); \code{columns_added}, \code{columns_removed} and \code{type_changed}

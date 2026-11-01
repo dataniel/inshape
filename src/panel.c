@@ -29,7 +29,7 @@ static inline uint64_t mix64(uint64_t x) {
     return x;
 }
 
-int lustrum_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads);
+int inshape_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads);
 
 static int cmp_int(const void *a, const void *b) {
     int x = *(const int *) a, y = *(const int *) b;
@@ -41,7 +41,7 @@ static int cmp_int(const void *a, const void *b) {
    its bit unset. Which row that is depends on timing, but only the number
    of repeats and their unit-periods are used, and the repeated rows are
    returned sorted. */
-SEXP lustrum_panel_scan(SEXP unit_, SEXP pos_, SEXP n_units_, SEXP n_per_,
+SEXP inshape_panel_scan(SEXP unit_, SEXP pos_, SEXP n_units_, SEXP n_per_,
                         SEXP threads_) {
     R_xlen_t n = XLENGTH(unit_);
     const int *unit = INTEGER(unit_), *pos = INTEGER(pos_);
@@ -134,7 +134,7 @@ SEXP lustrum_panel_scan(SEXP unit_, SEXP pos_, SEXP n_units_, SEXP n_per_,
        longer rows are hashed and compared word by word */
     int n_pat = 0;
     if (W == 1) {
-        int k = lustrum_dense_u64(bits, U, pat, threads);
+        int k = inshape_dense_u64(bits, U, pat, threads);
         if (k == -2) Rf_error("Out of memory in the panel engine.");
         int empty = 0;
         for (int u = 0; u < U; u++) if (seen[u] == 0) { empty = pat[u]; break; }
@@ -191,7 +191,7 @@ SEXP lustrum_panel_scan(SEXP unit_, SEXP pos_, SEXP n_units_, SEXP n_per_,
 
 /* The unset bits between lo and hi (1-based, inclusive) of the given units:
    the missing unit-periods, as a unit vector and a position vector. */
-SEXP lustrum_panel_missing(SEXP bits_, SEXP n_per_, SEXP units_, SEXP lo_, SEXP hi_) {
+SEXP inshape_panel_missing(SEXP bits_, SEXP n_per_, SEXP units_, SEXP lo_, SEXP hi_) {
     const uint64_t *bits = (const uint64_t *) RAW(bits_);
     int T = Rf_asInteger(n_per_), W = (T + 63) / 64;
     R_xlen_t k = XLENGTH(units_);

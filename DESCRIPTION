@@ -1,4 +1,4 @@
-Package: lustrum
+Package: inshape
 Title: Structure Checks for Register Microdata
 Version: 0.1.0
 Authors@R: person("Daniel", "Madsen", email = "danielmadsen@live.dk",
@@ -10,8 +10,8 @@ Description: Check that register microdata has the structure an analysis
     linear pass without sorting them, spell lookups run in compiled code,
     and database and Arrow tables are checked where they live.
 License: MIT + file LICENSE
-URL: https://dataniel.github.io/lustrum, https://github.com/dataniel/lustrum
-BugReports: https://github.com/dataniel/lustrum/issues
+URL: https://dataniel.github.io/inshape, https://github.com/dataniel/inshape
+BugReports: https://github.com/dataniel/inshape/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Depends:

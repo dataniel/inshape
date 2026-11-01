@@ -17,7 +17,7 @@ describe_codes(data, code, time, periods = NULL)
 \item{periods}{Expected periods. Defaults to those observed in \code{data}.}
 }
 \value{
-An object of class \code{lustrum_codes}, printed as a summary. It is a
+An object of class \code{inshape_codes}, printed as a summary. It is a
 list with the counts \code{n_rows}, \code{n_codes}, \code{n_every_period},
 \code{n_with_gaps}, \code{n_missing} (rows with a missing code),
 \code{n_missing_time} and \code{n_outside}, the \code{periods}, and two tibbles:

@@ -22,7 +22,7 @@ everyone.}
 first.}
 }
 \value{
-An object of class \code{lustrum_panel}, printed as a summary. It is
+An object of class \code{inshape_panel}, printed as a summary. It is
 a list with the counts (\code{n_rows}, \code{n_units}, \code{n_complete},
 \code{n_with_gaps}, \code{n_gap_cells}, \code{n_dup_cells}, \code{n_dup_rows},
 \code{n_missing_id}, \code{n_missing_time}, \code{n_outside}), the \code{periods}, and

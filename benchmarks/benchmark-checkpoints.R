@@ -5,7 +5,7 @@
 # speed-up (baseline-checkpoints.R, a frozen reference) with the current
 # code, in memory.
 pkgload::load_all(quiet = TRUE)
-baseline <- new.env(parent = asNamespace("lustrum"))
+baseline <- new.env(parent = asNamespace("inshape"))
 sys.source("benchmarks/baseline-checkpoints.R", baseline)
 # The frozen code predates the ensure_ names
 for (nm in c("unique", "balanced", "no_overlap")) {
@@ -41,7 +41,7 @@ inputs <- list(
 )
 
 violations <- function(expr) {
-  cnd <- rlang::catch_cnd(expr, classes = "lustrum_failure")
+  cnd <- rlang::catch_cnd(expr, classes = "inshape_failure")
   if (is.null(cnd)) return(NULL)
   tibble::as_tibble(cnd$violations)
 }
@@ -63,7 +63,7 @@ cases <- list(
 )
 
 rows <- list()
-current <- asNamespace("lustrum")
+current <- asNamespace("inshape")
 for (case in names(cases)) {
   f <- cases[[case]][[1]]
   x <- inputs[[cases[[case]][[2]]]]()
@@ -71,7 +71,7 @@ for (case in names(cases)) {
 
   # Cold: the content cache of dense ids is off, so every repetition
   # groups the key from scratch, as the first check on new data does
-  options(lustrum.cache = FALSE)
+  options(inshape.cache = FALSE)
   times <- matrix(NA_real_, 3L, 2L)
   for (rep in 1:3) {
     for (impl in if (rep %% 2) 1:2 else 2:1) {
@@ -81,13 +81,13 @@ for (case in names(cases)) {
     }
   }
   # Warm: a later check on the same, unchanged columns
-  options(lustrum.cache = TRUE)
+  options(inshape.cache = TRUE)
   suppressWarnings(f(current, x))
   warm <- vapply(1:3, function(i) {
     gc()
     system.time(suppressWarnings(f(current, x)))[["elapsed"]]
   }, numeric(1))
-  options(lustrum.cache = FALSE)
+  options(inshape.cache = FALSE)
 
   row <- data.frame(rows = nrow(x), case = case,
                     before = median(times[, 1]), after = median(times[, 2]),

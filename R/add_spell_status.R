@@ -160,7 +160,7 @@ add_spell_status <- function(data, spells, id, at, start, end, status,
     ok  <- which(!is.na(unit_of) & !is.na(day))
     ord <- ok[order(unit_of[ok], day[ok])]
     qgroups <- c(0L, cumsum(tabulate(unit_of[ord], nbins = length(prep$first))))
-    res <- .Call(C_lustrum_spell_lookup, keys$.start, keys$.end,
+    res <- .Call(C_inshape_spell_lookup, keys$.start, keys$.end,
                  as.integer(prep$groups), as.integer(qgroups),
                  as.integer(day[ord]), status_is == "outcome")
     ambiguous <<- ambiguous + res[[2]]

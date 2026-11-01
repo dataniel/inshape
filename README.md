@@ -1,15 +1,15 @@
-# lustrum
+# inshape
 
 Structure checks for register microdata.
 
 Register data comes as one row per unit, one row per unit and period (a
 panel), or one row per spell. Every analysis assumes that shape is right:
 no duplicated persons, no missing years in the middle of a panel, no
-person with two addresses at once. lustrum checks those assumptions, fast
+person with two addresses at once. inshape checks those assumptions, fast
 enough for full-population registers, and converts spells to panels.
 
 ```r
-library(lustrum)
+library(inshape)
 
 persons |>
   ensure_unique(cpr, year, abort_msg = "Duplicate person-years") |>
@@ -21,11 +21,11 @@ addresses |>
 
 ## Installation
 
-lustrum is not on CRAN. Install it from GitHub:
+inshape is not on CRAN. Install it from GitHub:
 
 ```r
 # install.packages("pak")
-pak::pak("dataniel/lustrum")
+pak::pak("dataniel/inshape")
 ```
 
 ## Functions
@@ -51,8 +51,8 @@ pak::pak("dataniel/lustrum")
 The `ensure_*()` checkpoints warn or abort with the offending rows and
 return the data. Each can append a line to a log and write the rows to a
 CSV file, set once per script with
-`options(lustrum.log = ..., lustrum.dump = ...)`. A failure signals a
-condition of class `lustrum_failure` that carries the rows.
+`options(inshape.log = ..., inshape.dump = ...)`. A failure signals a
+condition of class `inshape_failure` that carries the rows.
 
 ## Built for registers
 
@@ -76,7 +76,7 @@ dplyr::tbl(con, "persons") |>
 
 ## The name
 
-Each Roman census was closed by the *lustrum*, a purification of the
+Each Roman census was closed by the *inshape*, a purification of the
 people just registered, before the register was accepted. This package is
 that last step for register data: a registration of the registrations.
 

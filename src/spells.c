@@ -59,7 +59,7 @@ static void running_max(const int *e_in, const int *g, R_xlen_t n_groups,
     }
 }
 
-SEXP lustrum_spell_status(SEXP start, SEXP end, SEXP groups, SEXP lo, SEXP hi,
+SEXP inshape_spell_status(SEXP start, SEXP end, SEXP groups, SEXP lo, SEXP hi,
                        SEXP primo, SEXP ultimo, SEXP outcome_) {
     const int *s = INTEGER(start), *e_in = INTEGER(end), *g = INTEGER(groups);
     const int *glo = INTEGER(lo), *ghi = INTEGER(hi);
@@ -121,7 +121,7 @@ SEXP lustrum_spell_status(SEXP start, SEXP end, SEXP groups, SEXP lo, SEXP hi,
      4 overlap   starts inside the cover and ends after it
      5 nested    ends within the cover
      6 duplicate same start and end as the spell before it */
-SEXP lustrum_spell_relations(SEXP unit_, SEXP start_, SEXP end_) {
+SEXP inshape_spell_relations(SEXP unit_, SEXP start_, SEXP end_) {
     R_xlen_t n = XLENGTH(unit_);
     const int *unit = INTEGER(unit_), *s = INTEGER(start_), *e = INTEGER(end_);
     SEXP rel_ = PROTECT(Rf_allocVector(INTSXP, n));
@@ -155,7 +155,7 @@ SEXP lustrum_spell_relations(SEXP unit_, SEXP start_, SEXP end_) {
 /* Status at arbitrary points, for add_spell_status(). Points arrive sorted
    by (unit, day); qgroups[k] .. qgroups[k + 1] - 1 are unit k's points, in
    the same unit order as the spell groups. Same pointer pass as above. */
-SEXP lustrum_spell_lookup(SEXP start, SEXP end, SEXP groups, SEXP qgroups,
+SEXP inshape_spell_lookup(SEXP start, SEXP end, SEXP groups, SEXP qgroups,
                        SEXP qday, SEXP outcome_) {
     const int *s = INTEGER(start), *e_in = INTEGER(end), *g = INTEGER(groups);
     const int *qg = INTEGER(qgroups), *qd = INTEGER(qday);

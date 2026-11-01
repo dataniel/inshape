@@ -28,7 +28,7 @@
 #' @param ... Columns to describe (tidy-select). Defaults to all other
 #'   columns.
 #'
-#' @return An object of class `lustrum_varying`, printed as a summary. It
+#' @return An object of class `inshape_varying`, printed as a summary. It
 #'   is a list with `ids`, `n_units` and `columns`, a tibble with one row
 #'   per column: `column`, `varying` (units with more than one non-missing
 #'   value), `share` (of the units with a value), `partly_missing` (units
@@ -73,7 +73,7 @@ describe_varying <- function(data, id, ...) {
   columns <- columns[order(columns$share, columns$column, na.last = TRUE), ]
 
   structure(list(ids = ids, n_units = n_units, columns = columns),
-            class = "lustrum_varying")
+            class = "inshape_varying")
 }
 
 # Per unit (1..n_units): whether column `x` has two different non-missing
@@ -85,7 +85,7 @@ describe_varying <- function(data, id, ...) {
 varying_units <- function(x, unit, n_units) {
   if (is.factor(x)) x <- as.integer(x)
   flag <- if (!inherits(x, "integer64")) {
-    .Call(C_lustrum_varying_units, x, unit, as.integer(n_units))
+    .Call(C_inshape_varying_units, x, unit, as.integer(n_units))
   }
   if (!is.null(flag)) {
     has_value <- bitwAnd(flag, 2L) > 0L
@@ -112,7 +112,7 @@ varying_units <- function(x, unit, n_units) {
 }
 
 #' @export
-print.lustrum_varying <- function(x, ...) {
+print.inshape_varying <- function(x, ...) {
   cli::cat_rule(paste0("Within ", toString(x$ids)))
   cli::cat_line(count(x$n_units, "unit"), ", ", count(nrow(x$columns), "column"))
   cli::cat_line()

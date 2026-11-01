@@ -1,4 +1,4 @@
-url: https://dataniel.github.io/lustrum
+url: https://dataniel.github.io/inshape
 
 template:
   bootstrap: 5
@@ -10,7 +10,7 @@ navbar:
   components:
     github:
       icon: fab fa-github
-      href: https://github.com/dataniel/lustrum
+      href: https://github.com/dataniel/inshape
 
 home:
   strip_header: true
@@ -53,4 +53,4 @@ reference:
 
   - title: Package
     contents:
-      - lustrum-package
+      - inshape-package

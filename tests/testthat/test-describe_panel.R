@@ -5,7 +5,7 @@ panel <- data.frame(
 
 test_that("the counts describe units, gaps and duplicates", {
   p <- describe_panel(panel, cpr, year)
-  expect_s3_class(p, "lustrum_panel")
+  expect_s3_class(p, "inshape_panel")
   expect_equal(p$n_rows, 10)
   expect_equal(p$n_units, 4)
   expect_equal(p$n_complete, 2)     # a and d
@@ -55,13 +55,13 @@ test_that("gap counts agree with ensure_balanced()", {
   df <- df[-sample.int(nrow(df), 200), ]
   p <- describe_panel(df, id, t)
   cnd <- rlang::catch_cnd(ensure_balanced(df, id, t, gaps_only = TRUE),
-                          classes = "lustrum_failure")
+                          classes = "inshape_failure")
   expect_equal(nrow(cnd$violations), p$n_gap_cells)
   expect_equal(length(unique(cnd$violations$id)), p$n_with_gaps)
 })
 
 test_that("very long panels leave out the patterns", {
-  withr::local_options(lustrum.bits = FALSE)
+  withr::local_options(inshape.bits = FALSE)
   p <- describe_panel(panel, cpr, year)
   expect_equal(nrow(p$patterns), 0)
   expect_equal(p$n_gap_cells, 1)

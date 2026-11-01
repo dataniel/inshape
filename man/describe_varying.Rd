@@ -16,7 +16,7 @@ describe_varying(data, id, ...)
 columns.}
 }
 \value{
-An object of class \code{lustrum_varying}, printed as a summary. It
+An object of class \code{inshape_varying}, printed as a summary. It
 is a list with \code{ids}, \code{n_units} and \code{columns}, a tibble with one row
 per column: \code{column}, \code{varying} (units with more than one non-missing
 value), \code{share} (of the units with a value), \code{partly_missing} (units

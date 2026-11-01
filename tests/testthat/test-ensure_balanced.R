@@ -5,7 +5,7 @@ panel <- data.frame(
 )
 
 violations <- function(...) {
-  rlang::catch_cnd(ensure_balanced(...), classes = "lustrum_failure")$violations
+  rlang::catch_cnd(ensure_balanced(...), classes = "inshape_failure")$violations
 }
 
 test_that("ensure_balanced() lists every missing unit-period", {

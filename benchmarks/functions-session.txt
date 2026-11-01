@@ -20,7 +20,7 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] lustrum_0.1.0  testthat_3.3.2
+[1] inshape_0.1.0  testthat_3.3.2
 
 loaded via a namespace (and not attached):
  [1] desc_1.4.3        utf8_1.2.6        R6_2.6.1          tidyselect_1.2.1 

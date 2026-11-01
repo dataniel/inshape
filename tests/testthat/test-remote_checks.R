@@ -11,7 +11,7 @@ local_duck <- function(df, env = parent.frame()) {
 
 # The violations of a failing check, fetched into R
 violations_of <- function(expr) {
-  cnd <- rlang::catch_cnd(expr, classes = "lustrum_failure")
+  cnd <- rlang::catch_cnd(expr, classes = "inshape_failure")
   expect_false(is.null(cnd))
   v <- cnd$violations
   if (!is.data.frame(v)) v <- dplyr::collect(v)
@@ -29,7 +29,7 @@ test_that("a checkpoint returns the database table unchanged, violations as a qu
   expect_message(out <- ensure_unique(tbl, id, year, amount), "Unique on")
   expect_s3_class(out, "tbl_lazy")
 
-  cnd <- rlang::catch_cnd(ensure_unique(tbl, id, year), classes = "lustrum_failure")
+  cnd <- rlang::catch_cnd(ensure_unique(tbl, id, year), classes = "inshape_failure")
   expect_match(conditionMessage(cnd), "4 rows in 2 groups")
   expect_s3_class(cnd$violations, "tbl_lazy")
 })

@@ -51,7 +51,7 @@
 #' @param patterns Number of participation patterns to keep, most common
 #'   first.
 #'
-#' @return An object of class `lustrum_panel`, printed as a summary. It is
+#' @return An object of class `inshape_panel`, printed as a summary. It is
 #'   a list with the counts (`n_rows`, `n_units`, `n_complete`,
 #'   `n_with_gaps`, `n_gap_cells`, `n_dup_cells`, `n_dup_rows`,
 #'   `n_missing_id`, `n_missing_time`, `n_outside`), the `periods`, and
@@ -128,7 +128,7 @@ describe_panel <- function(data, id, time, periods = NULL, patterns = 10) {
     by_period      = by_period,
     runs           = tibble::tibble(runs = which(by_runs > 0), units = by_runs[by_runs > 0]),
     patterns       = panel_patterns(cells, present, n_per, patterns)
-  ), class = "lustrum_panel")
+  ), class = "inshape_panel")
 }
 
 # The most common participation patterns, from the pattern ids the engine
@@ -148,7 +148,7 @@ panel_patterns <- function(cells, present, n_per, keep) {
 }
 
 #' @export
-print.lustrum_panel <- function(x, ...) {
+print.inshape_panel <- function(x, ...) {
   per <- x$periods
   span <- if (length(per)) paste0(", ", format(per[1]), "-", format(per[length(per)])) else ""
 

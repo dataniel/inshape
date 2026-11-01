@@ -19,7 +19,7 @@
 #' @param codes The valid codes: a vector, e.g. a column of a code list.
 #' @param na_ok Whether a missing value passes. Default `TRUE`.
 #' @inheritParams checkpoints
-#' @param warn_msg Message shown (and logged) when values are outside the
+#' @param warn_msg Message shown when values are outside the
 #'   code list and no `abort_msg` is set. Defaults to a description of the
 #'   check.
 #'
@@ -39,8 +39,7 @@
 ensure_codes <- function(data, column, codes, na_ok = TRUE,
                          success_msg = NULL,
                          warn_msg    = NULL,
-                         abort_msg   = NULL,
-                         log         = getOption("inshape.log")) {
+                         abort_msg   = NULL) {
 
   tbl <- check_table(data)
   col <- select_names(tbl, {{ column }})
@@ -73,7 +72,6 @@ ensure_codes <- function(data, column, codes, na_ok = TRUE,
       if (is.null(label)) paste0("Valid codes: ", col) else paste0("Check passed: ", label),
     fail_msg    = label %||% paste0("Codes not in the code list: ", col),
     abort       = !is.null(abort_msg),
-    log         = log,
     key         = col,
     group       = col
   )

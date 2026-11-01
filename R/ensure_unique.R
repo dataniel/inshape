@@ -23,7 +23,7 @@
 #' @param ... Key columns (tidy-select). If omitted, all columns are used,
 #'   which checks for fully duplicated rows.
 #' @inheritParams checkpoints
-#' @param warn_msg Message shown (and logged) when duplicates exist and no
+#' @param warn_msg Message shown when duplicates exist and no
 #'   `abort_msg` is set. Defaults to a description naming the key columns.
 #'
 #' @return `data` invisibly, unchanged.
@@ -51,8 +51,7 @@
 ensure_unique <- function(data, ...,
                           success_msg = NULL,
                           warn_msg    = NULL,
-                          abort_msg   = NULL,
-                          log         = getOption("inshape.log")) {
+                          abort_msg   = NULL) {
 
   tbl <- check_table(data)
   key_cols <- if (...length() > 0) select_names(tbl, ...)
@@ -76,7 +75,6 @@ ensure_unique <- function(data, ...,
       if (is.null(label)) paste0("Unique on ", keys) else paste0("Check passed: ", label),
     fail_msg    = label %||% paste0("Duplicate rows on ", keys),
     abort       = !is.null(abort_msg),
-    log         = log,
     key         = key_cols,
     group       = "dupid"
   )

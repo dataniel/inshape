@@ -2,26 +2,22 @@
 % Please edit documentation in R/report.R
 \name{checkpoints}
 \alias{checkpoints}
-\title{Checkpoints: shared arguments, logging and database tables}
+\title{Checkpoints: shared arguments, personal data and database tables}
 \arguments{
 \item{data}{A data frame or tibble, a database table (dbplyr, e.g.
 DuckDB) or an Arrow table or dataset; see \emph{Database and Arrow tables}.}
 
-\item{success_msg}{Message shown (and logged) when the rule holds. If
-\code{NULL} (default), it is \code{"Check passed: <message>"} when \code{warn_msg} or
-\code{abort_msg} is given, so the log names every check that ran, and a
+\item{success_msg}{Message shown when the rule holds. If \code{NULL}
+(default), it is \code{"Check passed: <message>"} when \code{warn_msg} or
+\code{abort_msg} is given, so the console names every check that ran, and a
 description of the check otherwise.}
 
-\item{warn_msg}{Message shown (and logged) when the rule is broken and no
-\code{abort_msg} is set. Defaults to a description of the check.}
+\item{warn_msg}{Message shown when the rule is broken and no \code{abort_msg}
+is set. Defaults to a description of the check.}
 
 \item{abort_msg}{If provided, \code{cli::cli_abort()} is called with this
 message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
-
-\item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("inshape.log")}. The log holds
-messages and row counts, never rows; see \emph{Personal data}.}
 }
 \description{
 The \verb{ensure_*()} functions are checkpoints: each states a rule about the
@@ -37,54 +33,28 @@ braces are not interpolated.
 
 A failed check signals a condition of class \code{inshape_failure} (a warning or
 an error) that carries the offending rows in its \code{violations} field.
-Catch it to keep the rows:
+Catch it to look at all of them in the session:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{tryCatch(
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{dups <- tryCatch(
   ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-  inshape_failure = \\(e) saveRDS(e$violations, "duplicates.rds")
+  inshape_failure = \\(e) e$violations
 )
 }\if{html}{\out{</div>}}
 \subsection{Personal data}{
 
-The offending rows of a check on a register are personal data: they hold
-the key, often a cpr number, and every other column of the rows. inshape
-therefore never writes them to disk itself. Where they may be stored, and
-in which format, is a decision for the analysis and its data agreement,
-so it belongs in the script as a line that can be read and reviewed, as
-in the \code{tryCatch()} above, not in an option that one line at the top of a
-script turns on for every check.
-
-What inshape does show or write:
+inshape is made for interactive review of registers, at the console in
+the environment where the data lives. The offending rows of a check are
+personal data: they hold the key, often a cpr number, and every other
+column of the rows. inshape therefore writes nothing to disk, neither
+the rows nor a log of the checks, and keeps nothing after a check:
 \itemize{
-\item \strong{The message} shows the first rows of a failure, 5 by default. A
-message also ends up in the output of a scheduled job and in a rendered
-report. \code{options(inshape.preview = 0)} shows only the number of rows
-(and groups), never their content; set it in unattended runs and in
-documents that leave the secure environment.
-\item \strong{The log} holds the time, the message and the number of rows, never
-the rows. The message is your own \code{warn_msg} or \code{abort_msg}, or a
-description of the check that names only columns.
+\item \strong{The message} shows the number of rows and the first 5 of them at
+the console. Output that is kept, such as a rendered report or a
+shared screen, keeps them too, so run the checks at the console.
 \item \strong{The condition} carries the rows in memory, until it is caught or
-dropped.
+dropped. Whether any of them are stored, and where, is for the analysis
+and its data agreement to decide, not the package.
 }
-}
-
-\subsection{Logging}{
-
-\code{log} appends one line per check to a text file. It defaults to a global
-option, so a script can switch it on once at the top instead of
-repeating the path in every check:
-
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(inshape.log = format(Sys.time(), "log/\%Y\%m\%d_\%H\%M\%S_checks.log"))
-}\if{html}{\out{</div>}}
-
-A log line has the form \code{time | symbol | message | rows}, where the
-symbol is a check mark for success, \code{!} for a warning and a cross for an
-abort (shown as \code{v} below):
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{2026-06-11 09:00:03 | v | Unique on cpr, year | 0 rows
-2026-06-11 09:00:03 | ! | Gaps in panel | 3 rows
-}\if{html}{\out{</div>}}
 }
 
 \subsection{Several checks on the same columns}{
@@ -121,8 +91,7 @@ dplyr::tbl(con, "persons") |>
 A checkpoint returns the table it was given, still unevaluated, so the
 pipeline continues in the database. On a failure the condition's
 \code{violations} field holds the violation set as a query: \code{collect()} it to
-get the rows, or \code{compute()} it to keep them as a table in the same
-database, under the access rules of the register itself. Two things differ
+get the rows. Two things differ
 from data frames, because a database table has no row order:
 \code{\link[=ensure_unique]{ensure_unique()}} numbers \code{dupid} in the order of the key instead of
 first appearance, and spells starting on the same day are ordered by

@@ -12,8 +12,7 @@ ensure_balanced(
   gaps_only = FALSE,
   success_msg = NULL,
   warn_msg = NULL,
-  abort_msg = NULL,
-  log = getOption("inshape.log")
+  abort_msg = NULL
 )
 }
 \arguments{
@@ -33,21 +32,17 @@ sorts, such as integer years or dates.}
 period. If \code{TRUE}, only periods between a unit's first and last
 observation are required.}
 
-\item{success_msg}{Message shown (and logged) when the rule holds. If
-\code{NULL} (default), it is \code{"Check passed: <message>"} when \code{warn_msg} or
-\code{abort_msg} is given, so the log names every check that ran, and a
+\item{success_msg}{Message shown when the rule holds. If \code{NULL}
+(default), it is \code{"Check passed: <message>"} when \code{warn_msg} or
+\code{abort_msg} is given, so the console names every check that ran, and a
 description of the check otherwise.}
 
-\item{warn_msg}{Message shown (and logged) when unit-periods are missing
+\item{warn_msg}{Message shown when unit-periods are missing
 and no \code{abort_msg} is set. Defaults to a description of the check.}
 
 \item{abort_msg}{If provided, \code{cli::cli_abort()} is called with this
 message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
-
-\item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("inshape.log")}. The log holds
-messages and row counts, never rows; see \emph{Personal data}.}
 }
 \value{
 \code{data} invisibly, unchanged.
@@ -99,5 +94,5 @@ ensure_balanced(panel, cpr, year, periods = 2019:2022, gaps_only = TRUE)
 }
 \seealso{
 \code{\link[=ensure_unique]{ensure_unique()}} for duplicated unit-periods,
-\code{\link[=ensure_no_overlap]{ensure_no_overlap()}} for spell data, \link{checkpoints} for logging and personal data.
+\code{\link[=ensure_no_overlap]{ensure_no_overlap()}} for spell data, \link{checkpoints} for messages and personal data.
 }

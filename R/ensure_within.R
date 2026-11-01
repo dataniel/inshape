@@ -49,7 +49,7 @@
 #'   can be observed, e.g. `birth_date` and `death_date`. At least one is
 #'   required.
 #' @inheritParams checkpoints
-#' @param warn_msg Message shown (and logged) when rows lie outside and no
+#' @param warn_msg Message shown when rows lie outside and no
 #'   `abort_msg` is set. Defaults to a description of the check.
 #'
 #' @return `data` invisibly, unchanged.
@@ -72,8 +72,7 @@
 ensure_within <- function(data, time, from = NULL, to = NULL,
                           success_msg = NULL,
                           warn_msg    = NULL,
-                          abort_msg   = NULL,
-                          log         = getOption("inshape.log")) {
+                          abort_msg   = NULL) {
 
   tbl      <- check_table(data)
   time_col <- select_names(tbl, {{ time }})
@@ -103,7 +102,6 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
       if (is.null(label)) paste0("All rows: ", what) else paste0("Check passed: ", label),
     fail_msg    = label %||% paste0("Rows outside: ", what),
     abort       = !is.null(abort_msg),
-    log         = log,
     key         = c(time_col, from_col, to_col),
     group       = "outside"
   )

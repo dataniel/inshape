@@ -23,7 +23,7 @@
 #' @param start,end Columns with the first and last period of each spell
 #'   (dates, or integers such as years).
 #' @inheritParams checkpoints
-#' @param warn_msg Message shown (and logged) when spells overlap and no
+#' @param warn_msg Message shown when spells overlap and no
 #'   `abort_msg` is set. Defaults to a description of the check.
 #'
 #' @return `data` invisibly, unchanged.
@@ -46,8 +46,7 @@
 ensure_no_overlap <- function(data, id, start, end,
                               success_msg = NULL,
                               warn_msg    = NULL,
-                              abort_msg   = NULL,
-                              log         = getOption("inshape.log")) {
+                              abort_msg   = NULL) {
 
   tbl       <- check_table(data)
   ids       <- select_names(tbl, {{ id }})
@@ -72,7 +71,6 @@ ensure_no_overlap <- function(data, id, start, end,
       else paste0("Check passed: ", label),
     fail_msg    = label %||% paste0("Overlapping spells per ", toString(ids)),
     abort       = !is.null(abort_msg),
-    log         = log,
     key         = c(ids, start_col, end_col),
     group       = "overlap_id"
   )

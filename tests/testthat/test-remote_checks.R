@@ -113,13 +113,9 @@ test_that("ensure_within() finds the same rows as in memory", {
                  "All rows: year until death")
 })
 
-test_that("with no preview, a database check reports counts and keeps the query", {
-  withr::local_options(inshape.preview = 0)
+test_that("a failed database check keeps all rows as a query on the condition", {
   tbl <- local_duck(df)
   cnd <- rlang::catch_cnd(ensure_unique(tbl, id, year), classes = "inshape_failure")
-  msg <- cli::ansi_strip(conditionMessage(cnd))
-  expect_match(msg, "4 rows in 2 groups.", fixed = TRUE)
-  expect_no_match(msg, "dupid", fixed = TRUE)
   expect_s3_class(cnd$violations, "tbl_lazy")
   expect_equal(nrow(dplyr::collect(cnd$violations)), 4)
 })

@@ -1,4 +1,4 @@
-#' Checkpoints: shared arguments, logging and database tables
+#' Checkpoints: shared arguments, personal data and database tables
 #'
 #' The `ensure_*()` functions are checkpoints: each states a rule about the
 #' structure of the data, warns or aborts with the offending rows when it is
@@ -12,56 +12,29 @@
 #'
 #' A failed check signals a condition of class `inshape_failure` (a warning or
 #' an error) that carries the offending rows in its `violations` field.
-#' Catch it to keep the rows:
+#' Catch it to look at all of them in the session:
 #'
 #' ```r
-#' tryCatch(
+#' dups <- tryCatch(
 #'   ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-#'   inshape_failure = \(e) saveRDS(e$violations, "duplicates.rds")
+#'   inshape_failure = \(e) e$violations
 #' )
 #' ```
 #'
 #' ## Personal data
 #'
-#' The offending rows of a check on a register are personal data: they hold
-#' the key, often a cpr number, and every other column of the rows. inshape
-#' therefore never writes them to disk itself. Where they may be stored, and
-#' in which format, is a decision for the analysis and its data agreement,
-#' so it belongs in the script as a line that can be read and reviewed, as
-#' in the `tryCatch()` above, not in an option that one line at the top of a
-#' script turns on for every check.
+#' inshape is made for interactive review of registers, at the console in
+#' the environment where the data lives. The offending rows of a check are
+#' personal data: they hold the key, often a cpr number, and every other
+#' column of the rows. inshape therefore writes nothing to disk, neither
+#' the rows nor a log of the checks, and keeps nothing after a check:
 #'
-#' What inshape does show or write:
-#'
-#' * **The message** shows the first rows of a failure, 5 by default. A
-#'   message also ends up in the output of a scheduled job and in a rendered
-#'   report. `options(inshape.preview = 0)` shows only the number of rows
-#'   (and groups), never their content; set it in unattended runs and in
-#'   documents that leave the secure environment.
-#' * **The log** holds the time, the message and the number of rows, never
-#'   the rows. The message is your own `warn_msg` or `abort_msg`, or a
-#'   description of the check that names only columns.
+#' * **The message** shows the number of rows and the first 5 of them at
+#'   the console. Output that is kept, such as a rendered report or a
+#'   shared screen, keeps them too, so run the checks at the console.
 #' * **The condition** carries the rows in memory, until it is caught or
-#'   dropped.
-#'
-#' ## Logging
-#'
-#' `log` appends one line per check to a text file. It defaults to a global
-#' option, so a script can switch it on once at the top instead of
-#' repeating the path in every check:
-#'
-#' ```r
-#' options(inshape.log = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"))
-#' ```
-#'
-#' A log line has the form `time | symbol | message | rows`, where the
-#' symbol is a check mark for success, `!` for a warning and a cross for an
-#' abort (shown as `v` below):
-#'
-#' ```
-#' 2026-06-11 09:00:03 | v | Unique on cpr, year | 0 rows
-#' 2026-06-11 09:00:03 | ! | Gaps in panel | 3 rows
-#' ```
+#'   dropped. Whether any of them are stored, and where, is for the analysis
+#'   and its data agreement to decide, not the package.
 #'
 #' ## Several checks on the same columns
 #'
@@ -97,8 +70,7 @@
 #' A checkpoint returns the table it was given, still unevaluated, so the
 #' pipeline continues in the database. On a failure the condition's
 #' `violations` field holds the violation set as a query: `collect()` it to
-#' get the rows, or `compute()` it to keep them as a table in the same
-#' database, under the access rules of the register itself. Two things differ
+#' get the rows. Two things differ
 #' from data frames, because a database table has no row order:
 #' [ensure_unique()] numbers `dupid` in the order of the key instead of
 #' first appearance, and spells starting on the same day are ordered by
@@ -115,18 +87,15 @@
 #'
 #' @param data A data frame or tibble, a database table (dbplyr, e.g.
 #'   DuckDB) or an Arrow table or dataset; see *Database and Arrow tables*.
-#' @param success_msg Message shown (and logged) when the rule holds. If
-#'   `NULL` (default), it is `"Check passed: <message>"` when `warn_msg` or
-#'   `abort_msg` is given, so the log names every check that ran, and a
+#' @param success_msg Message shown when the rule holds. If `NULL`
+#'   (default), it is `"Check passed: <message>"` when `warn_msg` or
+#'   `abort_msg` is given, so the console names every check that ran, and a
 #'   description of the check otherwise.
-#' @param warn_msg Message shown (and logged) when the rule is broken and no
-#'   `abort_msg` is set. Defaults to a description of the check.
+#' @param warn_msg Message shown when the rule is broken and no `abort_msg`
+#'   is set. Defaults to a description of the check.
 #' @param abort_msg If provided, `cli::cli_abort()` is called with this
 #'   message when the rule is broken. If `NULL` (default), a warning is
 #'   issued instead.
-#' @param log Optional path to a log file. The directory is created
-#'   automatically. Defaults to `getOption("inshape.log")`. The log holds
-#'   messages and row counts, never rows; see *Personal data*.
 #'
 #' @name checkpoints
 #' @seealso [ensure_unique()], [ensure_balanced()], [ensure_no_overlap()],
@@ -277,10 +246,9 @@ first_row_by <- function(group, n_groups) {
 # and previewed by queries, never fetched in full, and carried on the
 # condition as the query itself.
 #
-# The rows are never written to disk here: they are personal data, and
-# where they may be stored is the analysis's decision (see ?checkpoints).
+# Nothing is written to disk here, neither rows nor a log: the rows are
+# personal data, and inshape is for interactive review (see ?checkpoints).
 report_check <- function(violations, success_msg, fail_msg, abort,
-                         log = NULL,
                          key = character(), group = NULL,
                          call = rlang::caller_env()) {
   remote <- is_remote(violations)
@@ -288,7 +256,6 @@ report_check <- function(violations, success_msg, fail_msg, abort,
 
   if (n == 0) {
     cli::cli_alert_success("{success_msg}")
-    write_check_log(log, "\u2714", success_msg, n)
     return(invisible(TRUE))
   }
 
@@ -297,14 +264,12 @@ report_check <- function(violations, success_msg, fail_msg, abort,
     else length(unique(violations[[group]]))
   }
 
-  n_shown <- preview_count()
   if (remote) {
     # Sorted only now, for the rows that are fetched; see sort_by()
     order <- attr(violations, "inshape_order")
     violations <- dplyr::relocate(violations, dplyr::any_of(c(group, key)))
     if (length(order) > 0) violations <- dplyr::arrange(violations, !!!order)
-    # With no preview, no row leaves the database
-    shown <- if (n_shown > 0) dplyr::collect(utils::head(violations, n_shown))
+    shown <- dplyr::collect(utils::head(violations, preview_n))
   } else {
     violations <- tibble::as_tibble(violations)
     violations <- violations[c(intersect(c(group, key), names(violations)),
@@ -312,14 +277,12 @@ report_check <- function(violations, success_msg, fail_msg, abort,
     shown <- violations
   }
 
-  write_check_log(log, if (abort) "\u2716" else "!", fail_msg, n)
-
-  found <- if (is.null(n_groups)) "{n} row{?s} found" else "{n} row{?s} in {n_groups} group{?s}"
   bullets <- c(
     "{fail_msg}",
-    "i" = paste0(found, if (n_shown > 0) ":" else "."),
-    if (n_shown > 0) preview_rows(shown, n = n_shown),
-    if (n > n_shown) c("i" = "Catch the {.cls inshape_failure} condition to get all rows; see {.topic inshape::checkpoints}.")
+    "i" = if (is.null(n_groups)) "{n} row{?s} found:"
+          else "{n} row{?s} in {n_groups} group{?s}:",
+    preview_rows(shown, n = preview_n),
+    if (n > preview_n) c("i" = "Catch the {.cls inshape_failure} condition to get all rows; see {.topic inshape::checkpoints}.")
   )
 
   signal <- if (abort) cli::cli_abort else cli::cli_warn
@@ -328,32 +291,8 @@ report_check <- function(violations, success_msg, fail_msg, abort,
   invisible(FALSE)
 }
 
-# Rows shown in a failure message: options(inshape.preview = ), 5 by
-# default, 0 for counts only (see "Personal data" in ?checkpoints)
-preview_count <- function() {
-  n <- getOption("inshape.preview", 5)
-  if (!is.numeric(n) || length(n) != 1 || is.na(n) || n < 0 || n != trunc(n)) {
-    cli::cli_abort(
-      "{.code options(inshape.preview = )} must be a whole number of rows, 0 or more.",
-      call = NULL
-    )
-  }
-  as.integer(n)
-}
-
-# One line per check: time, symbol, message and row count, never the rows
-write_check_log <- function(log, symbol, msg, n) {
-  if (is.null(log)) return(invisible())
-  dir.create(dirname(log), recursive = TRUE, showWarnings = FALSE)
-  line <- paste(
-    format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-    symbol,
-    msg,
-    paste(n, if (n == 1) "row" else "rows"),
-    sep = " | "
-  )
-  cat(line, "\n", file = log, append = TRUE, sep = "")
-}
+# Rows shown in a failure message
+preview_n <- 5
 
 # The first rows as a tibble printout, one escaped cli bullet per line. The
 # "# A tibble" header repeats the summary bullet and the "print(n = ...)"

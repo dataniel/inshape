@@ -100,7 +100,7 @@ ryddet |>
                   warn_msg = "Huller i befolkningspanelet") |>
   invisible()
 
-# En fejl som betingelse: rækkerne kan gemmes i et planlagt job
+# En fejl som betingelse: alle rækkerne, til at se på i sessionen
 fejl <- tryCatch(
   ensure_unique(panel, cpr, aar, abort_msg = "Dublerede personår"),
   inshape_failure = function(e) e$violations
@@ -230,25 +230,7 @@ ryddet |>
   add_spell_status(forloeb_ok, cpr, aar, start, slut, status)
 
 
-# 6. Log til uovervågede kørsler, uden personoplysninger --------------------
-
-# Loggen får kun tid, besked og antal rækker; preview = 0 holder rækkerne
-# ude af beskederne, som i en planlagt kørsel ender i en logfil
-mappe <- file.path(tempdir(), "inshape-demo")
-options(
-  inshape.log     = file.path(mappe, "tjek.log"),
-  inshape.preview = 0
-)
-ensure_unique(panel, cpr, aar, warn_msg = "Dublerede personår")
-suppressWarnings({
-  ensure_constant(panel, cpr, koen, warn_msg = "Køn skifter")
-  ensure_unique(ryddet, cpr, aar)
-})
-cat(readLines(file.path(mappe, "tjek.log")), sep = "\n")
-options(inshape.log = NULL, inshape.preview = NULL)
-
-
-# 7. Samme tjek i DuckDB, uden at hente data ind i R ------------------------
+# 6. Samme tjek i DuckDB, uden at hente data ind i R ------------------------
 
 if (requireNamespace("duckdb", quietly = TRUE) && requireNamespace("dbplyr", quietly = TRUE)) {
   con <- DBI::dbConnect(duckdb::duckdb())
@@ -268,7 +250,7 @@ if (requireNamespace("duckdb", quietly = TRUE) && requireNamespace("dbplyr", qui
 }
 
 
-# 8. Hastighed på et register i fuld størrelse (valgfrit) -------------------
+# 7. Hastighed på et register i fuld størrelse (valgfrit) -------------------
 #
 # Sæt stor <- TRUE for 25 mio. personår (5 mio. personer i 5 år). Kræver
 # omkring 4 GB fri hukommelse. Andet tjek af samme cpr-kolonne genbruger

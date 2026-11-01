@@ -16,7 +16,7 @@
 #' @param ... Columns that must be constant within a unit (tidy-select),
 #'   e.g. `sex, birth_date`.
 #' @inheritParams checkpoints
-#' @param warn_msg Message shown (and logged) when a column varies and no
+#' @param warn_msg Message shown when a column varies and no
 #'   `abort_msg` is set. Defaults to a description of the check.
 #'
 #' @return `data` invisibly, unchanged.
@@ -36,8 +36,7 @@
 ensure_constant <- function(data, id, ...,
                             success_msg = NULL,
                             warn_msg    = NULL,
-                            abort_msg   = NULL,
-                            log         = getOption("inshape.log")) {
+                            abort_msg   = NULL) {
 
   tbl  <- check_table(data)
   ids  <- select_names(tbl, {{ id }})
@@ -70,7 +69,6 @@ ensure_constant <- function(data, id, ...,
       if (is.null(label)) paste0("Constant: ", what) else paste0("Check passed: ", label),
     fail_msg    = label %||% paste0("Varies within units: ", what),
     abort       = !is.null(abort_msg),
-    log         = log,
     key         = c(ids, cols)
   )
   invisible(data)

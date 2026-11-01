@@ -11,8 +11,7 @@ ensure_codes(
   na_ok = TRUE,
   success_msg = NULL,
   warn_msg = NULL,
-  abort_msg = NULL,
-  log = getOption("inshape.log")
+  abort_msg = NULL
 )
 }
 \arguments{
@@ -25,22 +24,18 @@ DuckDB) or an Arrow table or dataset; see \emph{Database and Arrow tables}.}
 
 \item{na_ok}{Whether a missing value passes. Default \code{TRUE}.}
 
-\item{success_msg}{Message shown (and logged) when the rule holds. If
-\code{NULL} (default), it is \code{"Check passed: <message>"} when \code{warn_msg} or
-\code{abort_msg} is given, so the log names every check that ran, and a
+\item{success_msg}{Message shown when the rule holds. If \code{NULL}
+(default), it is \code{"Check passed: <message>"} when \code{warn_msg} or
+\code{abort_msg} is given, so the console names every check that ran, and a
 description of the check otherwise.}
 
-\item{warn_msg}{Message shown (and logged) when values are outside the
+\item{warn_msg}{Message shown when values are outside the
 code list and no \code{abort_msg} is set. Defaults to a description of the
 check.}
 
 \item{abort_msg}{If provided, \code{cli::cli_abort()} is called with this
 message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
-
-\item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("inshape.log")}. The log holds
-messages and row counts, never rows; see \emph{Personal data}.}
 }
 \value{
 \code{data} invisibly, unchanged.

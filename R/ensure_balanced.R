@@ -37,7 +37,7 @@
 #'   period. If `TRUE`, only periods between a unit's first and last
 #'   observation are required.
 #' @inheritParams checkpoints
-#' @param warn_msg Message shown (and logged) when unit-periods are missing
+#' @param warn_msg Message shown when unit-periods are missing
 #'   and no `abort_msg` is set. Defaults to a description of the check.
 #'
 #' @return `data` invisibly, unchanged.
@@ -58,7 +58,7 @@
 #' ensure_balanced(panel, cpr, year, periods = 2019:2022, gaps_only = TRUE)
 #'
 #' @seealso [ensure_unique()] for duplicated unit-periods,
-#'   [ensure_no_overlap()] for spell data, [checkpoints] for logging and personal data.
+#'   [ensure_no_overlap()] for spell data, [checkpoints] for messages and personal data.
 #'
 #' @export
 ensure_balanced <- function(data, id, time,
@@ -66,8 +66,7 @@ ensure_balanced <- function(data, id, time,
                             gaps_only   = FALSE,
                             success_msg = NULL,
                             warn_msg    = NULL,
-                            abort_msg   = NULL,
-                            log         = getOption("inshape.log")) {
+                            abort_msg   = NULL) {
 
   tbl      <- check_table(data)
   ids      <- select_names(tbl, {{ id }})
@@ -91,8 +90,7 @@ ensure_balanced <- function(data, id, time,
       else paste0("Balanced panel: ", toString(ids), " by ", time_col),
     fail_msg    = label %||%
       paste0(what, ": missing ", toString(ids), "-", time_col, " combinations"),
-    abort       = !is.null(abort_msg),
-    log         = log
+    abort       = !is.null(abort_msg)
   )
   invisible(data)
 }

@@ -1,0 +1,9 @@
+pandoc: 3.7.0.2
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  inshape: inshape.html
+last_built: 2026-11-01T22:47Z
+urls:
+  reference: https://dataniel.github.io/inshape/reference
+  article: https://dataniel.github.io/inshape/articles

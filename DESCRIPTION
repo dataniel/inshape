@@ -14,6 +14,8 @@ URL: https://dataniel.github.io/lustrum, https://github.com/dataniel/lustrum
 BugReports: https://github.com/dataniel/lustrum/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1.0)
 Imports:
     cli,
     data.table,

@@ -108,6 +108,15 @@ from data frames, because a database table has no row order:
 \code{\link[=ensure_unique]{ensure_unique()}} numbers \code{dupid} in the order of the key instead of
 first appearance, and spells starting on the same day are ordered by
 their end in \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}.
+
+The \verb{describe_*()} functions take database and Arrow tables too. Each
+summary is computed in the database with grouped counts, and only those
+counts are fetched, so describing a register costs a few small queries
+whatever its size. The numbers are the same as in memory, which the
+tests check. Two differences: participation patterns with the same count
+at the cut of \code{\link[=describe_panel]{describe_panel()}}'s \code{patterns} may be chosen differently,
+and in \code{\link[=describe_changes]{describe_changes()}} the keys that came, went or changed stay
+queries, to \code{collect()}.
 }
 }
 \seealso{

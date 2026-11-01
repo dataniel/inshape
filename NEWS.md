@@ -16,6 +16,17 @@
   spells that end before they start. `ensure_no_overlap()` shares its
   compiled pass over the sorted spells, and went from 6.0 to 2.8 seconds on
   25 million spells.
+* New `describe_changes()` compares two extracts of a register by their
+  key: keys that came and went, columns that came, went or changed type,
+  and per column the values that changed, went missing or were filled in,
+  the late corrections of a register without a time limit on them.
+* New `describe_codes()` shows how the codes of a column change over
+  periods (first and last period, codes skipping periods, new and gone
+  codes per period), on the panel engine, and `ensure_codes()` requires
+  codes from a code list.
+* Every `describe_*()` function now takes a database or Arrow table and
+  computes its summary in the database, fetching only the counts; the
+  tests hold the numbers to those in memory.
 * New `ensure_within()` requires each row to lie within its unit's
   lifetime: no observations after death or emigration, or before birth.
   A year compared with a date counts by the date's year, and a missing

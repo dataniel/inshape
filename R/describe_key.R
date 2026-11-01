@@ -12,7 +12,8 @@
 #' columns with missing values are counted, since a missing value in a key
 #' is usually an error of its own, even when the key is unique.
 #'
-#' @param data A data frame or tibble.
+#' @param data A data frame or tibble, or a database or Arrow table: see
+#'   *Database tables* in [checkpoints].
 #' @param ... Key columns (tidy-select). If omitted, all columns are used,
 #'   which counts fully duplicated rows.
 #'
@@ -39,7 +40,11 @@
 #'
 #' @export
 describe_key <- function(data, ...) {
-  check_data_frame(data)
+  tbl <- check_table(data)
+  if (is_remote(tbl)) {
+    key <- if (...length() == 0) colnames(tbl) else select_names(tbl, ...)
+    return(remote_describe_key(tbl, key))
+  }
   key <- dup_cols(data, ...)
 
   id     <- group_ids(data, key)

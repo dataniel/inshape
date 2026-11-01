@@ -84,6 +84,15 @@
 #' first appearance, and spells starting on the same day are ordered by
 #' their end in [ensure_no_overlap()].
 #'
+#' The `describe_*()` functions take database and Arrow tables too. Each
+#' summary is computed in the database with grouped counts, and only those
+#' counts are fetched, so describing a register costs a few small queries
+#' whatever its size. The numbers are the same as in memory, which the
+#' tests check. Two differences: participation patterns with the same count
+#' at the cut of [describe_panel()]'s `patterns` may be chosen differently,
+#' and in [describe_changes()] the keys that came, went or changed stay
+#' queries, to `collect()`.
+#'
 #' @param data A data frame or tibble, a database table (dbplyr, e.g.
 #'   DuckDB) or an Arrow table or dataset; see *Database and Arrow tables*.
 #' @param success_msg Message shown (and logged) when the rule holds. If

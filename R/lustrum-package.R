@@ -19,8 +19,10 @@
 #'
 #' ## Where to start
 #'
-#' * [describe_key()], [describe_panel()], [describe_spells()] and
-#'   [describe_varying()]: look at the structure before choosing a rule.
+#' * [describe_key()], [describe_panel()], [describe_spells()],
+#'   [describe_varying()] and [describe_codes()]: look at the structure
+#'   before choosing a rule.
+#' * [describe_changes()]: what changed since the last extract.
 #' * [ensure_unique()]: a key identifies each row.
 #' * [ensure_balanced()]: every unit is observed in every period, or at
 #'   least has no gaps.
@@ -29,6 +31,7 @@
 #'   unit.
 #' * [ensure_within()]: no one is observed after death or emigration, or
 #'   before birth.
+#' * [ensure_codes()]: a coded column holds only codes from the code list.
 #' * [merge_spells()]: one spell recorded as several, merged into one.
 #' * [spells_to_panel()] and [add_spell_status()]: from spells to a panel.
 #'

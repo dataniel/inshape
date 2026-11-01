@@ -34,6 +34,9 @@ pipeline.
 | `describe_panel()` | (look) units, gaps, entries, exits, patterns | a summary |
 | `describe_spells()` | (look) gaps, transfers, overlapping and nested spells | a summary |
 | `describe_varying()` | (look) which columns vary within units | a summary |
+| `describe_codes()` | (look) how the codes of a column change over periods | a summary |
+| `describe_changes()` | (look) what changed between two extracts | a summary |
+| `ensure_codes()` | a coded column holds only codes from the code list | the data |
 | `ensure_constant()` | sex, birth date and the like are constant within a unit | the data |
 | `ensure_unique()` | the key columns identify each row | the data |
 | `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
@@ -204,6 +207,43 @@ that break it. A missing value is not a contradiction, so `c` passes:
 
 ```{r}
 ensure_constant(persons, cpr, sex)
+```
+
+## Codes over time: `describe_codes()` and `ensure_codes()`
+
+Code lists change: municipalities merge, industry codes are revised.
+`describe_codes()` shows when each code occurs, so a revision stands out as
+a period with many new and many gone codes, and a typo as a code seen once:
+
+```{r}
+residents <- tibble(
+  year = rep(2018:2021, each = 4),
+  municipality = c("955", "956", "957", NA,    "955", "956", "957", "957",
+                   "960", "956", "957", "95",  "960", "965", "957", "956")
+)
+
+describe_codes(residents, municipality, year)
+```
+
+`ensure_codes()` requires the codes of a code list:
+
+```{r}
+ensure_codes(residents, municipality, c("955", "956", "957", "960", "965"))
+```
+
+## A new extract: `describe_changes()`
+
+A register is delivered again and again, and the same person-year should
+not change between deliveries unless it was corrected. `describe_changes()`
+compares two extracts by their key:
+
+```{r}
+before <- tibble(cpr = c("a", "b", "c"), year = 2023,
+                 sex = c("F", "M", "F"), born = c(1950, 1960, NA))
+after  <- tibble(cpr = c("a", "b", "d"), year = 2023,
+                 sex = c("F", "F", "M"), born = c(1950, 1960, 1990))
+
+describe_changes(before, after, cpr, year)
 ```
 
 ## Within a lifetime: `ensure_within()`

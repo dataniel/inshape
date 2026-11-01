@@ -21,6 +21,8 @@ reference:
       Look at the structure before choosing a rule. Each returns a summary
       that prints, and judges nothing.
     contents:
+      - describe_changes
+      - describe_codes
       - describe_key
       - describe_panel
       - describe_spells
@@ -37,6 +39,7 @@ reference:
       - ensure_no_overlap
       - ensure_constant
       - ensure_within
+      - ensure_codes
       - checkpoints
 
   - title: Spells and panels

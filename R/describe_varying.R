@@ -22,7 +22,8 @@
 #' non-missing value of its unit, with no hashing or sorting of the column
 #' and one memory word of state per unit.
 #'
-#' @param data A data frame or tibble.
+#' @param data A data frame or tibble, or a database or Arrow table: see
+#'   *Database tables* in [checkpoints].
 #' @param id Column(s) identifying the unit (tidy-select), e.g. `cpr`.
 #' @param ... Columns to describe (tidy-select). Defaults to all other
 #'   columns.
@@ -48,11 +49,12 @@
 #'
 #' @export
 describe_varying <- function(data, id, ...) {
-  check_data_frame(data)
-  ids <- select_names(data, {{ id }})
+  tbl <- check_table(data)
+  ids <- select_names(tbl, {{ id }})
   if (length(ids) == 0) cli::cli_abort("{.arg id} must select at least one column.")
-  cols <- if (...length() == 0) setdiff(names(data), ids) else select_names(data, ...)
+  cols <- if (...length() == 0) setdiff(colnames(tbl), ids) else select_names(tbl, ...)
   cols <- setdiff(cols, ids)
+  if (is_remote(tbl)) return(remote_describe_varying(tbl, ids, cols))
   cols <- cols[vapply(unclass(data)[cols], is.atomic, logical(1))]
 
   unit <- group_ids(data, ids)

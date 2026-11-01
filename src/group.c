@@ -433,6 +433,43 @@ SEXP lustrum_varying_units(SEXP x, SEXP unit_, SEXP n_units_) {
     return res;
 }
 
+/* How each pair of rows (a[ia[k]], b[ib[k]]) compares, for
+   describe_changes(): 0 equal (two missing values are equal), 1 a changed
+   value, 2 a value that went missing, 3 a missing value that was filled
+   in. a and b have the same type; NULL for a type it does not take. */
+SEXP lustrum_pair_changes(SEXP a, SEXP b, SEXP ia_, SEXP ib_) {
+    R_xlen_t n = XLENGTH(ia_);
+    int type = TYPEOF(a);
+    if (TYPEOF(b) != type || XLENGTH(ib_) != n) return R_NilValue;
+    if (type != STRSXP && type != INTSXP && type != LGLSXP && type != REALSXP) {
+        return R_NilValue;
+    }
+    const int *ia = INTEGER(ia_), *ib = INTEGER(ib_);
+    SEXP res = PROTECT(Rf_allocVector(INTSXP, n));
+    int *out = INTEGER(res);
+
+#define PAIR_PASS(NA_A, NA_B, DIFFERS)                                 \
+    for (R_xlen_t k = 0; k < n; k++) {                                  \
+        R_xlen_t i = ia[k] - 1, j = ib[k] - 1;                          \
+        int na_a = NA_A, na_b = NA_B;                                   \
+        out[k] = na_a ? (na_b ? 0 : 3) : (na_b ? 2 : ((DIFFERS) ? 1 : 0)); \
+    }
+
+    if (type == STRSXP) {
+        const SEXP *pa = STRING_PTR_RO(a), *pb = STRING_PTR_RO(b);
+        PAIR_PASS(pa[i] == NA_STRING, pb[j] == NA_STRING, strings_differ(pa[i], pb[j]))
+    } else if (type == REALSXP) {
+        const double *pa = REAL(a), *pb = REAL(b);
+        PAIR_PASS(ISNAN(pa[i]), ISNAN(pb[j]), pa[i] != pb[j])
+    } else {
+        const int *pa = INTEGER(a), *pb = INTEGER(b);
+        PAIR_PASS(pa[i] == NA_INTEGER, pb[j] == NA_INTEGER, pa[i] != pb[j])
+    }
+#undef PAIR_PASS
+    UNPROTECT(1);
+    return res;
+}
+
 /* Dense ids of 64-bit keys, for the panel engine (src/panel.c) */
 int lustrum_dense_u64(const uint64_t *keys, R_xlen_t n, int *out, int threads) {
     return n < (1 << 17) ? dense_serial(K_U64, keys, n, out)

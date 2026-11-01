@@ -27,8 +27,10 @@ censuses, which suits a package about periods.
 
 \subsection{Where to start}{
 \itemize{
-\item \code{\link[=describe_key]{describe_key()}}, \code{\link[=describe_panel]{describe_panel()}}, \code{\link[=describe_spells]{describe_spells()}} and
-\code{\link[=describe_varying]{describe_varying()}}: look at the structure before choosing a rule.
+\item \code{\link[=describe_key]{describe_key()}}, \code{\link[=describe_panel]{describe_panel()}}, \code{\link[=describe_spells]{describe_spells()}},
+\code{\link[=describe_varying]{describe_varying()}} and \code{\link[=describe_codes]{describe_codes()}}: look at the structure
+before choosing a rule.
+\item \code{\link[=describe_changes]{describe_changes()}}: what changed since the last extract.
 \item \code{\link[=ensure_unique]{ensure_unique()}}: a key identifies each row.
 \item \code{\link[=ensure_balanced]{ensure_balanced()}}: every unit is observed in every period, or at
 least has no gaps.
@@ -37,6 +39,7 @@ least has no gaps.
 unit.
 \item \code{\link[=ensure_within]{ensure_within()}}: no one is observed after death or emigration, or
 before birth.
+\item \code{\link[=ensure_codes]{ensure_codes()}}: a coded column holds only codes from the code list.
 \item \code{\link[=merge_spells]{merge_spells()}}: one spell recorded as several, merged into one.
 \item \code{\link[=spells_to_panel]{spells_to_panel()}} and \code{\link[=add_spell_status]{add_spell_status()}}: from spells to a panel.
 }

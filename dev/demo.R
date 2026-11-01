@@ -126,6 +126,37 @@ med_afgang <- ryddet |>
 ensure_within(med_afgang, aar, from = foedt, to = udgaaet)
 
 
+# Kommunekoder over tid: i 2021 får Qeqqata en ny kode, og to rækker har en
+# tastefejl. describe_codes() viser hvornår hver kode findes;
+# ensure_codes() kræver koder fra kodelisten.
+koder <- c(Kujalleq = "955", Sermersooq = "956", Qeqqata = "957",
+           Avannaata = "960", Qeqertalik = "961")
+med_koder <- ryddet |>
+  mutate(kode = unname(koder[kommune]),
+         kode = if_else(kommune == "Qeqqata" & aar >= 2021, "959", kode))
+med_koder$kode[c(10, 20)] <- "95"
+describe_codes(med_koder, kode, aar)
+ensure_codes(med_koder, kode, c(koder, "959"))
+
+
+# 3b. Et nyt udtræk: hvad er ændret siden sidst? ----------------------------
+#
+# Et nyt udtræk af samme register: 20 personer er rettet i køn, 15 har fået
+# rettet fødselsdato, 10 er forsvundet og 2023 har fået 5 nye personer.
+gammelt <- ryddet
+nyt <- ryddet |>
+  mutate(koen = if_else(cpr %in% sample(unique(cpr), 20),
+                        if_else(koen == "K", "M", "K"), koen),
+         foedt = if_else(cpr %in% sample(unique(cpr), 15), foedt + 365, foedt)) |>
+  filter(!cpr %in% sample(unique(cpr), 10)) |>
+  bind_rows(tibble(cpr = sprintf("999999-%04d", 1:5), koen = "K",
+                   foedt = as.Date("2023-03-01"), kommune = "Sermersooq",
+                   aar = 2023L, indkomst = 0))
+aendringer <- describe_changes(gammelt, nyt, cpr, aar)
+aendringer
+aendringer$changed        # personår med mindst én ændret kolonne
+
+
 # 4. Forløb: én række pr. forløb med start og slut --------------------------
 
 forloeb <- personer |>
@@ -227,6 +258,10 @@ if (requireNamespace("duckdb", quietly = TRUE) && requireNamespace("dbplyr", qui
   ensure_unique(db, cpr, aar)
   ensure_balanced(db, cpr, aar, gaps_only = TRUE)
   ensure_constant(db, cpr, koen)
+
+  # Beskrivelserne regnes også i databasen; kun optællingerne hentes
+  print(describe_panel(db, cpr, aar))
+  print(describe_varying(db, cpr))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 }

@@ -7,7 +7,8 @@
 describe_varying(data, id, ...)
 }
 \arguments{
-\item{data}{A data frame or tibble.}
+\item{data}{A data frame or tibble, or a database or Arrow table: see
+\emph{Database tables} in \link{checkpoints}.}
 
 \item{id}{Column(s) identifying the unit (tidy-select), e.g. \code{cpr}.}
 

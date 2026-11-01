@@ -41,7 +41,8 @@
 #' many years, the unit-periods are sorted instead and the patterns, as long
 #' as the panel and nearly all different, are left out.
 #'
-#' @param data A data frame or tibble.
+#' @param data A data frame or tibble, or a database or Arrow table: see
+#'   *Database tables* in [checkpoints].
 #' @param id Column(s) identifying the unit (tidy-select), e.g. `cpr`.
 #' @param time The period column (one column), e.g. `year`.
 #' @param periods Expected periods. Defaults to those observed in `data`.
@@ -74,14 +75,15 @@
 #'
 #' @export
 describe_panel <- function(data, id, time, periods = NULL, patterns = 10) {
-  check_data_frame(data)
-  ids      <- select_names(data, {{ id }})
-  time_col <- select_names(data, {{ time }})
+  tbl      <- check_table(data)
+  ids      <- select_names(tbl, {{ id }})
+  time_col <- select_names(tbl, {{ time }})
   if (length(ids) == 0) cli::cli_abort("{.arg id} must select at least one column.")
   if (length(time_col) != 1) cli::cli_abort("{.arg time} must select exactly one column.")
   if (!rlang::is_scalar_integerish(patterns) || patterns < 0) {
     cli::cli_abort("{.arg patterns} must be a single non-negative whole number.")
   }
+  if (is_remote(tbl)) return(remote_describe_panel(tbl, ids, time_col, periods, patterns))
 
   ix    <- panel_index(data, ids, time_col, periods)
   cells <- panel_cells(ix)

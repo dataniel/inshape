@@ -7,7 +7,8 @@
 describe_key(data, ...)
 }
 \arguments{
-\item{data}{A data frame or tibble.}
+\item{data}{A data frame or tibble, or a database or Arrow table: see
+\emph{Database tables} in \link{checkpoints}.}
 
 \item{...}{Key columns (tidy-select). If omitted, all columns are used,
 which counts fully duplicated rows.}

@@ -7,7 +7,8 @@
 describe_spells(data, id, start, end)
 }
 \arguments{
-\item{data}{A data frame or tibble with one row per spell.}
+\item{data}{A data frame or tibble with one row per spell, or a database
+or Arrow table: see \emph{Database tables} in \link{checkpoints}.}
 
 \item{id}{Column(s) identifying the unit (tidy-select), e.g. \code{cpr}.}
 

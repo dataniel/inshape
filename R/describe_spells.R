@@ -39,7 +39,8 @@
 #' in order. Counts and lengths are read from counts per day, never from
 #' sorting millions of values.
 #'
-#' @param data A data frame or tibble with one row per spell.
+#' @param data A data frame or tibble with one row per spell, or a database
+#'   or Arrow table: see *Database tables* in [checkpoints].
 #' @param id Column(s) identifying the unit (tidy-select), e.g. `cpr`.
 #' @param start,end Columns with the first and last day (or period) of each
 #'   spell. A missing `end` means an ongoing spell.
@@ -70,14 +71,15 @@
 #'
 #' @export
 describe_spells <- function(data, id, start, end) {
-  check_data_frame(data)
-  ids       <- select_names(data, {{ id }})
-  start_col <- select_names(data, {{ start }})
-  end_col   <- select_names(data, {{ end }})
+  tbl       <- check_table(data)
+  ids       <- select_names(tbl, {{ id }})
+  start_col <- select_names(tbl, {{ start }})
+  end_col   <- select_names(tbl, {{ end }})
   if (length(ids) == 0) cli::cli_abort("{.arg id} must select at least one column.")
   if (length(start_col) != 1 || length(end_col) != 1) {
     cli::cli_abort("{.arg start} and {.arg end} must each select exactly one column.")
   }
+  if (is_remote(tbl)) return(remote_describe_spells(tbl, ids, start_col, end_col))
   s <- spell_numbers(data[[start_col]], start_col)
   e <- spell_numbers(data[[end_col]], end_col)
   is_date <- inherits(data[[start_col]], c("Date", "POSIXt"))
@@ -194,12 +196,16 @@ spread_counts <- function(counts, values) {
 
 # Count, minimum, quartiles, mean and maximum of a vector of lengths, read
 # from the counts of each value (type 1 quantiles: an observed value)
-number_summary <- function(x) {
-  if (length(x) == 0) {
+number_summary <- function(x) summary_of_counts(count_values(x))
+
+# The same summary from distinct values and their counts, sorted by value,
+# as a database returns them
+summary_of_counts <- function(counts) {
+  if (length(counts$value) == 0) {
     return(tibble::tibble(n = 0L, min = NA_real_, q25 = NA_real_, median = NA_real_,
                           mean = NA_real_, q75 = NA_real_, max = NA_real_))
   }
-  counts <- count_values(x)
+  counts$value <- as.numeric(counts$value)
   total <- sum(counts$n)
   at <- cumsum(counts$n)
   q <- vapply(c(.25, .5, .75), function(p) {

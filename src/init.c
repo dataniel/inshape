@@ -9,6 +9,7 @@ SEXP lustrum_first_rows(SEXP, SEXP);
 SEXP lustrum_fingerprint(SEXP, SEXP);
 SEXP lustrum_varying_units(SEXP, SEXP, SEXP);
 SEXP lustrum_outside(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+SEXP lustrum_pair_changes(SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_panel_scan(SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_panel_missing(SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP lustrum_spell_status(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -21,6 +22,7 @@ static const R_CallMethodDef call_methods[] = {
     {"lustrum_fingerprint", (DL_FUNC) &lustrum_fingerprint, 2},
     {"lustrum_varying_units", (DL_FUNC) &lustrum_varying_units, 3},
     {"lustrum_outside", (DL_FUNC) &lustrum_outside, 7},
+    {"lustrum_pair_changes", (DL_FUNC) &lustrum_pair_changes, 4},
     {"lustrum_panel_scan", (DL_FUNC) &lustrum_panel_scan, 5},
     {"lustrum_panel_missing", (DL_FUNC) &lustrum_panel_missing, 5},
     {"lustrum_spell_status", (DL_FUNC) &lustrum_spell_status, 8},

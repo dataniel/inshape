@@ -20,11 +20,8 @@ message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
 
 \item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("inshape.log")}.}
-
-\item{dump}{Optional directory. When the check fails, the offending rows
-are written there as a timestamped CSV file (UTF-8 with BOM, so Excel
-reads Danish letters correctly). Defaults to \code{getOption("inshape.dump")}.}
+automatically. Defaults to \code{getOption("inshape.log")}. The log holds
+messages and row counts, never rows; see \emph{Personal data}.}
 }
 \description{
 The \verb{ensure_*()} functions are checkpoints: each states a rule about the
@@ -40,32 +37,53 @@ braces are not interpolated.
 
 A failed check signals a condition of class \code{inshape_failure} (a warning or
 an error) that carries the offending rows in its \code{violations} field.
-Scheduled pipelines can catch it and keep the rows:
+Catch it to keep the rows:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{tryCatch(
   ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
   inshape_failure = \\(e) saveRDS(e$violations, "duplicates.rds")
 )
 }\if{html}{\out{</div>}}
-\subsection{Logging and dumping}{
+\subsection{Personal data}{
 
-\code{log} appends one line per check to a text file, and \code{dump} writes the
-offending rows to a CSV file in a directory. Both default to a global
-option, so a script can switch them on once at the top instead of
+The offending rows of a check on a register are personal data: they hold
+the key, often a cpr number, and every other column of the rows. inshape
+therefore never writes them to disk itself. Where they may be stored, and
+in which format, is a decision for the analysis and its data agreement,
+so it belongs in the script as a line that can be read and reviewed, as
+in the \code{tryCatch()} above, not in an option that one line at the top of a
+script turns on for every check.
+
+What inshape does show or write:
+\itemize{
+\item \strong{The message} shows the first rows of a failure, 5 by default. A
+message also ends up in the output of a scheduled job and in a rendered
+report. \code{options(inshape.preview = 0)} shows only the number of rows
+(and groups), never their content; set it in unattended runs and in
+documents that leave the secure environment.
+\item \strong{The log} holds the time, the message and the number of rows, never
+the rows. The message is your own \code{warn_msg} or \code{abort_msg}, or a
+description of the check that names only columns.
+\item \strong{The condition} carries the rows in memory, until it is caught or
+dropped.
+}
+}
+
+\subsection{Logging}{
+
+\code{log} appends one line per check to a text file. It defaults to a global
+option, so a script can switch it on once at the top instead of
 repeating the path in every check:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(
-  inshape.log  = format(Sys.time(), "log/\%Y\%m\%d_\%H\%M\%S_checks.log"),
-  inshape.dump = "log/violations"
-)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(inshape.log = format(Sys.time(), "log/\%Y\%m\%d_\%H\%M\%S_checks.log"))
 }\if{html}{\out{</div>}}
 
-A log line has the form \verb{time | symbol | message | rows [| dump file]},
-where the symbol is a check mark for success, \code{!} for a warning and a
-cross for an abort (shown as \code{v} below):
+A log line has the form \code{time | symbol | message | rows}, where the
+symbol is a check mark for success, \code{!} for a warning and a cross for an
+abort (shown as \code{v} below):
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{2026-06-11 09:00:03 | v | Unique on cpr, year | 0 rows
-2026-06-11 09:00:03 | ! | Gaps in panel | 3 rows | log/violations/20260611_090003_Gaps_in_panel.csv
+2026-06-11 09:00:03 | ! | Gaps in panel | 3 rows
 }\if{html}{\out{</div>}}
 }
 
@@ -103,7 +121,8 @@ dplyr::tbl(con, "persons") |>
 A checkpoint returns the table it was given, still unevaluated, so the
 pipeline continues in the database. On a failure the condition's
 \code{violations} field holds the violation set as a query: \code{collect()} it to
-get the rows. \code{dump} fetches and writes all of them. Two things differ
+get the rows, or \code{compute()} it to keep them as a table in the same
+database, under the access rules of the register itself. Two things differ
 from data frames, because a database table has no row order:
 \code{\link[=ensure_unique]{ensure_unique()}} numbers \code{dupid} in the order of the key instead of
 first appearance, and spells starting on the same day are ordered by

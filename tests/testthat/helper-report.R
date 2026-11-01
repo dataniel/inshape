@@ -2,10 +2,9 @@
 # without the rule of any particular ensure_*() function
 check_rows <- function(data, success_msg = "OK", warn_msg = "Bad rows",
                        abort_msg = NULL,
-                       log  = getOption("inshape.log"),
-                       dump = getOption("inshape.dump")) {
+                       log  = getOption("inshape.log")) {
   report_check(data, success_msg = success_msg,
                fail_msg = if (is.null(abort_msg)) warn_msg else abort_msg,
-               abort = !is.null(abort_msg), log = log, dump = dump)
+               abort = !is.null(abort_msg), log = log)
   invisible(data)
 }

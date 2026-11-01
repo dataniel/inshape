@@ -4,8 +4,14 @@
   are renamed so the two packages cannot be confused:
   `expect_unique()` is now `ensure_unique()`, `expect_balanced()` is
   `ensure_balanced()` and `expect_no_overlap()` is `ensure_no_overlap()`.
-  Their options are `inshape.log` and `inshape.dump`, and a failure signals
-  `inshape_failure`.
+  Their options are `inshape.log` and `inshape.preview`, and a failure
+  signals `inshape_failure`.
+* The offending rows are never written to disk: they are personal data, and
+  where they may be kept is the analysis's decision, made by catching
+  `inshape_failure`, so there is no `dump` argument or option. The log
+  holds messages and row counts only, and `options(inshape.preview = 0)`
+  keeps the rows out of messages, for scheduled jobs and rendered reports.
+  See "Personal data" in `?checkpoints`.
 * New `describe_key()` and `describe_panel()` describe a key and a panel
   before a rule is chosen: duplicated keys split into exact copies and
   conflicts by column, and the panel's units, gaps, entries, exits and

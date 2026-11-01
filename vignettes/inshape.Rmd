@@ -314,18 +314,32 @@ population |>
 
 ## Unattended pipelines and large registers
 
-Set a log file and a dump directory once at the top of a script, and every
-checkpoint appends a line to the log and writes its offending rows to a
-CSV file:
+Set a log file once at the top of a script, and every checkpoint appends a
+line to it with the time, the message and the number of rows:
 
 ```{r, eval = FALSE}
 options(
-  inshape.log  = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
-  inshape.dump = "log/violations"
+  inshape.log     = format(Sys.time(), "log/%Y%m%d_%H%M%S_checks.log"),
+  inshape.preview = 0
 )
 ```
 
+The offending rows of a register check are personal data. inshape never
+writes them to disk, and the log holds counts, not rows. A message shows
+the first rows, which is what you want at the console in the secure
+environment; `inshape.preview = 0` above keeps them out of the output of a
+scheduled job or a rendered report, so only the counts are shown.
+
 A failure signals a condition of class `inshape_failure` that carries the
-rows, so a scheduled job can catch it. A DuckDB or Arrow table is checked
-where it lives, and only the count and a preview are fetched into R. See
-`?checkpoints` for both.
+rows. Where they may be kept is the analysis's decision, so it is written
+out in the script:
+
+```{r, eval = FALSE}
+tryCatch(
+  ensure_unique(persons, cpr, year, abort_msg = "Duplicate person-years"),
+  inshape_failure = \(e) saveRDS(e$violations, "secure/duplicates.rds")
+)
+```
+
+A DuckDB or Arrow table is checked where it lives, and only the count and
+the preview are fetched into R. See `?checkpoints` for both.

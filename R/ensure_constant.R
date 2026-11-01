@@ -37,8 +37,7 @@ ensure_constant <- function(data, id, ...,
                             success_msg = NULL,
                             warn_msg    = NULL,
                             abort_msg   = NULL,
-                            log         = getOption("inshape.log"),
-                            dump        = getOption("inshape.dump")) {
+                            log         = getOption("inshape.log")) {
 
   tbl  <- check_table(data)
   ids  <- select_names(tbl, {{ id }})
@@ -72,7 +71,6 @@ ensure_constant <- function(data, id, ...,
     fail_msg    = label %||% paste0("Varies within units: ", what),
     abort       = !is.null(abort_msg),
     log         = log,
-    dump        = dump,
     key         = c(ids, cols)
   )
   invisible(data)

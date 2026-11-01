@@ -1,8 +1,8 @@
 #' Assert that key columns identify each row uniquely
 #'
 #' A checkpoint for keys: every combination of the selected columns must
-#' occur at most once. On failure the duplicated rows are reported (and
-#' dumped, see [checkpoints]) grouped by a `dupid` column, so each group
+#' occur at most once. On failure the duplicated rows are reported (see
+#' [checkpoints]) grouped by a `dupid` column, so each group
 #' of copies can be inspected together. Returns `data`, so it can sit in the
 #' middle of a pipeline.
 #'
@@ -52,8 +52,7 @@ ensure_unique <- function(data, ...,
                           success_msg = NULL,
                           warn_msg    = NULL,
                           abort_msg   = NULL,
-                          log         = getOption("inshape.log"),
-                          dump        = getOption("inshape.dump")) {
+                          log         = getOption("inshape.log")) {
 
   tbl <- check_table(data)
   key_cols <- if (...length() > 0) select_names(tbl, ...)
@@ -78,7 +77,6 @@ ensure_unique <- function(data, ...,
     fail_msg    = label %||% paste0("Duplicate rows on ", keys),
     abort       = !is.null(abort_msg),
     log         = log,
-    dump        = dump,
     key         = key_cols,
     group       = "dupid"
   )

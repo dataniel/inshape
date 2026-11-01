@@ -40,8 +40,7 @@ ensure_codes <- function(data, column, codes, na_ok = TRUE,
                          success_msg = NULL,
                          warn_msg    = NULL,
                          abort_msg   = NULL,
-                         log         = getOption("inshape.log"),
-                         dump        = getOption("inshape.dump")) {
+                         log         = getOption("inshape.log")) {
 
   tbl <- check_table(data)
   col <- select_names(tbl, {{ column }})
@@ -75,7 +74,6 @@ ensure_codes <- function(data, column, codes, na_ok = TRUE,
     fail_msg    = label %||% paste0("Codes not in the code list: ", col),
     abort       = !is.null(abort_msg),
     log         = log,
-    dump        = dump,
     key         = col,
     group       = col
   )

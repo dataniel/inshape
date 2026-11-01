@@ -47,8 +47,7 @@ ensure_no_overlap <- function(data, id, start, end,
                               success_msg = NULL,
                               warn_msg    = NULL,
                               abort_msg   = NULL,
-                              log         = getOption("inshape.log"),
-                              dump        = getOption("inshape.dump")) {
+                              log         = getOption("inshape.log")) {
 
   tbl       <- check_table(data)
   ids       <- select_names(tbl, {{ id }})
@@ -74,7 +73,6 @@ ensure_no_overlap <- function(data, id, start, end,
     fail_msg    = label %||% paste0("Overlapping spells per ", toString(ids)),
     abort       = !is.null(abort_msg),
     log         = log,
-    dump        = dump,
     key         = c(ids, start_col, end_col),
     group       = "overlap_id"
   )

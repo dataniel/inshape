@@ -73,8 +73,7 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
                           success_msg = NULL,
                           warn_msg    = NULL,
                           abort_msg   = NULL,
-                          log         = getOption("inshape.log"),
-                          dump        = getOption("inshape.dump")) {
+                          log         = getOption("inshape.log")) {
 
   tbl      <- check_table(data)
   time_col <- select_names(tbl, {{ time }})
@@ -105,7 +104,6 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
     fail_msg    = label %||% paste0("Rows outside: ", what),
     abort       = !is.null(abort_msg),
     log         = log,
-    dump        = dump,
     key         = c(time_col, from_col, to_col),
     group       = "outside"
   )

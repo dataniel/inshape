@@ -46,7 +46,7 @@ before birth.
 
 The \verb{ensure_*()} functions are checkpoints: they warn or abort with the
 offending rows and return the data, so they sit in a pipeline. What they
-share (messages, logging, dumps, database tables) is described in
+share (messages, logging, personal data, database tables) is described in
 \link{checkpoints}.
 }
 

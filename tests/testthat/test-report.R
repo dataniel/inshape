@@ -32,11 +32,45 @@ test_that("failure messages report the row count and preview rows", {
   cnd <- rlang::catch_cnd(check_rows(big, warn_msg = "Many"))
   expect_match(conditionMessage(cnd), "12 rows found")
   expect_match(conditionMessage(cnd), "7 more rows")
-  expect_match(conditionMessage(cnd), "inshape.dump", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "Catch the <inshape_failure> condition", fixed = TRUE)
 
   # All rows are shown, so there is nothing to point to
   few <- rlang::catch_cnd(check_rows(data.frame(x = 1:3), warn_msg = "Few"))
-  expect_no_match(conditionMessage(few), "inshape.dump", fixed = TRUE)
+  expect_no_match(conditionMessage(few), "Catch the", fixed = TRUE)
+})
+
+test_that("inshape.preview sets the rows shown, and 0 shows none", {
+  df <- data.frame(cpr = c("0101011234", "0202022345", "0303033456"))
+
+  withr::local_options(inshape.preview = 1)
+  msg <- conditionMessage(rlang::catch_cnd(check_rows(df, warn_msg = "Bad")))
+  expect_match(msg, "3 rows found:", fixed = TRUE)
+  expect_match(msg, "0101011234", fixed = TRUE)
+  expect_no_match(msg, "0202022345", fixed = TRUE)
+
+  withr::local_options(inshape.preview = 0)
+  cnd <- rlang::catch_cnd(check_rows(df, warn_msg = "Bad"))
+  msg <- cli::ansi_strip(conditionMessage(cnd))
+  expect_match(msg, "3 rows found.", fixed = TRUE)
+  expect_no_match(msg, "[0-9]{10}")
+  expect_no_match(msg, "cpr", fixed = TRUE)
+  expect_match(msg, "Catch the <inshape_failure> condition", fixed = TRUE)
+  # The rows are still on the condition, for the script to keep or drop
+  expect_equal(cnd$violations, tibble::as_tibble(df))
+})
+
+test_that("a group count is shown without rows too", {
+  withr::local_options(inshape.preview = 0)
+  df <- data.frame(cpr = c("a", "a", "b", "b"), year = 2020)
+  msg <- conditionMessage(rlang::catch_cnd(ensure_unique(df, cpr, year)))
+  expect_match(msg, "4 rows in 2 groups.", fixed = TRUE)
+})
+
+test_that("a bad inshape.preview is refused", {
+  for (bad in list(-1, 1.5, NA, "5", c(1, 2))) {
+    withr::local_options(inshape.preview = bad)
+    expect_error(check_rows(data.frame(x = 1)), "whole number of rows")
+  }
 })
 
 test_that("the preview keeps columns aligned and drops the tibble header", {
@@ -94,24 +128,22 @@ test_that("log path is taken from the inshape.log option", {
   expect_match(readLines(log, encoding = "UTF-8"), "From option")
 })
 
-test_that("dump writes the violations to a CSV and names it in log and message", {
+test_that("a failed check writes no rows to disk, only a count to the log", {
   dir <- withr::local_tempdir()
   log <- file.path(dir, "checks.log")
-  df <- data.frame(id = 1:3, amount = c(-1, -2, -3))
+  df <- data.frame(cpr = c("0101011234", "0202022345"), amount = c(-1, -2))
 
-  expect_warning(
-    check_rows(df, warn_msg = "Negative amounts", log = log, dump = file.path(dir, "v")),
-    "All rows written to"
-  )
-  files <- list.files(file.path(dir, "v"), full.names = TRUE)
-  expect_length(files, 1)
-  expect_match(basename(files), "_Negative_amounts\\.csv$")
-  expect_equal(nrow(utils::read.csv(files)), 3)
-  expect_match(readLines(log, encoding = "UTF-8"), basename(files), fixed = TRUE)
+  withr::with_dir(dir, expect_warning(
+    check_rows(df, warn_msg = "Negative amounts", log = log)
+  ))
+  expect_equal(list.files(dir, recursive = TRUE, all.files = TRUE), "checks.log")
+  line <- readLines(log, encoding = "UTF-8")
+  expect_true(endsWith(line, "| ! | Negative amounts | 2 rows"))
+  expect_no_match(line, "[0-9]{10}")
 })
 
-test_that("nothing is dumped when the check passes", {
-  dir <- withr::local_tempdir()
-  check_rows(data.frame(), dump = dir)
-  expect_length(list.files(dir), 0)
+test_that("the checkpoints have no dump argument", {
+  for (f in grep("^ensure_", getNamespaceExports("inshape"), value = TRUE)) {
+    expect_false("dump" %in% names(formals(getExportedValue("inshape", f))), info = f)
+  }
 })

@@ -10,8 +10,7 @@ ensure_unique(
   success_msg = NULL,
   warn_msg = NULL,
   abort_msg = NULL,
-  log = getOption("inshape.log"),
-  dump = getOption("inshape.dump")
+  log = getOption("inshape.log")
 )
 }
 \arguments{
@@ -34,19 +33,16 @@ message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
 
 \item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("inshape.log")}.}
-
-\item{dump}{Optional directory. When the check fails, the offending rows
-are written there as a timestamped CSV file (UTF-8 with BOM, so Excel
-reads Danish letters correctly). Defaults to \code{getOption("inshape.dump")}.}
+automatically. Defaults to \code{getOption("inshape.log")}. The log holds
+messages and row counts, never rows; see \emph{Personal data}.}
 }
 \value{
 \code{data} invisibly, unchanged.
 }
 \description{
 A checkpoint for keys: every combination of the selected columns must
-occur at most once. On failure the duplicated rows are reported (and
-dumped, see \link{checkpoints}) grouped by a \code{dupid} column, so each group
+occur at most once. On failure the duplicated rows are reported (see
+\link{checkpoints}) grouped by a \code{dupid} column, so each group
 of copies can be inspected together. Returns \code{data}, so it can sit in the
 middle of a pipeline.
 }

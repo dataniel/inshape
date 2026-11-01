@@ -12,8 +12,7 @@ ensure_codes(
   success_msg = NULL,
   warn_msg = NULL,
   abort_msg = NULL,
-  log = getOption("inshape.log"),
-  dump = getOption("inshape.dump")
+  log = getOption("inshape.log")
 )
 }
 \arguments{
@@ -40,11 +39,8 @@ message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
 
 \item{log}{Optional path to a log file. The directory is created
-automatically. Defaults to \code{getOption("inshape.log")}.}
-
-\item{dump}{Optional directory. When the check fails, the offending rows
-are written there as a timestamped CSV file (UTF-8 with BOM, so Excel
-reads Danish letters correctly). Defaults to \code{getOption("inshape.dump")}.}
+automatically. Defaults to \code{getOption("inshape.log")}. The log holds
+messages and row counts, never rows; see \emph{Personal data}.}
 }
 \value{
 \code{data} invisibly, unchanged.

@@ -49,10 +49,15 @@ pak::pak("dataniel/inshape")
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
 
 The `ensure_*()` checkpoints warn or abort with the offending rows and
-return the data. Each can append a line to a log and write the rows to a
-CSV file, set once per script with
-`options(inshape.log = ..., inshape.dump = ...)`. A failure signals a
-condition of class `inshape_failure` that carries the rows.
+return the data. Each can append a line to a log, set once per script with
+`options(inshape.log = ...)`. A failure signals a condition of class
+`inshape_failure` that carries the rows.
+
+The offending rows of a register check are personal data, so inshape never
+writes them to disk: the log holds messages and row counts only, and where
+the rows may be kept is up to the script that catches the condition.
+`options(inshape.preview = 0)` keeps them out of messages too, for
+scheduled jobs and rendered reports. See `?checkpoints`.
 
 ## Built for registers
 

@@ -37,7 +37,7 @@
 #'
 #' The `ensure_*()` functions are checkpoints: they warn or abort with the
 #' offending rows and return the data, so they sit in a pipeline. What they
-#' share (messages, logging, dumps, database tables) is described in
+#' share (messages, logging, personal data, database tables) is described in
 #' [checkpoints].
 #'
 #' ## Why a package of its own

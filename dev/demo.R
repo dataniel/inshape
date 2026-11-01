@@ -230,21 +230,22 @@ ryddet |>
   add_spell_status(forloeb_ok, cpr, aar, start, slut, status)
 
 
-# 6. Log og dump til uovervågede kørsler ------------------------------------
+# 6. Log til uovervågede kørsler, uden personoplysninger --------------------
 
+# Loggen får kun tid, besked og antal rækker; preview = 0 holder rækkerne
+# ude af beskederne, som i en planlagt kørsel ender i en logfil
 mappe <- file.path(tempdir(), "inshape-demo")
 options(
-  inshape.log  = file.path(mappe, "tjek.log"),
-  inshape.dump = file.path(mappe, "fejl")
+  inshape.log     = file.path(mappe, "tjek.log"),
+  inshape.preview = 0
 )
+ensure_unique(panel, cpr, aar, warn_msg = "Dublerede personår")
 suppressWarnings({
-  ensure_unique(panel, cpr, aar, warn_msg = "Dublerede personår")
   ensure_constant(panel, cpr, koen, warn_msg = "Køn skifter")
   ensure_unique(ryddet, cpr, aar)
 })
 cat(readLines(file.path(mappe, "tjek.log")), sep = "\n")
-list.files(file.path(mappe, "fejl"))
-options(inshape.log = NULL, inshape.dump = NULL)
+options(inshape.log = NULL, inshape.preview = NULL)
 
 
 # 7. Samme tjek i DuckDB, uden at hente data ind i R ------------------------

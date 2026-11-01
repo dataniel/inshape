@@ -58,7 +58,7 @@
 #' ensure_balanced(panel, cpr, year, periods = 2019:2022, gaps_only = TRUE)
 #'
 #' @seealso [ensure_unique()] for duplicated unit-periods,
-#'   [ensure_no_overlap()] for spell data, [checkpoints] for logging and dumps.
+#'   [ensure_no_overlap()] for spell data, [checkpoints] for logging and personal data.
 #'
 #' @export
 ensure_balanced <- function(data, id, time,
@@ -67,8 +67,7 @@ ensure_balanced <- function(data, id, time,
                             success_msg = NULL,
                             warn_msg    = NULL,
                             abort_msg   = NULL,
-                            log         = getOption("inshape.log"),
-                            dump        = getOption("inshape.dump")) {
+                            log         = getOption("inshape.log")) {
 
   tbl      <- check_table(data)
   ids      <- select_names(tbl, {{ id }})
@@ -93,8 +92,7 @@ ensure_balanced <- function(data, id, time,
     fail_msg    = label %||%
       paste0(what, ": missing ", toString(ids), "-", time_col, " combinations"),
     abort       = !is.null(abort_msg),
-    log         = log,
-    dump        = dump
+    log         = log
   )
   invisible(data)
 }

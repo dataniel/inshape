@@ -1,8 +1,8 @@
 # Checkpoints on database and Arrow tables --------------------------------
 #
 # A lazy table (dbplyr, e.g. DuckDB) is checked where it lives: the violation
-# set is built as a query, and only its size, the preview rows and, with
-# `dump`, the full set are fetched into R. Arrow tables and datasets go
+# set is built as a query, and only its size and the preview rows are
+# fetched into R. Arrow tables and datasets go
 # through DuckDB with arrow::to_duckdb(), so there is one code path. dbplyr,
 # duckdb and arrow are only suggested: a data frame never needs them.
 

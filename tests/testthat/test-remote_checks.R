@@ -113,12 +113,15 @@ test_that("ensure_within() finds the same rows as in memory", {
                  "All rows: year until death")
 })
 
-test_that("a failed check on a database table can be dumped", {
+test_that("with no preview, a database check reports counts and keeps the query", {
+  withr::local_options(inshape.preview = 0)
   tbl <- local_duck(df)
-  dir <- withr::local_tempdir()
-  expect_warning(ensure_unique(tbl, id, year, warn_msg = "Duplicates", dump = dir),
-                 "All rows written to")
-  expect_equal(nrow(utils::read.csv(list.files(dir, full.names = TRUE))), 4)
+  cnd <- rlang::catch_cnd(ensure_unique(tbl, id, year), classes = "inshape_failure")
+  msg <- cli::ansi_strip(conditionMessage(cnd))
+  expect_match(msg, "4 rows in 2 groups.", fixed = TRUE)
+  expect_no_match(msg, "dupid", fixed = TRUE)
+  expect_s3_class(cnd$violations, "tbl_lazy")
+  expect_equal(nrow(dplyr::collect(cnd$violations)), 4)
 })
 
 test_that("Arrow tables are checked through DuckDB", {

@@ -9,6 +9,9 @@
 #' a population register a failed check can hold millions of rows, and they
 #' would stay in memory until the next failure. Messages are shown literally:
 #' braces are not interpolated.
+#' Diagnostic columns such as `dupid`, `overlap_id`, `outside` and `reason`
+#' receive a numeric suffix when their name is already in the input (for
+#' example `dupid.1`). All original columns keep their names and values.
 #'
 #' A failed check signals a condition of class `inshape_failure` (a warning or
 #' an error) that carries the offending rows in its `violations` field.
@@ -252,6 +255,11 @@ report_check <- function(violations, success_msg, fail_msg, abort,
 
 # Rows shown in a failure message
 preview_n <- 5
+
+# Keep every input column; suffix only the diagnostic column on collision.
+diagnostic_name <- function(data, name) {
+  utils::tail(make.unique(c(colnames(data), name)), 1L)
+}
 
 # The first rows as a tibble printout, one escaped cli bullet per line. The
 # "# A tibble" header repeats the summary bullet and the "print(n = ...)"

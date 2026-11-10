@@ -103,7 +103,7 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
     fail_msg    = label %||% paste0("Rows outside: ", what),
     abort       = !is.null(abort_msg),
     key         = c(time_col, from_col, to_col),
-    group       = "outside"
+    group       = diagnostic_name(tbl, "outside")
   )
   invisible(data)
 }
@@ -124,10 +124,10 @@ find_outside <- function(data, time_col, from_col, to_col) {
   }
   hit <- c(before, after)
   o <- order(hit, method = "radix")
-  out <- tibble::as_tibble(data)[hit[o], setdiff(names(data), "outside")]
+  out <- tibble::as_tibble(data)[hit[o], ]
   outside <- c(rep(paste("before", from_col), length(before)),
                rep(paste("after", to_col), length(after)))
-  tibble::add_column(out, outside = outside[o], .before = 1)
+  tibble::add_column(out, !!diagnostic_name(data, "outside") := outside[o], .before = 1)
 }
 
 # Rows where time is before (side "from") or after (side "to") the bound,

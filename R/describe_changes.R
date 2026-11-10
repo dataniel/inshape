@@ -13,6 +13,8 @@
 #' [describe_key()] first. Two missing values are equal. A column whose
 #' type changed, e.g. from integer to character, is compared as text, and
 #' integer and double columns as numbers.
+#' Shared non-key list or matrix columns are not compared. Their names are
+#' returned in `columns_skipped` and shown when the summary is printed.
 #'
 #' @section Why it is fast:
 #' The keys of both extracts are compressed to integer ids together, by
@@ -34,7 +36,8 @@
 #'   a list with the counts `n_old`, `n_new`, `n_kept` (keys in both),
 #'   `n_added`, `n_removed` and `n_changed` (kept keys with any changed
 #'   column); `columns_added`, `columns_removed` and `type_changed`
-#'   (column names); `columns`, a tibble with one row per shared column:
+#'   (column names); `columns_skipped` (shared columns not compared);
+#'   `columns`, a tibble with one row per compared shared column:
 #'   `column`, `changed` (another value), `went_missing` (a value, now
 #'   missing), `filled_in` (missing, now a value) and `share` (of the kept
 #'   keys with any of the three), most changed first; and `added` and
@@ -94,9 +97,8 @@ describe_changes <- function(old, new, ...) {
   added    <- which(row_old[id_new] == 0L)
 
   shared <- setdiff(intersect(names(old), names(new)), key)
-  shared <- shared[vapply(shared, function(col) {
-    is.atomic(old[[col]]) && is.atomic(new[[col]])
-  }, logical(1))]
+  skipped <- skipped_changes(old, new, shared)
+  shared <- setdiff(shared, skipped)
   type_changed <- shared[!vapply(shared, function(col) {
     identical(class(old[[col]]), class(new[[col]]))
   }, logical(1))]
@@ -137,11 +139,19 @@ describe_changes <- function(old, new, ...) {
     columns_added   = setdiff(names(new), names(old)),
     columns_removed = setdiff(names(old), names(new)),
     type_changed    = type_changed,
+    columns_skipped = skipped,
     columns         = columns,
     added           = tibble::as_tibble(lapply(unclass(new)[key], `[`, added)),
     removed         = tibble::as_tibble(lapply(unclass(old)[key], `[`, removed)),
     changed         = changed
   ), class = "inshape_changes")
+}
+
+skipped_changes <- function(old, new, shared) {
+  supported <- function(x) is.atomic(x) && is.null(dim(x))
+  shared[!vapply(shared, function(col) {
+    supported(old[[col]]) && supported(new[[col]])
+  }, logical(1))]
 }
 
 # Two columns as vectors of one type that compare as R's == does: factors
@@ -188,6 +198,7 @@ print.inshape_changes <- function(x, ...) {
   if (length(x$columns_added)) cli::cat_bullet(paste0("New columns: ", toString(x$columns_added)))
   if (length(x$columns_removed)) cli::cat_bullet(paste0("Columns gone: ", toString(x$columns_removed)))
   if (length(x$type_changed)) cli::cat_bullet(paste0("Columns with another type: ", toString(x$type_changed)))
+  if (length(x$columns_skipped)) cli::cat_bullet(paste0("Columns not compared: ", toString(x$columns_skipped)))
   if (nrow(x$columns)) {
     cli::cat_line()
     cli::cat_line("Changes per column, among the keys in both:")

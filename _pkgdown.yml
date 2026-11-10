@@ -40,6 +40,8 @@ reference:
       - ensure_constant
       - ensure_within
       - ensure_codes
+      - ensure_valid_spells
+      - ensure_matched
       - checkpoints
 
   - title: Spells and panels

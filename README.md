@@ -40,10 +40,12 @@ pak::pak("dataniel/inshape")
 | `describe_spells()` | Spell data: gaps, transfers (adjacent spells), overlapping, nested and duplicate spells, ongoing and invalid spells |
 | `describe_varying()` | Which columns vary within units: constant, nearly constant (errors) and varying |
 | `ensure_balanced()` | Every unit observed in every period, or no gaps (`gaps_only`) |
-| `ensure_codes()` | A coded column only holds codes from a code list |
+| `ensure_codes()` | Codes belong to a code list, optionally within their validity periods |
 | `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
+| `ensure_matched()` | Every key occurs in a reference register, including composite or renamed keys |
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
 | `ensure_unique()` | Key columns identify each row uniquely |
+| `ensure_valid_spells()` | Spells have a start and do not end before it, optionally requiring a closed end |
 | `ensure_within()` | No rows after death or emigration, or before birth: each row within its unit's lifetime |
 | `merge_spells()` | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
@@ -51,6 +53,33 @@ pak::pak("dataniel/inshape")
 The `ensure_*()` checkpoints warn or abort with the offending rows and
 return the data. A failure signals a condition of class `inshape_failure`
 that carries the rows.
+
+Check a reference before linking it, or validate a code at the time it was
+observed:
+
+```r
+income |>
+  ensure_matched(population, by = c("cpr", "year"))
+
+codebook <- data.frame(
+  code = c("A", "B"),
+  valid_from = c(2015, 2020),
+  valid_to = c(2019, NA_real_)
+)
+persons |>
+  ensure_codes(classification, codebook, time = year)
+
+addresses |>
+  ensure_valid_spells(start, end) |>
+  ensure_no_overlap(cpr, start, end)
+```
+
+Code validity bounds are inclusive, and missing bounds are open. Missing
+observation times fail for non-missing codes. `ensure_matched()` treats
+missing keys as unmatched unless `na_matches = "na"` is requested.
+Diagnostic columns get a suffix on name collisions, preserving the input
+columns. `describe_changes()` explicitly lists columns it cannot compare
+in `columns_skipped` and in its printed summary.
 
 inshape is made for interactive review of registers. The offending rows of
 a check are personal data, so inshape writes nothing to disk, neither rows

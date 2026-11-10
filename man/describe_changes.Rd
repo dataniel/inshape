@@ -17,7 +17,8 @@ An object of class \code{inshape_changes}, printed as a summary. It is
 a list with the counts \code{n_old}, \code{n_new}, \code{n_kept} (keys in both),
 \code{n_added}, \code{n_removed} and \code{n_changed} (kept keys with any changed
 column); \code{columns_added}, \code{columns_removed} and \code{type_changed}
-(column names); \code{columns}, a tibble with one row per shared column:
+(column names); \code{columns_skipped} (shared columns not compared);
+\code{columns}, a tibble with one row per compared shared column:
 \code{column}, \code{changed} (another value), \code{went_missing} (a value, now
 missing), \code{filled_in} (missing, now a value) and \code{share} (of the kept
 keys with any of the three), most changed first; and \code{added} and
@@ -39,6 +40,8 @@ Both extracts must be unique on the key; check with \code{\link[=ensure_unique]{
 \code{\link[=describe_key]{describe_key()}} first. Two missing values are equal. A column whose
 type changed, e.g. from integer to character, is compared as text, and
 integer and double columns as numbers.
+Shared non-key list or matrix columns are not compared. Their names are
+returned in \code{columns_skipped} and shown when the summary is printed.
 }
 \section{Why it is fast}{
 

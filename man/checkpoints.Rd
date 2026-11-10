@@ -30,6 +30,9 @@ The offending rows are deliberately not kept in the session afterwards: on
 a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
 braces are not interpolated.
+Diagnostic columns such as \code{dupid}, \code{overlap_id}, \code{outside} and \code{reason}
+receive a numeric suffix when their name is already in the input (for
+example \code{dupid.1}). All original columns keep their names and values.
 
 A failed check signals a condition of class \code{inshape_failure} (a warning or
 an error) that carries the offending rows in its \code{violations} field.

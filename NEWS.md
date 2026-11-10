@@ -1,5 +1,19 @@
 # inshape 0.1.0
 
+* Diagnostic columns in uniqueness, overlap and lifetime failures now get
+  collision-safe names, preserving original columns in local and database
+  violation sets.
+* `describe_changes()` reports shared list and matrix columns it cannot
+  compare in `columns_skipped` and in the printed summary.
+* New `ensure_valid_spells()` checks missing starts and reversed boundaries,
+  with `open_end = FALSE` to also reject missing ends.
+* `ensure_codes()` accepts temporal code lists with `code`, `valid_from`
+  and `valid_to`, plus a `time` selection. Inclusive and open boundaries,
+  multiple intervals and missing observation times have explicit rules.
+* New `ensure_matched()` checks coverage against a reference register, with
+  composite and renamed keys and explicit missing-key matching. Both new
+  checkpoints and temporal code checks support database and Arrow inputs.
+
 * First version. The key, panel and spell checks move here from expectr and
   are renamed so the two packages cannot be confused:
   `expect_unique()` is now `ensure_unique()`, `expect_balanced()` is

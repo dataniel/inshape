@@ -52,14 +52,14 @@ sql_dense_rank <- function(tbl, cols) {
 # A database has no row order, so groups cannot be numbered by first
 # appearance as in memory. NULL keys form a group, as NA keys do in memory.
 remote_duplicates <- function(tbl, cols) {
+  diagnostic <- diagnostic_name(tbl, "dupid")
   dups <- tbl |>
-    dplyr::select(!dplyr::any_of("dupid")) |>
     dplyr::group_by(!!!rlang::syms(cols)) |>
     dplyr::filter(dplyr::n() > 1L) |>
     dplyr::ungroup()
   dups |>
-    dplyr::mutate(dupid = !!sql_dense_rank(dups, cols)) |>
-    sort_by(rlang::exprs(.data$dupid))
+    dplyr::mutate(!!diagnostic := !!sql_dense_rank(dups, cols)) |>
+    sort_by(list(rlang::sym(diagnostic)))
 }
 
 # Missing unit-periods, as find_panel_gaps() but as one query. The periods
@@ -102,6 +102,18 @@ remote_panel_gaps <- function(tbl, ids, time_col, periods, gaps_only) {
 # unit, ordered by start, a spell opens a new group unless it starts on or
 # before the latest end of the earlier spells, or an earlier spell is open.
 remote_overlaps <- function(tbl, ids, start_col, end_col) {
+  diagnostic <- diagnostic_name(tbl, "overlap_id")
+  original_start <- start_col
+  original_end <- end_col
+  internal <- c(".inshape_prev_end", ".inshape_prev_open", ".inshape_new", ".inshape_grp")
+  collisions <- intersect(colnames(tbl), internal)
+  saved <- stats::setNames(vapply(collisions, function(nm) diagnostic_name(tbl, nm), character(1)), collisions)
+  if (length(collisions)) {
+    tbl <- dplyr::rename(tbl, !!!stats::setNames(rlang::syms(collisions), saved))
+    ids <- vapply(ids, function(nm) if (nm %in% collisions) saved[[nm]] else nm, character(1))
+    if (start_col %in% collisions) start_col <- saved[[start_col]]
+    if (end_col %in% collisions) end_col <- saved[[end_col]]
+  }
   start <- rlang::sym(start_col)
   end   <- rlang::sym(end_col)
 
@@ -127,10 +139,13 @@ remote_overlaps <- function(tbl, ids, start_col, end_col) {
     dplyr::filter(dplyr::n() > 1L) |>
     dplyr::ungroup()
 
-  spells |>
-    dplyr::mutate(overlap_id = !!sql_dense_rank(spells, c(ids, ".inshape_grp"))) |>
-    dplyr::select(!dplyr::starts_with(".inshape_")) |>
-    sort_by(rlang::exprs(.data$overlap_id, !!start, !!end))
+  out <- spells |>
+    dplyr::mutate(!!diagnostic := !!sql_dense_rank(spells, c(ids, ".inshape_grp"))) |>
+    dplyr::select(!dplyr::all_of(internal))
+  if (length(collisions)) {
+    out <- dplyr::rename(out, !!!stats::setNames(rlang::syms(saved), collisions))
+  }
+  sort_by(out, rlang::syms(c(diagnostic, original_start, original_end)))
 }
 
 # Rows of the units where a column has two different non-missing values,
@@ -155,6 +170,7 @@ remote_varying <- function(tbl, ids, cols) {
 # NULL is NULL, which WHERE drops, so missing bounds are open without a
 # test of their own. A date compared with a year counts by its year.
 remote_outside <- function(tbl, time_col, from_col, to_col) {
+  diagnostic <- diagnostic_name(tbl, "outside")
   proto <- dplyr::collect(utils::head(
     dplyr::select(tbl, dplyr::all_of(c(time_col, from_col, to_col))), 0L))
   is_date <- function(col) inherits(proto[[col]], c("Date", "POSIXt"))
@@ -183,11 +199,10 @@ remote_outside <- function(tbl, time_col, from_col, to_col) {
                                  TRUE ~ !!paste("after", to_col)))
   }
   tbl |>
-    dplyr::select(!dplyr::any_of("outside")) |>
     dplyr::filter(!!test) |>
-    dplyr::mutate(outside = !!label) |>
-    dplyr::relocate("outside") |>
-    sort_by(c(rlang::exprs(.data$outside), na_first(time_col)))
+    dplyr::mutate(!!diagnostic := !!label) |>
+    dplyr::relocate(dplyr::all_of(diagnostic)) |>
+    sort_by(c(list(rlang::sym(diagnostic)), na_first(time_col)))
 }
 
 # The finders return their query unsorted, since a sorted query that is

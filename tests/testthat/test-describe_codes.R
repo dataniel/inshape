@@ -60,7 +60,7 @@ test_that("ensure_codes() compares text as text and takes factors and numbers", 
 })
 
 test_that("ensure_codes() validates its arguments", {
-  expect_error(ensure_codes(persons, kom, data.frame(code = "955")), "one column of it")
+  expect_error(ensure_codes(persons, kom, data.frame(code = "955")), "time.*column")
   expect_error(ensure_codes(persons, kom, character()), "non-empty")
   expect_error(ensure_codes(persons, c(kom, year), "955"), "exactly one")
   expect_error(ensure_codes(persons, kom, "955", na_ok = NA), "TRUE or FALSE")

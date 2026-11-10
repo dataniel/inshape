@@ -15,9 +15,8 @@
 #' spell ending 31 January and one starting 1 February do not overlap, while
 #' one ending and one starting on 1 February do. A missing `end` means an
 #' ongoing spell and overlaps everything after its start. Rows with a missing
-#' `start` are ignored; find them with `dplyr::filter(data, is.na(start))`,
-#' and spells that end before they start with
-#' `dplyr::filter(data, end < start)`.
+#' `start` are ignored. Check missing starts and ends before starts with
+#' [ensure_valid_spells()] before checking overlaps.
 #'
 #' @param id Column(s) identifying the unit (tidy-select), e.g. `cpr`.
 #' @param start,end Columns with the first and last period of each spell
@@ -72,7 +71,7 @@ ensure_no_overlap <- function(data, id, start, end,
     fail_msg    = label %||% paste0("Overlapping spells per ", toString(ids)),
     abort       = !is.null(abort_msg),
     key         = c(ids, start_col, end_col),
-    group       = "overlap_id"
+    group       = diagnostic_name(tbl, "overlap_id")
   )
   invisible(data)
 }
@@ -102,6 +101,6 @@ find_overlaps <- function(data, ids, start_col, end_col) {
   data.table::setorderv(hits, c(paste0(".id", seq_along(ids)), ".start", ".row"))
 
   out <- tibble::as_tibble(data)[hits$.row, ]
-  tibble::add_column(out, overlap_id = match(hits$.group, unique(hits$.group)),
+  tibble::add_column(out, !!diagnostic_name(data, "overlap_id") := match(hits$.group, unique(hits$.group)),
                      .before = 1)
 }

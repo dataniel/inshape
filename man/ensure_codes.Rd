@@ -11,7 +11,8 @@ ensure_codes(
   na_ok = TRUE,
   success_msg = NULL,
   warn_msg = NULL,
-  abort_msg = NULL
+  abort_msg = NULL,
+  time = NULL
 )
 }
 \arguments{
@@ -20,7 +21,8 @@ DuckDB) or an Arrow table or dataset; see \emph{Database and Arrow tables}.}
 
 \item{column}{The coded column (tidy-select), e.g. \code{municipality}.}
 
-\item{codes}{The valid codes: a vector, e.g. a column of a code list.}
+\item{codes}{A vector of valid codes, or a local data frame with columns
+\code{code}, \code{valid_from}, \code{valid_to}. An empty temporal list allows no codes.}
 
 \item{na_ok}{Whether a missing value passes. Default \code{TRUE}.}
 
@@ -36,6 +38,9 @@ check.}
 \item{abort_msg}{If provided, \code{cli::cli_abort()} is called with this
 message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
+
+\item{time}{Observation time column (tidy-select), required for a
+time-dependent code list and omitted for a vector.}
 }
 \value{
 \code{data} invisibly, unchanged.
@@ -52,10 +57,16 @@ the middle of a pipeline.
 Missing values pass by default, as missing is a different problem from a
 wrong code; set \code{na_ok = FALSE} to require a code on every row. The code
 list is compared as text when the column is text, so \code{"0955"} and \code{"955"}
-are different codes, as they are in the register. When the valid codes
-depend on the period, check each period with its own list, e.g. after
-\code{dplyr::filter(data, year >= 2018)}; see \code{\link[=describe_codes]{describe_codes()}} for how the
-codes change.
+are different codes, as they are in the register.
+
+For time-dependent codes, supply a data frame with \code{code}, \code{valid_from}
+and \code{valid_to}, and select the observation's \code{time} column. Boundaries
+are inclusive; missing boundaries are open. Multiple validity intervals
+per code are allowed. A non-missing code with missing time fails, since
+its validity cannot be established. \code{na_ok} only controls missing codes.
+Time and both boundaries must use the same scale: Date, POSIXct, or
+numeric periods. Years and dates are not implicitly mixed.
+The code list must have non-missing codes and ordered boundaries.
 }
 \examples{
 persons <- data.frame(cpr = c("a", "b", "c", "d"),

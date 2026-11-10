@@ -64,8 +64,8 @@ ensure_unique <- function(data, ...,
     rows  <- which(dupid > 0L)
     rows  <- rows[order(dupid[rows])]
     dups  <- tibble::as_tibble(data)[rows, ]
-    dups  <- tibble::add_column(dups[setdiff(names(dups), "dupid")],
-                                dupid = dupid[rows], .before = 1)
+    dups <- tibble::add_column(dups,
+      !!diagnostic_name(data, "dupid") := dupid[rows], .before = 1)
   }
 
   label <- abort_msg %||% warn_msg
@@ -76,7 +76,7 @@ ensure_unique <- function(data, ...,
     fail_msg    = label %||% paste0("Duplicate rows on ", keys),
     abort       = !is.null(abort_msg),
     key         = key_cols,
-    group       = "dupid"
+    group       = diagnostic_name(tbl, "dupid")
   )
   invisible(data)
 }

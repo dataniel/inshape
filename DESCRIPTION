@@ -19,7 +19,7 @@ Depends:
 Imports:
     cli,
     data.table,
-    dplyr,
+    dplyr (>= 1.1.0),
     rlang,
     tibble
 Suggests:

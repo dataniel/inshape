@@ -312,6 +312,40 @@ population |>
                    status_is = "outcome", ongoing = "in progress")
 ```
 
+## Valid boundaries and reference coverage
+
+Validate spell boundaries before checking their relationships. Missing ends
+represent ongoing spells; `open_end = FALSE` requires closed spells.
+
+```{r}
+ensure_valid_spells(education, start, end)
+```
+
+Check that each observation can be linked to a reference register. Duplicate
+reference keys do not multiply rows, and missing keys do not match unless
+`na_matches = "na"` is specified.
+
+```{r}
+observations <- tibble(cpr = c("a", "b", "c"), year = 2020)
+reference <- tibble(person_id = c("a", "b"), year = 2020)
+ensure_matched(observations, reference, by = c(cpr = "person_id", "year"))
+```
+
+## Codes valid at the observation time
+
+A temporal code list has `code`, `valid_from` and `valid_to`. Bounds are
+inclusive, missing bounds are open, and a code may have several intervals.
+Time and bounds use the same scale: dates, date-times, or numeric periods.
+Missing observation times fail for non-missing codes. `na_ok` controls
+missing codes separately.
+
+```{r}
+codebook <- tibble(code = c("A", "B"),
+                   valid_from = c(2015, 2020), valid_to = c(2019, NA_real_))
+coded <- tibble(classification = c("A", "A", "B"), year = c(2019, 2020, 2020))
+ensure_codes(coded, classification, codebook, time = year)
+```
+
 ## Personal data and large registers
 
 inshape is made for interactive review of registers, at the console in

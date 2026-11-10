@@ -55,9 +55,8 @@ Spells are treated as closed intervals, as register dates usually are: a
 spell ending 31 January and one starting 1 February do not overlap, while
 one ending and one starting on 1 February do. A missing \code{end} means an
 ongoing spell and overlaps everything after its start. Rows with a missing
-\code{start} are ignored; find them with \code{dplyr::filter(data, is.na(start))},
-and spells that end before they start with
-\code{dplyr::filter(data, end < start)}.
+\code{start} are ignored. Check missing starts and ends before starts with
+\code{\link[=ensure_valid_spells]{ensure_valid_spells()}} before checking overlaps.
 }
 \examples{
 addresses <- data.frame(

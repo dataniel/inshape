@@ -446,6 +446,8 @@ remote_changes <- function(old, new, ...) {
   proto_old <- dplyr::collect(utils::head(old, 0L))
   proto_new <- dplyr::collect(utils::head(new, 0L))
   shared <- setdiff(intersect(colnames(old), colnames(new)), key)
+  skipped <- skipped_changes(proto_old, proto_new, shared)
+  shared <- setdiff(shared, skipped)
   type_changed <- shared[!vapply(shared, function(col) {
     identical(class(proto_old[[col]]), class(proto_new[[col]]))
   }, logical(1))]
@@ -456,7 +458,7 @@ remote_changes <- function(old, new, ...) {
   }, logical(1))]
 
   rename_side <- function(tbl, suffix) {
-    cols <- stats::setNames(shared, paste0(shared, suffix))
+    cols <- stats::setNames(shared, if (length(shared)) paste0(shared, suffix) else character())
     dplyr::select(tbl, dplyr::all_of(key), dplyr::all_of(cols))
   }
   kept <- dplyr::inner_join(rename_side(old, ".inshape_old"), rename_side(new, ".inshape_new"),
@@ -486,7 +488,10 @@ remote_changes <- function(old, new, ...) {
     .inshape_changed = sum(!!flag(rlang::expr(.data$.inshape_k > 0L)), na.rm = TRUE),
     !!!sums))
   n_kept <- totals[[".inshape_kept"]]
-  at <- function(prefix) int_or_na(totals[paste0(prefix, seq_along(shared))])
+  at <- function(prefix) {
+    if (!length(shared)) return(integer())
+    int_or_na(totals[paste0(prefix, seq_along(shared))])
+  }
   columns <- tibble::tibble(
     column = shared, changed = at(".inshape_c"), went_missing = at(".inshape_w"),
     filled_in = at(".inshape_f")
@@ -514,6 +519,7 @@ remote_changes <- function(old, new, ...) {
     columns_added   = setdiff(colnames(new), colnames(old)),
     columns_removed = setdiff(colnames(old), colnames(new)),
     type_changed    = type_changed,
+    columns_skipped = skipped,
     columns         = columns,
     added           = added,
     removed         = removed,

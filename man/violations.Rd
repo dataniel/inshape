@@ -13,7 +13,7 @@ the checks after it do not run.}
 }
 \value{
 A tibble with the offending rows, key columns first, and the
-diagnostic column of the check (\code{dupid}, \code{overlap_id}, \code{outside},
+diagnostic column of the check (\code{dupid}, \code{overlap_id}, \code{gap}, \code{outside},
 \code{reason}) where it has one. When every check passes, the data with no
 rows, and so without a diagnostic column. For a database or Arrow table
 both are queries: \code{collect()} them to get the rows.

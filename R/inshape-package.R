@@ -25,6 +25,8 @@
 #'   least has no gaps.
 #' * [ensure_valid_spells()]: a spell has a start and does not end before it.
 #' * [ensure_no_overlap()]: a unit is in one spell at a time.
+#' * [ensure_no_gaps()]: and in one all the time, without a break between
+#'   its spells.
 #' * [ensure_constant()]: sex, birth date and the like do not change within a
 #'   unit.
 #' * [ensure_within()]: no one is observed after death or emigration, or

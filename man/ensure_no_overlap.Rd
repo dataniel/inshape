@@ -71,6 +71,7 @@ ensure_no_overlap(addresses, cpr, start, end)
 }
 \seealso{
 \code{\link[=describe_spells]{describe_spells()}} to see how spells relate first,
+\code{\link[=ensure_no_gaps]{ensure_no_gaps()}} for the opposite rule,
 \code{\link[=merge_spells]{merge_spells()}} when overlapping spells are one spell recorded
 twice, \code{\link[=ensure_balanced]{ensure_balanced()}} for yearly panels, \link{checkpoints}.
 }

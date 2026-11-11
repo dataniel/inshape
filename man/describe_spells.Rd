@@ -85,5 +85,6 @@ describe_spells(admissions, cpr, start, end)
 \seealso{
 \code{\link[=merge_spells]{merge_spells()}} to merge adjacent and overlapping spells,
 \code{\link[=ensure_no_overlap]{ensure_no_overlap()}} to require spells not to overlap,
+\code{\link[=ensure_no_gaps]{ensure_no_gaps()}} to require that they leave no gaps,
 \code{\link[=spells_to_panel]{spells_to_panel()}} to turn spells into a panel.
 }

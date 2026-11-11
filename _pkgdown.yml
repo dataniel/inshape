@@ -37,6 +37,7 @@ reference:
       - ensure_unique
       - ensure_balanced
       - ensure_no_overlap
+      - ensure_no_gaps
       - ensure_constant
       - ensure_within
       - ensure_codes

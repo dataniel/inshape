@@ -38,6 +38,7 @@
 #' ensure_no_overlap(addresses, cpr, start, end)
 #'
 #' @seealso [describe_spells()] to see how spells relate first,
+#'   [ensure_no_gaps()] for the opposite rule,
 #'   [merge_spells()] when overlapping spells are one spell recorded
 #'   twice, [ensure_balanced()] for yearly panels, [checkpoints].
 #'

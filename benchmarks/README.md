@@ -67,7 +67,10 @@ rows), a fifth of them starting the day after the previous one ends, and
 0.1% overlapping. `describe_changes()` compares two extracts on a unique
 key, the later one with 1% of incomes corrected and 0.1% of rows gone.
 The temporal code list gives three of the five codes a validity period,
-and the reference register lacks 0.01% of the persons.
+and the reference register lacks 0.01% of the persons. The pauses between
+spells are at most 200 days, so `ensure_no_gaps()` runs with
+`max_gap = 200` and reports nothing; with the default it reports the 1.2
+million spells after a pause, in 0.9 seconds.
 Results are in `functions-results.csv`, session details in
 `functions-session.txt`.
 
@@ -77,19 +80,20 @@ Median seconds of three repetitions:
 | --- | ---: | ---: |
 | `describe_key(cpr, year)` | 4.5M | 0.22 |
 | `describe_panel(cpr, year)` | 4.5M | 0.22 |
-| `describe_varying(cpr)` | 4.5M | 0.68 |
-| `describe_codes(kommune, year)` | 4.5M | 0.14 |
-| `describe_changes(old, new, cpr, year)` | 4.5M | 1.00 |
-| `describe_spells(cpr, start, end)` | 2.5M | 0.35 |
-| `ensure_unique(cpr, year)` | 4.5M | 0.20 |
-| `ensure_balanced(gaps_only = TRUE)` | 4.5M | 0.19 |
-| `ensure_constant(cpr, sex, born)` | 4.5M | 0.33 |
+| `describe_varying(cpr)` | 4.5M | 0.70 |
+| `describe_codes(kommune, year)` | 4.5M | 0.11 |
+| `describe_changes(old, new, cpr, year)` | 4.5M | 0.97 |
+| `describe_spells(cpr, start, end)` | 2.5M | 0.31 |
+| `ensure_unique(cpr, year)` | 4.5M | 0.22 |
+| `ensure_balanced(gaps_only = TRUE)` | 4.5M | 0.20 |
+| `ensure_constant(cpr, sex, born)` | 4.5M | 0.34 |
 | `ensure_within(year, from = born, to = left)` | 4.5M | 0.28 |
-| `ensure_codes(kommune, codes)` | 4.5M | 0.03 |
-| `ensure_codes(kommune, code_list, time = year)` | 4.5M | 0.17 |
-| `ensure_matched(reference, by = "cpr")` | 4.5M | 0.26 |
-| `ensure_valid_spells(start, end)` | 2.5M | 0.04 |
-| `ensure_no_overlap(cpr, start, end)` | 2.5M | 0.22 |
-| `merge_spells(cpr, start, end)` | 2.5M | 0.57 |
-| `spells_to_panel(from = 2016, to = 2020)` | 2.5M | 0.90 |
-| `add_spell_status()` onto the panel | 4.5M | 1.37 |
+| `ensure_codes(kommune, codes)` | 4.5M | 0.05 |
+| `ensure_codes(kommune, code_list, time = year)` | 4.5M | 0.18 |
+| `ensure_matched(reference, by = "cpr")` | 4.5M | 0.27 |
+| `ensure_valid_spells(start, end)` | 2.5M | 0.05 |
+| `ensure_no_overlap(cpr, start, end)` | 2.5M | 0.20 |
+| `ensure_no_gaps(cpr, start, end, max_gap = 200)` | 2.5M | 0.22 |
+| `merge_spells(cpr, start, end)` | 2.5M | 0.56 |
+| `spells_to_panel(from = 2016, to = 2020)` | 2.5M | 0.93 |
+| `add_spell_status()` onto the panel | 4.5M | 1.45 |

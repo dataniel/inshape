@@ -31,3 +31,6 @@ src/*.rds
 
 # Local profiling output
 /benchmarks/*-profile.out
+
+# Local scripts for trying things out
+/dev/local/

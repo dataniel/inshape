@@ -43,6 +43,7 @@ pak::pak("dataniel/inshape")
 | `ensure_codes()` | Codes belong to a code list, optionally within their validity periods |
 | `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
 | `ensure_matched()` | Every key occurs in a reference register, including composite or renamed keys |
+| `ensure_no_gaps()` | Spells cover a unit without a break between them, or with gaps of at most `max_gap` days |
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
 | `ensure_unique()` | Key columns identify each row uniquely |
 | `ensure_valid_spells()` | Spells have a start and do not end before it, optionally requiring a closed end |

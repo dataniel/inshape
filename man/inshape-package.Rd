@@ -33,6 +33,8 @@ before choosing a rule.
 least has no gaps.
 \item \code{\link[=ensure_valid_spells]{ensure_valid_spells()}}: a spell has a start and does not end before it.
 \item \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}: a unit is in one spell at a time.
+\item \code{\link[=ensure_no_gaps]{ensure_no_gaps()}}: and in one all the time, without a break between
+its spells.
 \item \code{\link[=ensure_constant]{ensure_constant()}}: sex, birth date and the like do not change within a
 unit.
 \item \code{\link[=ensure_within]{ensure_within()}}: no one is observed after death or emigration, or

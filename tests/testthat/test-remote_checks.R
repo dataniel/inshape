@@ -131,3 +131,36 @@ test_that("Arrow tables are checked through DuckDB", {
 test_that("other objects are refused with a clear message", {
   expect_error(ensure_unique(list(x = 1), x), "database table or an Arrow table")
 })
+
+test_that("ensure_no_gaps() finds the same gaps as in memory", {
+  spells <- data.frame(
+    cpr   = c("a", "a", "b", "b", "c", "c", "c", "d", "d", NA, NA, "b", "b"),
+    start = as.Date(c("2020-01-01", "2021-01-01", "2020-01-01", "2020-07-04",
+                      "2020-01-01", "2020-02-01", "2020-06-01", "2010-01-01", "2015-01-01",
+                      "2020-01-01", "2020-03-01", NA, "2020-07-02")),
+    end   = as.Date(c("2020-12-31", NA, "2020-06-30", "2021-12-31",
+                      "2020-04-30", "2020-02-10", "2020-12-31", NA, "2016-01-01",
+                      "2020-01-31", "2020-03-31", "2020-07-03", "2020-07-01")),
+    gap   = "kept"
+  )
+  tbl <- local_duck(spells)
+  for (max_gap in c(0, 3, 40)) {
+    cnd <- rlang::catch_cnd(ensure_no_gaps(tbl, cpr, start, end, max_gap = max_gap),
+                            classes = "inshape_failure")
+    local <- rlang::catch_cnd(ensure_no_gaps(spells, cpr, start, end, max_gap = max_gap),
+                              classes = "inshape_failure")
+    if (is.null(local)) {
+      expect_null(cnd)
+      next
+    }
+    remote <- cnd$violations |>
+      dplyr::arrange(!!!attr(cnd$violations, "inshape_order")) |>
+      dplyr::collect()
+    expect_equal(remote, local$violations, info = paste("max_gap =", max_gap))
+  }
+  expect_equal(nrow(violations_of(ensure_no_gaps(tbl, cpr, start, end))), 3L)
+
+  years <- data.frame(id = c(1, 1, 2, 2), from = c(2010L, 2013L, 2010L, 2011L),
+                      to = c(2011L, 2015L, 2010L, 2012L))
+  expect_equal(violations_of(ensure_no_gaps(local_duck(years), id, from, to))$gap, 1L)
+})

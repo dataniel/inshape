@@ -101,6 +101,7 @@ cases <- list(
   ensure_matched    = function() ensure_matched(panel, reference, by = "cpr"),
   ensure_valid_spells = function() ensure_valid_spells(spells, start, end),
   ensure_no_overlap = function() ensure_no_overlap(spells, cpr, start, end),
+  ensure_no_gaps    = function() ensure_no_gaps(spells, cpr, start, end, max_gap = 200),
   merge_spells      = function() merge_spells(spells, cpr, start, end),
   spells_to_panel   = function() spells_to_panel(spells, cpr, start, end, status,
                                                  from = 2016, to = 2020),
@@ -111,7 +112,7 @@ cases <- list(
 rows <- list()
 for (case in names(cases)) {
   f <- cases[[case]]
-  n_in <- if (grepl("spell|overlap", case) && case != "add_spell_status") nrow(spells) else nrow(panel)
+  n_in <- if (grepl("spell|overlap|gaps", case) && case != "add_spell_status") nrow(spells) else nrow(panel)
   times <- vapply(1:3, function(i) {
     gc()
     system.time(suppressWarnings(f()))[["elapsed"]]

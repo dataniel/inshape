@@ -67,6 +67,7 @@
 #'
 #' @seealso [merge_spells()] to merge adjacent and overlapping spells,
 #'   [ensure_no_overlap()] to require spells not to overlap,
+#'   [ensure_no_gaps()] to require that they leave no gaps,
 #'   [spells_to_panel()] to turn spells into a panel.
 #'
 #' @export

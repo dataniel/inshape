@@ -152,6 +152,39 @@ remote_overlaps <- function(tbl, ids, start_col, end_col) {
   sort_by(out, rlang::syms(c(diagnostic, original_start, original_end)))
 }
 
+# Spells starting after a gap, as find_spell_gaps(): the same window as
+# remote_overlaps(), the latest end among the unit's earlier spells, and a
+# spell is after a gap when none of those is open and it starts more than
+# max_gap + 1 after that end. The helper columns get names the table does
+# not have.
+remote_spell_gaps <- function(tbl, ids, start_col, end_col, max_gap) {
+  diagnostic <- diagnostic_name(tbl, "gap")
+  prev_end   <- diagnostic_name(tbl, ".inshape_prev_end")
+  prev_open  <- diagnostic_name(tbl, ".inshape_prev_open")
+  start <- rlang::sym(start_col)
+  end   <- rlang::sym(end_col)
+
+  tbl |>
+    dplyr::filter(!is.na(!!start), is.na(!!end) | !!end >= !!start) |>
+    dplyr::group_by(!!!rlang::syms(ids)) |>
+    dbplyr::window_order(!!start, !!end) |>
+    dbplyr::window_frame(-Inf, -1) |>
+    dplyr::mutate(
+      !!prev_end  := max(!!end, na.rm = TRUE),
+      !!prev_open := max(dplyr::if_else(is.na(!!end), 1L, 0L), na.rm = TRUE)
+    ) |>
+    dplyr::ungroup() |>
+    # the order and the frame are for the window above only
+    dbplyr::window_order() |>
+    dbplyr::window_frame(-Inf, Inf) |>
+    dplyr::filter(dplyr::coalesce(.data[[prev_open]], 0L) == 0L,
+                  !!start > .data[[prev_end]] + !!(max_gap + 1L)) |>
+    dplyr::mutate(!!diagnostic := as.integer(!!start - .data[[prev_end]] - 1L)) |>
+    dplyr::select(!dplyr::all_of(c(prev_end, prev_open))) |>
+    dplyr::relocate(dplyr::all_of(diagnostic)) |>
+    sort_by(c(na_first(ids), list(start)))
+}
+
 # Rows of the units where a column has two different non-missing values,
 # as varying_units() in memory: min() and max() skip NULL in SQL, so they
 # differ exactly then.

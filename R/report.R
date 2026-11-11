@@ -9,9 +9,10 @@
 #' a population register a failed check can hold millions of rows, and they
 #' would stay in memory until the next failure. Messages are shown literally:
 #' braces are not interpolated.
-#' Diagnostic columns such as `dupid`, `overlap_id`, `gap`, `outside` and `reason`
-#' receive a numeric suffix when their name is already in the input (for
-#' example `dupid.1`). All original columns keep their names and values.
+#' Diagnostic columns such as `dupid`, `missing`, `overlap_id`, `gap`,
+#' `outside` and `reason` receive a numeric suffix when their name is already
+#' in the input (for example `dupid.1`). All original columns keep their
+#' names and values.
 #'
 #' A failed check signals a condition of class `inshape_failure` (a warning or
 #' an error) that carries the offending rows in its `violations` field.
@@ -96,8 +97,8 @@
 #'   issued instead.
 #'
 #' @name checkpoints
-#' @seealso [ensure_unique()], [ensure_balanced()], [ensure_no_overlap()],
-#'   [ensure_no_gaps()],
+#' @seealso [ensure_unique()], [ensure_complete()], [ensure_balanced()],
+#'   [ensure_no_overlap()], [ensure_no_gaps()],
 #'   [ensure_valid_spells()], [ensure_constant()], [ensure_within()],
 #'   [ensure_codes()] and [ensure_matched()] for the rules, and
 #'   [violations()] for the rows that break one.

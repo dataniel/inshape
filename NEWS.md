@@ -1,5 +1,15 @@
 # inshape 0.1.0
 
+* New `describe_match()` says what a join will do before it is made: the
+  keys found in both tables, only in the data and only in the reference,
+  the rows without a match, and how many rows a left join returns when the
+  reference repeats a key. Missing keys match nothing and are counted on
+  their own. Keys of different types, such as a number against text, stop
+  with an error instead of matching nothing.
+* New `ensure_complete()` checks that columns have no missing values, all
+  columns if none are named. The rows are reported with a `missing` column
+  that names the columns missing in each, e.g. `"cpr, born"`. Both new
+  functions take database and Arrow tables too.
 * New `ensure_no_gaps()` checks that a unit's spells cover it without a
   break, e.g. that a resident has an address every day: the spell after
   each gap is reported with the length of the gap, and `max_gap` accepts

@@ -30,9 +30,10 @@ The offending rows are deliberately not kept in the session afterwards: on
 a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
 braces are not interpolated.
-Diagnostic columns such as \code{dupid}, \code{overlap_id}, \code{gap}, \code{outside} and \code{reason}
-receive a numeric suffix when their name is already in the input (for
-example \code{dupid.1}). All original columns keep their names and values.
+Diagnostic columns such as \code{dupid}, \code{missing}, \code{overlap_id}, \code{gap},
+\code{outside} and \code{reason} receive a numeric suffix when their name is already
+in the input (for example \code{dupid.1}). All original columns keep their
+names and values.
 
 A failed check signals a condition of class \code{inshape_failure} (a warning or
 an error) that carries the offending rows in its \code{violations} field.
@@ -106,8 +107,8 @@ queries, to \code{collect()}.
 }
 }
 \seealso{
-\code{\link[=ensure_unique]{ensure_unique()}}, \code{\link[=ensure_balanced]{ensure_balanced()}}, \code{\link[=ensure_no_overlap]{ensure_no_overlap()}},
-\code{\link[=ensure_no_gaps]{ensure_no_gaps()}},
+\code{\link[=ensure_unique]{ensure_unique()}}, \code{\link[=ensure_complete]{ensure_complete()}}, \code{\link[=ensure_balanced]{ensure_balanced()}},
+\code{\link[=ensure_no_overlap]{ensure_no_overlap()}}, \code{\link[=ensure_no_gaps]{ensure_no_gaps()}},
 \code{\link[=ensure_valid_spells]{ensure_valid_spells()}}, \code{\link[=ensure_constant]{ensure_constant()}}, \code{\link[=ensure_within]{ensure_within()}},
 \code{\link[=ensure_codes]{ensure_codes()}} and \code{\link[=ensure_matched]{ensure_matched()}} for the rules, and
 \code{\link[=violations]{violations()}} for the rows that break one.

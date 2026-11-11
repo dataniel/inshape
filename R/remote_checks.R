@@ -254,3 +254,19 @@ na_first <- function(cols) {
     list(rlang::expr(dplyr::if_else(is.na(!!col), 0L, 1L)), col)
   }), recursive = FALSE)
 }
+
+# Rows with NULL in any of `cols`, as find_incomplete(), with the names of
+# the NULL columns joined by CONCAT_WS(), which skips the NULL of a column
+# that has a value.
+remote_incomplete <- function(tbl, cols, diagnostic) {
+  con <- dbplyr::remote_con(tbl)
+  any_null <- Reduce(function(a, b) rlang::expr(!!a | !!b),
+                     lapply(rlang::syms(cols), function(col) rlang::expr(is.na(!!col))))
+  names_sql <- paste0("CASE WHEN ", DBI::dbQuoteIdentifier(con, cols), " IS NULL THEN ",
+                      DBI::dbQuoteString(con, cols), " END", collapse = ", ")
+  tbl |>
+    dplyr::filter(!!any_null) |>
+    dplyr::mutate(!!diagnostic := !!dbplyr::sql(paste0("CONCAT_WS(', ', ", names_sql, ")"))) |>
+    dplyr::relocate(dplyr::all_of(diagnostic)) |>
+    sort_by(c(list(rlang::sym(diagnostic)), na_first(cols)))
+}

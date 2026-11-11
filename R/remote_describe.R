@@ -542,3 +542,48 @@ remote_not_in <- function(tbl, col, codes, na_ok) {
   }
   sort_by(query, na_first(col))
 }
+
+
+# describe_match() ---------------------------------------------------------
+
+# Rows per key in each table, joined in full on the key: a key only in one
+# table has NULL for the count of the other. Keys with a NULL are counted
+# on their own and kept out, as in memory.
+remote_describe_match <- function(tbl, ref, by) {
+  whole <- function(cols) {
+    Reduce(function(a, b) rlang::expr(!!a & !!b),
+           lapply(rlang::syms(cols), function(col) rlang::expr(!is.na(!!col))))
+  }
+  d <- dplyr::count(dplyr::filter(tbl, !!whole(names(by))),
+                    !!!rlang::syms(names(by)), name = ".inshape_d")
+  r <- dplyr::count(dplyr::filter(ref, !!whole(unname(by))),
+                    !!!rlang::syms(unname(by)), name = ".inshape_r")
+  pairs <- dplyr::full_join(d, r, by = by)
+  in_d <- rlang::expr(!is.na(.data$.inshape_d))
+  in_r <- rlang::expr(!is.na(.data$.inshape_r))
+  rows <- function(cond, n) rlang::expr(sum(dplyr::if_else(!!cond, !!n, 0), na.rm = TRUE))
+  s <- fetch_sums(dplyr::summarise(pairs,
+    k_both = !!rows(rlang::expr(!!in_d & !!in_r), 1),
+    k_data = !!rows(rlang::expr(!!in_d & !(!!in_r)), 1),
+    k_ref  = !!rows(rlang::expr(!(!!in_d) & !!in_r), 1),
+    d_both = !!rows(rlang::expr(!!in_d & !!in_r), rlang::expr(.data$.inshape_d)),
+    d_data = !!rows(rlang::expr(!!in_d & !(!!in_r)), rlang::expr(.data$.inshape_d)),
+    r_both = !!rows(rlang::expr(!!in_d & !!in_r), rlang::expr(.data$.inshape_r)),
+    r_ref  = !!rows(rlang::expr(!(!!in_d) & !!in_r), rlang::expr(.data$.inshape_r)),
+    r_dup  = !!rows(rlang::expr(.data$.inshape_r > 1L), 1),
+    joined = !!rows(in_d, rlang::expr(.data$.inshape_d * dplyr::coalesce(.data$.inshape_r, 1L)))
+  ))
+  s[is.na(s)] <- 0
+  n_rows     <- remote_nrow(tbl)
+  n_ref_rows <- remote_nrow(ref)
+  n_missing  <- n_rows - s[["d_both"]] - s[["d_data"]]
+  new_match(
+    by, n_rows = n_rows, n_ref_rows = n_ref_rows,
+    n_missing = n_missing, n_ref_missing = n_ref_rows - s[["r_both"]] - s[["r_ref"]],
+    counts = list(unname(s[c("k_both", "k_data", "k_ref")]),
+                c(s[["d_both"]], s[["d_data"]], 0),
+                c(s[["r_both"]], 0, s[["r_ref"]])),
+    n_ref_dup_keys = s[["r_dup"]],
+    n_join_rows = s[["joined"]] + n_missing
+  )
+}

@@ -16,7 +16,8 @@
 #' @inheritParams checkpoints
 #' @param warn_msg Message when unmatched rows are found.
 #' @return `data` invisibly, unchanged. Failures carry unmatched input rows.
-#' @seealso [ensure_unique()], [checkpoints].
+#' @seealso [describe_match()] to look at the match from both sides first,
+#'   [ensure_unique()], [checkpoints].
 #' @examples
 #' income <- data.frame(cpr = c("a", "b"), year = 2024)
 #' population <- data.frame(cpr = "a", year = 2024)
@@ -28,27 +29,10 @@ ensure_matched <- function(data, reference, by, na_matches = c("never", "na"),
   tbl <- check_table(data)
   ref <- check_table(reference)
   na_matches <- match.arg(na_matches)
-  if (missing(by) || !is.character(by) || !length(by) || anyNA(by) || any(!nzchar(by))) {
-    cli::cli_abort("{.arg by} must be a non-empty character vector of key columns.")
-  }
+  if (missing(by)) by <- NULL
+  by   <- match_by(by, tbl, ref)
   left <- names(by)
-  if (is.null(left)) left <- by
-  if (anyNA(left)) cli::cli_abort("Names in {.arg by} must not be missing.")
-  left[!nzchar(left)] <- by[!nzchar(left)]
-  if (anyDuplicated(left) || anyDuplicated(unname(by))) {
-    cli::cli_abort("{.arg by} must not repeat a key column.")
-  }
-  if (!all(left %in% colnames(tbl)) || !all(by %in% colnames(ref))) {
-    cli::cli_abort("All {.arg by} columns must exist in their respective tables.")
-  }
-  by <- stats::setNames(unname(by), left)
-  ref <- dplyr::select(ref, dplyr::all_of(unname(by)))
-  if (is_remote(tbl)) {
-    if (!is_remote(ref)) ref <- dbplyr::copy_inline(dbplyr::remote_con(tbl), ref)
-    if (!dplyr::same_src(tbl, ref)) cli::cli_abort("Database tables must use the same connection.")
-  } else if (is_remote(ref)) {
-    cli::cli_abort("A local {.arg data} requires a local {.arg reference}.")
-  }
+  ref  <- match_reference(tbl, ref, by)
   rows <- if (is_remote(tbl)) {
     sort_by(dplyr::anti_join(tbl, ref, by = by, na_matches = na_matches), na_first(left))
   } else if (same_classes(data, ref, left, unname(by))) {
@@ -90,4 +74,41 @@ unmatched_rows <- function(data, ref, cols, ref_cols, na_matches) {
     for (col in cols) bad <- bad | is.na(data[[col]])
   }
   which(bad)
+}
+
+# `by` as a character vector of reference columns named by the columns of
+# the data, for ensure_matched() and describe_match(). An explicit key is
+# required: a natural join on whatever names two registers happen to share
+# is how a wrong key goes unnoticed.
+match_by <- function(by, tbl, ref, call = rlang::caller_env()) {
+  if (!is.character(by) || !length(by) || anyNA(by) || any(!nzchar(by))) {
+    cli::cli_abort("{.arg by} must be a non-empty character vector of key columns.", call = call)
+  }
+  left <- names(by)
+  if (is.null(left)) left <- by
+  if (anyNA(left)) cli::cli_abort("Names in {.arg by} must not be missing.", call = call)
+  left[!nzchar(left)] <- by[!nzchar(left)]
+  if (anyDuplicated(left) || anyDuplicated(unname(by))) {
+    cli::cli_abort("{.arg by} must not repeat a key column.", call = call)
+  }
+  if (!all(left %in% colnames(tbl)) || !all(by %in% colnames(ref))) {
+    cli::cli_abort("All {.arg by} columns must exist in their respective tables.", call = call)
+  }
+  stats::setNames(unname(by), left)
+}
+
+# The key columns of the reference, where the data lives: a local
+# reference travels to a database table as an inline query, so nothing is
+# written to the database.
+match_reference <- function(tbl, ref, by, call = rlang::caller_env()) {
+  ref <- dplyr::select(ref, dplyr::all_of(unname(by)))
+  if (is_remote(tbl)) {
+    if (!is_remote(ref)) ref <- dbplyr::copy_inline(dbplyr::remote_con(tbl), ref)
+    if (!dplyr::same_src(tbl, ref)) {
+      cli::cli_abort("Database tables must use the same connection.", call = call)
+    }
+  } else if (is_remote(ref)) {
+    cli::cli_abort("A local {.arg data} requires a local {.arg reference}.", call = call)
+  }
+  ref
 }

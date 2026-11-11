@@ -28,7 +28,11 @@ before anyone builds on them?
 \code{\link[=describe_varying]{describe_varying()}} and \code{\link[=describe_codes]{describe_codes()}}: look at the structure
 before choosing a rule.
 \item \code{\link[=describe_changes]{describe_changes()}}: what changed since the last extract.
+\item \code{\link[=describe_match]{describe_match()}}: what a join of two tables will do, before it is
+made.
 \item \code{\link[=ensure_unique]{ensure_unique()}}: a key identifies each row.
+\item \code{\link[=ensure_complete]{ensure_complete()}}: the columns an analysis cannot do without have no
+missing values.
 \item \code{\link[=ensure_balanced]{ensure_balanced()}}: every unit is observed in every period, or at
 least has no gaps.
 \item \code{\link[=ensure_valid_spells]{ensure_valid_spells()}}: a spell has a start and does not end before it.

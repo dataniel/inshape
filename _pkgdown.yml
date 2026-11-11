@@ -24,6 +24,7 @@ reference:
       - describe_changes
       - describe_codes
       - describe_key
+      - describe_match
       - describe_panel
       - describe_spells
       - describe_varying
@@ -35,6 +36,7 @@ reference:
       can sit in a pipeline.
     contents:
       - ensure_unique
+      - ensure_complete
       - ensure_balanced
       - ensure_no_overlap
       - ensure_no_gaps

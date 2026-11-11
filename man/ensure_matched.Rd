@@ -55,5 +55,6 @@ population <- data.frame(cpr = "a", year = 2024)
 ensure_matched(income, population, by = c("cpr", "year"))
 }
 \seealso{
+\code{\link[=describe_match]{describe_match()}} to look at the match from both sides first,
 \code{\link[=ensure_unique]{ensure_unique()}}, \link{checkpoints}.
 }

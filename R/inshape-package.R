@@ -20,7 +20,11 @@
 #'   [describe_varying()] and [describe_codes()]: look at the structure
 #'   before choosing a rule.
 #' * [describe_changes()]: what changed since the last extract.
+#' * [describe_match()]: what a join of two tables will do, before it is
+#'   made.
 #' * [ensure_unique()]: a key identifies each row.
+#' * [ensure_complete()]: the columns an analysis cannot do without have no
+#'   missing values.
 #' * [ensure_balanced()]: every unit is observed in every period, or at
 #'   least has no gaps.
 #' * [ensure_valid_spells()]: a spell has a start and does not end before it.

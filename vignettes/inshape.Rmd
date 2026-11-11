@@ -36,13 +36,17 @@ pipeline.
 | `describe_varying()` | (look) which columns vary within units | a summary |
 | `describe_codes()` | (look) how the codes of a column change over periods | a summary |
 | `describe_changes()` | (look) what changed between two extracts | a summary |
+| `describe_match()` | (look) what a join of two tables will do | a summary |
 | `ensure_codes()` | a coded column holds only codes from the code list | the data |
+| `ensure_complete()` | the columns named have no missing values | the data |
 | `ensure_constant()` | sex, birth date and the like are constant within a unit | the data |
 | `ensure_unique()` | the key columns identify each row | the data |
 | `ensure_balanced()` | every unit is observed in every period, or has no gaps | the data |
 | `ensure_no_overlap()` | a unit's spells do not overlap | the data |
 | `ensure_no_gaps()` | a unit's spells leave no gaps between them | the data |
 | `ensure_within()` | no rows after death or emigration, or before birth | the data |
+| `ensure_valid_spells()` | a spell has a start and does not end before it | the data |
+| `ensure_matched()` | every key occurs in a reference register | the data |
 | `merge_spells()` | (conversion) spells recorded as several, merged | merged spells |
 | `spells_to_panel()` | (conversion) spells to a period panel | a panel |
 | `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
@@ -100,6 +104,27 @@ df |>
 
 The reported rows carry a `dupid`, so the copies in each group sit
 together.
+
+## Missing values: `ensure_complete()`
+
+Some columns an analysis cannot do without: the id, the date, the outcome.
+A missing value in them drops the row from a model without a word, or
+becomes a group of its own in a count. `ensure_complete()` requires the
+columns named to have a value in every row, or all columns if none are
+named. The reported rows carry a `missing` column that names the columns
+missing in each:
+
+```{r}
+register <- tibble(
+  cpr  = c("a", "b", NA, "d"),
+  born = as.Date(c("1980-05-01", NA, NA, "1975-02-11")),
+  sex  = c("F", "M", "F", NA)
+)
+
+ensure_complete(register, cpr, born)
+```
+
+Missing means `NA`; an empty string is a value.
 
 ## Panels: `ensure_balanced()`
 
@@ -346,6 +371,32 @@ observations <- tibble(cpr = c("a", "b", "c"), year = 2020)
 reference <- tibble(person_id = c("a", "b"), year = 2020)
 ensure_matched(observations, reference, by = c(cpr = "person_id", "year"))
 ```
+
+## Before a join: `describe_match()`
+
+`ensure_matched()` asks one question of a join, whether every row finds a
+match. `describe_match()` looks at the whole of it first: how many keys are
+in both tables, how many only in one, and whether the reference repeats a
+key, so that a left join returns more rows than it was given. Here `c` is
+not in the register, `d` has no income, and `b` is registered twice:
+
+```{r}
+income <- tibble(
+  cpr    = c("a", "a", "b", "c", NA),
+  year   = c(2023, 2024, 2024, 2024, 2024),
+  income = c(10, 12, 7, 9, 3)
+)
+population_register <- tibble(
+  person_id = c("a", "b", "b", "d"),
+  kommune   = c("955", "956", "957", "960")
+)
+
+describe_match(income, population_register, by = c(cpr = "person_id"))
+```
+
+A row with a missing key matches nothing and is counted on its own. The key
+must be stated in `by`: a join on whatever names two registers happen to
+share is how a wrong key goes unnoticed.
 
 ## Codes valid at the observation time
 

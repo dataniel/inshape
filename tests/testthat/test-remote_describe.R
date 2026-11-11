@@ -113,3 +113,24 @@ test_that("ensure_codes() on DuckDB finds the same rows as in memory", {
     expect_equal(key(dplyr::collect(remote$violations)), key(local$violations))
   }
 })
+
+test_that("describe_match() on DuckDB equals the summary in memory", {
+  set.seed(11)
+  ref <- data.frame(person = sample(c(sprintf("p%02d", 40:75), NA), 80, TRUE),
+                    year   = sample(c(2019:2023, NA), 80, TRUE))
+  tbls <- local_duck(t = panel, r = ref)
+  by <- c(cpr = "person", "year")
+  local <- plain(describe_match(panel, ref, by = by))
+  expect_gt(local$n_join_rows, nrow(panel))
+  expect_equal(plain(describe_match(tbls[[1]], tbls[[2]], by = by)), local)
+  # A local reference travels to the database as an inline query
+  expect_equal(plain(describe_match(tbls[[1]], ref, by = by)), local)
+  expect_equal(plain(describe_match(tbls[[1]], tbls[[2]], by = c(cpr = "person"))),
+               plain(describe_match(panel, ref, by = c(cpr = "person"))))
+  # An integer key against a double one
+  ref$year <- as.double(ref$year)
+  expect_equal(plain(describe_match(tbls[[1]], ref, by = by)), local)
+  expect_equal(plain(describe_match(tbls[[1]], ref[0, ], by = by)),
+               plain(describe_match(panel, ref[0, ], by = by)))
+  expect_error(describe_match(panel, tbls[[2]], by = by), "local")
+})

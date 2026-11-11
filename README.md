@@ -36,11 +36,13 @@ pak::pak("dataniel/inshape")
 | `describe_changes()` | Two extracts of a register: keys that came and went, and per column the values that changed, went missing or were filled in |
 | `describe_codes()` | How the codes of a column change over periods: first and last period, codes skipping periods, new and gone codes |
 | `describe_key()` | How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in |
+| `describe_match()` | What a join will do: keys in both tables, only in one, rows without a match, and the rows a left join returns when the reference repeats a key |
 | `describe_panel()` | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
 | `describe_spells()` | Spell data: gaps, transfers (adjacent spells), overlapping, nested and duplicate spells, ongoing and invalid spells |
 | `describe_varying()` | Which columns vary within units: constant, nearly constant (errors) and varying |
 | `ensure_balanced()` | Every unit observed in every period, or no gaps (`gaps_only`) |
 | `ensure_codes()` | Codes belong to a code list, optionally within their validity periods |
+| `ensure_complete()` | Columns an analysis cannot do without (an id, a date) have no missing values; the rows are reported with the columns missing in each |
 | `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
 | `ensure_matched()` | Every key occurs in a reference register, including composite or renamed keys |
 | `ensure_no_gaps()` | Spells cover a unit without a break between them, or with gaps of at most `max_gap` days |
@@ -60,11 +62,14 @@ all of them:
 dups <- violations(ensure_unique(persons, cpr, year))
 ```
 
-Check a reference before linking it, or validate a code at the time it was
-observed:
+Look at a reference before linking it and require the match, or validate a
+code at the time it was observed:
 
 ```r
+describe_match(income, population, by = c("cpr", "year"))
+
 income |>
+  ensure_complete(cpr, year) |>
   ensure_matched(population, by = c("cpr", "year"))
 
 codebook <- data.frame(

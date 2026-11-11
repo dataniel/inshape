@@ -164,3 +164,42 @@ test_that("ensure_no_gaps() finds the same gaps as in memory", {
                       to = c(2011L, 2015L, 2010L, 2012L))
   expect_equal(violations_of(ensure_no_gaps(local_duck(years), id, from, to))$gap, 1L)
 })
+
+test_that("ensure_complete() finds the same rows as in memory", {
+  register <- data.frame(
+    row     = 1:8,
+    cpr     = c("a", NA, "c", NA, "e", "f", NA, "h"),
+    born    = as.Date(c("1980-05-01", NA, NA, "1975-02-11", "1990-01-01", NA, NA, "2001-07-07")),
+    amount  = c(1, 2, NA, 4, 5, 6, NA, 8),
+    missing = "kept"
+  )
+  tbl <- local_duck(register)
+  same <- function(...) {
+    remote <- dplyr::arrange(violations_of(ensure_complete(tbl, ...)), row)
+    local  <- violations_of(ensure_complete(register, ...))
+    expect_equal(remote, local)
+    remote
+  }
+  expect_equal(same(cpr, born)$missing.1, c("cpr, born", "born", "cpr", "born", "cpr, born"))
+  expect_equal(same(amount)$row, c(3L, 7L))
+  all <- same()
+  expect_equal(all$missing.1[all$row == 7], "cpr, born, amount")
+  expect_equal(all$missing, rep("kept", 5))
+
+  # Sorted by the columns missing, so the same combination sits together
+  cnd <- rlang::catch_cnd(ensure_complete(tbl, cpr, born), classes = "inshape_failure")
+  expect_match(conditionMessage(cnd), "5 rows in 3 groups")
+  expect_s3_class(cnd$violations, "tbl_lazy")
+
+  expect_message(out <- ensure_complete(tbl, row, missing), "Complete: row, missing")
+  expect_s3_class(out, "tbl_lazy")
+})
+
+test_that("ensure_complete() takes an Arrow table", {
+  skip_if_not_installed("arrow")
+  tbl <- arrow::arrow_table(df)
+  expect_equal(nrow(violations_of(ensure_complete(tbl, id))), 2)
+  expect_equal(sort(violations_of(ensure_complete(tbl))$missing), c("id", "id, amount"))
+  expect_message(out <- ensure_complete(tbl, year), "Complete: year")
+  expect_identical(out, tbl)
+})

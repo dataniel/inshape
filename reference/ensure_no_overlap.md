@@ -80,6 +80,8 @@ before checking overlaps.
 
 [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md)
 to see how spells relate first,
+[`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md)
+for the opposite rule,
 [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md)
 when overlapping spells are one spell recorded twice,
 [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md)

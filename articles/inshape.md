@@ -26,6 +26,7 @@ sits in a pipeline.
 | [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md) | the key columns identify each row | the data |
 | [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md) | every unit is observed in every period, or has no gaps | the data |
 | [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md) | a unit’s spells do not overlap | the data |
+| [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md) | a unit’s spells leave no gaps between them | the data |
 | [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md) | no rows after death or emigration, or before birth | the data |
 | [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md) | (conversion) spells recorded as several, merged | merged spells |
 | [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md) | (conversion) spells to a period panel | a panel |
@@ -188,6 +189,28 @@ ensure_no_overlap(addresses, cpr, start, end)
 Spells are closed intervals, and a missing end means the spell is
 ongoing. The reported rows carry an `overlap_id` that groups spells
 overlapping each other, the same idea as `dupid`.
+
+The opposite rule is
+[`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md):
+where a person must have an address every day, a spell that starts later
+than the day after the earlier ones ended leaves days without one. The
+spell after each gap is reported with the length of the gap, and
+`max_gap` accepts short ones:
+
+``` r
+moves <- tibble(
+  cpr   = c("a", "a", "b", "b"),
+  start = as.Date(c("2020-01-01", "2021-01-01", "2020-01-01", "2020-07-04")),
+  end   = as.Date(c("2020-12-31", NA,           "2020-06-30", "2021-12-31"))
+)
+
+ensure_no_gaps(moves, cpr, start, end)
+#> Warning in ensure_no_gaps(moves, cpr, start, end): Gaps between spells per cpr
+#> ℹ 1 row found:
+#>       gap cpr   start      end
+#>     <int> <chr> <date>     <date>
+#>   1     3 b     2020-07-04 2021-12-31
+```
 
 Before requiring that, look at how the spells relate to each other.
 [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md)

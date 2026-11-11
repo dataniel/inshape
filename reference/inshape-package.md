@@ -42,6 +42,9 @@ before anyone builds on them?
 - [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md):
   a unit is in one spell at a time.
 
+- [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md):
+  and in one all the time, without a break between its spells.
+
 - [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md):
   sex, birth date and the like do not change within a unit.
 

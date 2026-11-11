@@ -89,6 +89,8 @@ from sorting millions of values.
 to merge adjacent and overlapping spells,
 [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md)
 to require spells not to overlap,
+[`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md)
+to require that they leave no gaps,
 [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md)
 to turn spells into a panel.
 

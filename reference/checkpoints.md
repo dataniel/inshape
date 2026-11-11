@@ -37,9 +37,9 @@ The offending rows are deliberately not kept in the session afterwards:
 on a population register a failed check can hold millions of rows, and
 they would stay in memory until the next failure. Messages are shown
 literally: braces are not interpolated. Diagnostic columns such as
-`dupid`, `overlap_id`, `outside` and `reason` receive a numeric suffix
-when their name is already in the input (for example `dupid.1`). All
-original columns keep their names and values.
+`dupid`, `overlap_id`, `gap`, `outside` and `reason` receive a numeric
+suffix when their name is already in the input (for example `dupid.1`).
+All original columns keep their names and values.
 
 A failed check signals a condition of class `inshape_failure` (a warning
 or an error) that carries the offending rows in its `violations` field.
@@ -120,6 +120,7 @@ the keys that came, went or changed stay queries, to `collect()`.
 [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md),
 [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md),
 [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md),
+[`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md),
 [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md),
 [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md),
 [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md),

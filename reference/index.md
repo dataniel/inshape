@@ -30,6 +30,8 @@ in a pipeline.
   : Assert that a panel is balanced, or has no gaps
 - [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md)
   : Assert that spells do not overlap within a unit
+- [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md)
+  : Assert that a unit's spells leave no gaps
 - [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md)
   : Assert that columns are constant within each unit
 - [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md)

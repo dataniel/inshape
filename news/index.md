@@ -2,6 +2,15 @@
 
 ## inshape 0.1.0
 
+- New
+  [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md)
+  checks that a unit’s spells cover it without a break, e.g. that a
+  resident has an address every day: the spell after each gap is
+  reported with the length of the gap, and `max_gap` accepts short ones.
+  It is the counterpart of
+  [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md)
+  and takes database and Arrow tables too.
+
 - [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md)
   returns the units in the order they first appear in the data, as
   [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md)

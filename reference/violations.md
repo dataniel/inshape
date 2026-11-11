@@ -21,8 +21,8 @@ violations(check)
 ## Value
 
 A tibble with the offending rows, key columns first, and the diagnostic
-column of the check (`dupid`, `overlap_id`, `outside`, `reason`) where
-it has one. When every check passes, the data with no rows, and so
+column of the check (`dupid`, `overlap_id`, `gap`, `outside`, `reason`)
+where it has one. When every check passes, the data with no rows, and so
 without a diagnostic column. For a database or Arrow table both are
 queries: `collect()` them to get the rows.
 

@@ -42,6 +42,7 @@ pak::pak("dataniel/inshape")
 | [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md) | Codes belong to a code list, optionally within their validity periods |
 | [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md) | Columns such as sex or birth date are constant within each unit |
 | [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md) | Every key occurs in a reference register, including composite or renamed keys |
+| [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md) | Spells cover a unit without a break between them, or with gaps of at most `max_gap` days |
 | [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md) | Spells (addresses, employment) do not overlap within a unit |
 | [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md) | Key columns identify each row uniquely |
 | [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md) | Spells have a start and do not end before it, optionally requiring a closed end |
@@ -167,6 +168,8 @@ in a pipeline.
   : Assert that a panel is balanced, or has no gaps
 - [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md)
   : Assert that spells do not overlap within a unit
+- [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md)
+  : Assert that a unit's spells leave no gaps
 - [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md)
   : Assert that columns are constant within each unit
 - [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md)

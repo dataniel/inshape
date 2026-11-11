@@ -78,7 +78,7 @@ issued instead.</p></dd>
 a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
 braces are not interpolated.
-Diagnostic columns such as <code>dupid</code>, <code>overlap_id</code>, <code>outside</code> and <code>reason</code>
+Diagnostic columns such as <code>dupid</code>, <code>overlap_id</code>, <code>gap</code>, <code>outside</code> and <code>reason</code>
 receive a numeric suffix when their name is already in the input (for
 example <code>dupid.1</code>). All original columns keep their names and values.</p>
 <p>A failed check signals a condition of class <code>inshape_failure</code> (a warning or
@@ -152,6 +152,7 @@ queries, to <code>collect()</code>.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="ensure_unique.html">ensure_unique()</a></code>, <code><a href="ensure_balanced.html">ensure_balanced()</a></code>, <code><a href="ensure_no_overlap.html">ensure_no_overlap()</a></code>,
+<code><a href="ensure_no_gaps.html">ensure_no_gaps()</a></code>,
 <code><a href="ensure_valid_spells.html">ensure_valid_spells()</a></code>, <code><a href="ensure_constant.html">ensure_constant()</a></code>, <code><a href="ensure_within.html">ensure_within()</a></code>,
 <code><a href="ensure_codes.html">ensure_codes()</a></code> and <code><a href="ensure_matched.html">ensure_matched()</a></code> for the rules, and
 <code><a href="violations.html">violations()</a></code> for the rows that break one.</p></div>

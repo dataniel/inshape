@@ -58,13 +58,10 @@ registers. See <code><a href="../articles/inshape.html">vignette("inshape")</a><
 <h3 id="the-name">The name<a class="anchor" aria-label="anchor" href="#the-name"></a></h3>
 
 
-<p>In Rome the censors registered every citizen, and each census was closed
-by the <em>inshape</em>: a ceremony that purified the people just counted,
-before the register was accepted. This package is that last step for
-register data, a registration of the registrations: are the keys
-unique, the panels whole, the spells consistent, before anyone builds on
-them? The word also came to mean the five-year period between two
-censuses, which suits a package about periods.</p>
+<p>Register data has a shape, and an analysis is written for one of them.
+inshape asks whether the data is <em>in shape</em>, the shape the analysis
+assumes: are the keys unique, the panels whole, the spells consistent,
+before anyone builds on them?</p>
 </div>
 
 <div class="section">
@@ -77,18 +74,27 @@ before choosing a rule.</p></li>
 <li><p><code><a href="ensure_unique.html">ensure_unique()</a></code>: a key identifies each row.</p></li>
 <li><p><code><a href="ensure_balanced.html">ensure_balanced()</a></code>: every unit is observed in every period, or at
 least has no gaps.</p></li>
+<li><p><code><a href="ensure_valid_spells.html">ensure_valid_spells()</a></code>: a spell has a start and does not end before it.</p></li>
 <li><p><code><a href="ensure_no_overlap.html">ensure_no_overlap()</a></code>: a unit is in one spell at a time.</p></li>
 <li><p><code><a href="ensure_constant.html">ensure_constant()</a></code>: sex, birth date and the like do not change within a
 unit.</p></li>
 <li><p><code><a href="ensure_within.html">ensure_within()</a></code>: no one is observed after death or emigration, or
 before birth.</p></li>
-<li><p><code><a href="ensure_codes.html">ensure_codes()</a></code>: a coded column holds only codes from the code list.</p></li>
+<li><p><code><a href="ensure_codes.html">ensure_codes()</a></code>: a coded column holds only codes from the code list,
+valid at the time of the row.</p></li>
+<li><p><code><a href="ensure_matched.html">ensure_matched()</a></code>: every key occurs in a reference register.</p></li>
+<li><p><code><a href="violations.html">violations()</a></code>: the rows that break a check, all of them.</p></li>
 <li><p><code><a href="merge_spells.html">merge_spells()</a></code>: one spell recorded as several, merged into one.</p></li>
 <li><p><code><a href="spells_to_panel.html">spells_to_panel()</a></code> and <code><a href="add_spell_status.html">add_spell_status()</a></code>: from spells to a panel.</p></li>
 </ul><p>The <code>ensure_*()</code> functions are checkpoints: they warn or abort with the
 offending rows and return the data, so they sit in a pipeline. What they
 share (messages, personal data, database tables) is described in
 <a href="checkpoints.html">checkpoints</a>.</p>
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">persons</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span>, abort_msg <span class="op">=</span> <span class="st">"Duplicate person-years"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="../reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">year</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div>
 </div>
 
 <div class="section">

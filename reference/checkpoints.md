@@ -36,16 +36,17 @@ a pipeline. This page documents what they share.
 The offending rows are deliberately not kept in the session afterwards:
 on a population register a failed check can hold millions of rows, and
 they would stay in memory until the next failure. Messages are shown
-literally: braces are not interpolated.
+literally: braces are not interpolated. Diagnostic columns such as
+`dupid`, `overlap_id`, `outside` and `reason` receive a numeric suffix
+when their name is already in the input (for example `dupid.1`). All
+original columns keep their names and values.
 
 A failed check signals a condition of class `inshape_failure` (a warning
 or an error) that carries the offending rows in its `violations` field.
-Catch it to look at all of them in the session:
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+catches it and returns the rows, to look at all of them in the session:
 
-    dups <- tryCatch(
-      ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-      inshape_failure = \(e) e$violations
-    )
+    dups <- violations(ensure_unique(persons, cpr))
 
 ### Personal data
 
@@ -59,9 +60,10 @@ the rows nor a log of the checks, and keeps nothing after a check:
   the console. Output that is kept, such as a rendered report or a
   shared screen, keeps them too, so run the checks at the console.
 
-- **The condition** carries the rows in memory, until it is caught or
-  dropped. Whether any of them are stored, and where, is for the
-  analysis and its data agreement to decide, not the package.
+- **The condition** carries the rows in memory, until it is caught, by
+  [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+  for one, or dropped. Whether any of them are stored, and where, is for
+  the analysis and its data agreement to decide, not the package.
 
 ### Speed
 
@@ -92,9 +94,11 @@ This needs the dbplyr package, and duckdb for Arrow.
 
 A checkpoint returns the table it was given, still unevaluated, so the
 pipeline continues in the database. On a failure the condition's
-`violations` field holds the violation set as a query: `collect()` it to
-get the rows. Two things differ from data frames, because a database
-table has no row order:
+`violations` field, and so
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md),
+holds the violation set as a query: `collect()` it to get the rows. Two
+things differ from data frames, because a database table has no row
+order:
 [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md)
 numbers `dupid` in the order of the key instead of first appearance, and
 spells starting on the same day are ordered by their end in
@@ -116,5 +120,12 @@ the keys that came, went or changed stay queries, to `collect()`.
 [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md),
 [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md),
 [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md),
+[`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md),
 [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md),
-[`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md)
+[`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md),
+[`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md)
+and
+[`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
+for the rules, and
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+for the rows that break one.

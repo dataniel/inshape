@@ -77,14 +77,15 @@ issued instead.</p></dd>
     <p>The offending rows are deliberately not kept in the session afterwards: on
 a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
-braces are not interpolated.</p>
+braces are not interpolated.
+Diagnostic columns such as <code>dupid</code>, <code>overlap_id</code>, <code>outside</code> and <code>reason</code>
+receive a numeric suffix when their name is already in the input (for
+example <code>dupid.1</code>). All original columns keep their names and values.</p>
 <p>A failed check signals a condition of class <code>inshape_failure</code> (a warning or
 an error) that carries the offending rows in its <code>violations</code> field.
-Catch it to look at all of them in the session:</p>
-<p></p><div class="sourceCode r"><pre><code><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, abort_msg <span class="op">=</span> <span class="st">"Duplicate persons"</span><span class="op">)</span>,</span>
-<span>  inshape_failure <span class="op">=</span> \<span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="va">e</span><span class="op">$</span><span class="va">violations</span></span>
-<span><span class="op">)</span></span></code></pre><p></p></div><div class="section">
+<code><a href="violations.html">violations()</a></code> catches it and returns the rows, to look at all of them
+in the session:</p>
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="../reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div><div class="section">
 <h3 id="personal-data">Personal data<a class="anchor" aria-label="anchor" href="#personal-data"></a></h3>
 
 
@@ -95,8 +96,8 @@ column of the rows. inshape therefore writes nothing to disk, neither
 the rows nor a log of the checks, and keeps nothing after a check:</p><ul><li><p><strong>The message</strong> shows the number of rows and the first 5 of them at
 the console. Output that is kept, such as a rendered report or a
 shared screen, keeps them too, so run the checks at the console.</p></li>
-<li><p><strong>The condition</strong> carries the rows in memory, until it is caught or
-dropped. Whether any of them are stored, and where, is for the analysis
+<li><p><strong>The condition</strong> carries the rows in memory, until it is caught, by
+<code><a href="violations.html">violations()</a></code> for one, or dropped. Whether any of them are stored, and where, is for the analysis
 and its data agreement to decide, not the package.</p></li>
 </ul></div>
 
@@ -131,8 +132,8 @@ Arrow.</p>
 <span>  <span class="fu"><a href="../reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre><p></p></div>
 <p>A checkpoint returns the table it was given, still unevaluated, so the
 pipeline continues in the database. On a failure the condition's
-<code>violations</code> field holds the violation set as a query: <code>collect()</code> it to
-get the rows. Two things differ
+<code>violations</code> field, and so <code><a href="violations.html">violations()</a></code>, holds the violation set as a
+query: <code>collect()</code> it to get the rows. Two things differ
 from data frames, because a database table has no row order:
 <code><a href="ensure_unique.html">ensure_unique()</a></code> numbers <code>dupid</code> in the order of the key instead of
 first appearance, and spells starting on the same day are ordered by
@@ -151,7 +152,9 @@ queries, to <code>collect()</code>.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="ensure_unique.html">ensure_unique()</a></code>, <code><a href="ensure_balanced.html">ensure_balanced()</a></code>, <code><a href="ensure_no_overlap.html">ensure_no_overlap()</a></code>,
-<code><a href="ensure_constant.html">ensure_constant()</a></code>, <code><a href="ensure_within.html">ensure_within()</a></code></p></div>
+<code><a href="ensure_valid_spells.html">ensure_valid_spells()</a></code>, <code><a href="ensure_constant.html">ensure_constant()</a></code>, <code><a href="ensure_within.html">ensure_within()</a></code>,
+<code><a href="ensure_codes.html">ensure_codes()</a></code> and <code><a href="ensure_matched.html">ensure_matched()</a></code> for the rules, and
+<code><a href="violations.html">violations()</a></code> for the rows that break one.</p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

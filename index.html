@@ -110,11 +110,15 @@
 </tr>
 <tr>
 <td><code><a href="reference/ensure_codes.html">ensure_codes()</a></code></td>
-<td>A coded column only holds codes from a code list</td>
+<td>Codes belong to a code list, optionally within their validity periods</td>
 </tr>
 <tr>
 <td><code><a href="reference/ensure_constant.html">ensure_constant()</a></code></td>
 <td>Columns such as sex or birth date are constant within each unit</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_matched.html">ensure_matched()</a></code></td>
+<td>Every key occurs in a reference register, including composite or renamed keys</td>
 </tr>
 <tr>
 <td><code><a href="reference/ensure_no_overlap.html">ensure_no_overlap()</a></code></td>
@@ -123,6 +127,10 @@
 <tr>
 <td><code><a href="reference/ensure_unique.html">ensure_unique()</a></code></td>
 <td>Key columns identify each row uniquely</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_valid_spells.html">ensure_valid_spells()</a></code></td>
+<td>Spells have a start and do not end before it, optionally requiring a closed end</td>
 </tr>
 <tr>
 <td><code><a href="reference/ensure_within.html">ensure_within()</a></code></td>
@@ -136,17 +144,40 @@
 <td><code><a href="reference/spells_to_panel.html">spells_to_panel()</a></code></td>
 <td>Spells to a yearly, quarterly or monthly panel with primo and ultimo status</td>
 </tr>
+<tr>
+<td><code><a href="reference/violations.html">violations()</a></code></td>
+<td>The rows that break a check, all of them: wrap the check in it</td>
+</tr>
 </tbody>
 </table>
-<p>The <code>ensure_*()</code> checkpoints warn or abort with the offending rows and return the data. A failure signals a condition of class <code>inshape_failure</code> that carries the rows.</p>
-<p>inshape is made for interactive review of registers. The offending rows of a check are personal data, so inshape writes nothing to disk, neither rows nor a log: a failure shows the count and the first rows at the console, and the rest stay on the condition, in memory. See <code><a href="reference/checkpoints.html">?checkpoints</a></code>.</p>
+<p>The <code>ensure_*()</code> checkpoints warn or abort with the offending rows and return the data. The message shows the first rows; <code><a href="reference/violations.html">violations()</a></code> returns all of them:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">year</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Check a reference before linking it, or validate a code at the time it was observed:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">income</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ensure_matched.html">ensure_matched</a></span><span class="op">(</span><span class="va">population</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cpr"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">codebook</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  code <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>,</span>
+<span>  valid_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2015</span>, <span class="fl">2020</span><span class="op">)</span>,</span>
+<span>  valid_to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2019</span>, <span class="cn">NA_real_</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">persons</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ensure_codes.html">ensure_codes</a></span><span class="op">(</span><span class="va">classification</span>, <span class="va">codebook</span>, time <span class="op">=</span> <span class="va">year</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">addresses</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ensure_valid_spells.html">ensure_valid_spells</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">end</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ensure_no_overlap.html">ensure_no_overlap</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span></code></pre></div>
+<p>Code validity bounds are inclusive, and missing bounds are open. Missing observation times fail for non-missing codes. <code><a href="reference/ensure_matched.html">ensure_matched()</a></code> treats missing keys as unmatched unless <code>na_matches = "na"</code> is requested. Diagnostic columns get a suffix on name collisions, preserving the input columns. <code><a href="reference/describe_changes.html">describe_changes()</a></code> explicitly lists columns it cannot compare in <code>columns_skipped</code> and in its printed summary.</p>
+<p>inshape is made for interactive review of registers. The offending rows of a check are personal data, so inshape writes nothing to disk, neither rows nor a log: a failure shows the count and the first rows at the console, and the rest stay in memory, for <code><a href="reference/violations.html">violations()</a></code> to return. See <code><a href="reference/checkpoints.html">?checkpoints</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="built-for-registers">Built for registers<a class="anchor" aria-label="anchor" href="#built-for-registers"></a>
 </h2>
 <p>Character keys such as cpr are compressed to integer ids by a compiled, partitioned and multi-threaded hash, without sorting them; a panel then becomes a bit matrix, one bit per unit and period, read with processor bit instructions; and spell lookups run in one compiled pass over the sorted spells. On 25 million rows (5 million persons over 5 years), <code><a href="reference/describe_panel.html">describe_panel()</a></code> takes under 2 seconds. See <code>benchmarks/</code>.</p>
 <p>A DuckDB or Arrow table is checked and described in the database, without loading it into R; the <code>describe_*()</code> summaries fetch only their counts:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"register.duckdb"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"persons"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -156,7 +187,7 @@
 <div class="section level2">
 <h2 id="the-name">The name<a class="anchor" aria-label="anchor" href="#the-name"></a>
 </h2>
-<p>Each Roman census was closed by the <em>inshape</em>, a purification of the people just registered, before the register was accepted. This package is that last step for register data: a registration of the registrations.</p>
+<p>Register data has a shape: one row per unit, per unit and period, or per spell. An analysis is written for one of them. inshape asks whether the data is <em>in shape</em>, the shape the analysis assumes, before anything is built on it.</p>
 </div>
 <div class="section level2">
 <h2 id="origin">Origin<a class="anchor" aria-label="anchor" href="#origin"></a>

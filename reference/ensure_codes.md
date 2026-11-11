@@ -14,6 +14,7 @@ ensure_codes(
   data,
   column,
   codes,
+  time = NULL,
   na_ok = TRUE,
   success_msg = NULL,
   warn_msg = NULL,
@@ -34,7 +35,13 @@ ensure_codes(
 
 - codes:
 
-  The valid codes: a vector, e.g. a column of a code list.
+  A vector of valid codes, or a local data frame with columns `code`,
+  `valid_from`, `valid_to`. An empty temporal list allows no codes.
+
+- time:
+
+  Observation time column (tidy-select), required for a time-dependent
+  code list and omitted for a vector.
 
 - na_ok:
 
@@ -68,11 +75,16 @@ ensure_codes(
 Missing values pass by default, as missing is a different problem from a
 wrong code; set `na_ok = FALSE` to require a code on every row. The code
 list is compared as text when the column is text, so `"0955"` and
-`"955"` are different codes, as they are in the register. When the valid
-codes depend on the period, check each period with its own list, e.g.
-after `dplyr::filter(data, year >= 2018)`; see
-[`describe_codes()`](https://dataniel.github.io/inshape/reference/describe_codes.md)
-for how the codes change.
+`"955"` are different codes, as they are in the register.
+
+For time-dependent codes, supply a data frame with `code`, `valid_from`
+and `valid_to`, and select the observation's `time` column. Boundaries
+are inclusive; missing boundaries are open. Multiple validity intervals
+per code are allowed. A non-missing code with missing time fails, since
+its validity cannot be established. `na_ok` only controls missing codes.
+Time and both boundaries must use the same scale: Date, POSIXct, or
+numeric periods. Years and dates are not implicitly mixed. The code list
+must have non-missing codes and ordered boundaries.
 
 ## See also
 

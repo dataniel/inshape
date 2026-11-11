@@ -72,7 +72,10 @@ spells_to_panel(
 
 A tibble (a data.table if `data` is one) with the `id` columns, `year`,
 `quarter` or `month` for sub-year periods, and `primo` and `ultimo`.
-Rows are sorted by unit and period.
+Units come in the order they first appear in `data`, each with its
+periods in order; use
+[`dplyr::arrange()`](https://dplyr.tidyverse.org/reference/arrange.html)
+to sort by the id columns.
 
 ## Details
 
@@ -109,7 +112,11 @@ by start. A compiled pass keeps the running maximum of end dates within
 a unit, so "is a spell running at this point?" and "which spell ended
 most recently?" are constant-time lookups. Spells are never expanded to
 days or periods, so the cost is one sort plus a linear pass over spells
-and output rows.
+and output rows. The sort is on an integer id per unit, not on the id
+columns: on a population register sorting a character cpr took most of
+the time. That is why units keep the order of the data, as in
+[`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md);
+for an extract sorted by cpr it is the same order.
 
 ## See also
 

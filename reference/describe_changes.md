@@ -32,12 +32,12 @@ An object of class `inshape_changes`, printed as a summary. It is a list
 with the counts `n_old`, `n_new`, `n_kept` (keys in both), `n_added`,
 `n_removed` and `n_changed` (kept keys with any changed column);
 `columns_added`, `columns_removed` and `type_changed` (column names);
-`columns`, a tibble with one row per shared column: `column`, `changed`
-(another value), `went_missing` (a value, now missing), `filled_in`
-(missing, now a value) and `share` (of the kept keys with any of the
-three), most changed first; and `added` and `removed` (the keys) and
-`changed` (the keys with `n_columns`, the number of columns that
-changed).
+`columns_skipped` (shared columns not compared); `columns`, a tibble
+with one row per compared shared column: `column`, `changed` (another
+value), `went_missing` (a value, now missing), `filled_in` (missing, now
+a value) and `share` (of the kept keys with any of the three), most
+changed first; and `added` and `removed` (the keys) and `changed` (the
+keys with `n_columns`, the number of columns that changed).
 
 ## Details
 
@@ -47,7 +47,9 @@ or
 [`describe_key()`](https://dataniel.github.io/inshape/reference/describe_key.md)
 first. Two missing values are equal. A column whose type changed, e.g.
 from integer to character, is compared as text, and integer and double
-columns as numbers.
+columns as numbers. Shared non-key list or matrix columns are not
+compared. Their names are returned in `columns_skipped` and shown when
+the summary is printed.
 
 ## Why it is fast
 

@@ -39,22 +39,62 @@ pak::pak("dataniel/inshape")
 | [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md) | Spell data: gaps, transfers (adjacent spells), overlapping, nested and duplicate spells, ongoing and invalid spells |
 | [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md) | Which columns vary within units: constant, nearly constant (errors) and varying |
 | [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md) | Every unit observed in every period, or no gaps (`gaps_only`) |
-| [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md) | A coded column only holds codes from a code list |
+| [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md) | Codes belong to a code list, optionally within their validity periods |
 | [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md) | Columns such as sex or birth date are constant within each unit |
+| [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md) | Every key occurs in a reference register, including composite or renamed keys |
 | [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md) | Spells (addresses, employment) do not overlap within a unit |
 | [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md) | Key columns identify each row uniquely |
+| [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md) | Spells have a start and do not end before it, optionally requiring a closed end |
 | [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md) | No rows after death or emigration, or before birth: each row within its unit’s lifetime |
 | [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md) | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md) | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
+| [`violations()`](https://dataniel.github.io/inshape/reference/violations.md) | The rows that break a check, all of them: wrap the check in it |
 
 The `ensure_*()` checkpoints warn or abort with the offending rows and
-return the data. A failure signals a condition of class
-`inshape_failure` that carries the rows.
+return the data. The message shows the first rows;
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+returns all of them:
+
+``` r
+dups <- violations(ensure_unique(persons, cpr, year))
+```
+
+Check a reference before linking it, or validate a code at the time it
+was observed:
+
+``` r
+income |>
+  ensure_matched(population, by = c("cpr", "year"))
+
+codebook <- data.frame(
+  code = c("A", "B"),
+  valid_from = c(2015, 2020),
+  valid_to = c(2019, NA_real_)
+)
+persons |>
+  ensure_codes(classification, codebook, time = year)
+
+addresses |>
+  ensure_valid_spells(start, end) |>
+  ensure_no_overlap(cpr, start, end)
+```
+
+Code validity bounds are inclusive, and missing bounds are open. Missing
+observation times fail for non-missing codes.
+[`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
+treats missing keys as unmatched unless `na_matches = "na"` is
+requested. Diagnostic columns get a suffix on name collisions,
+preserving the input columns.
+[`describe_changes()`](https://dataniel.github.io/inshape/reference/describe_changes.md)
+explicitly lists columns it cannot compare in `columns_skipped` and in
+its printed summary.
 
 inshape is made for interactive review of registers. The offending rows
 of a check are personal data, so inshape writes nothing to disk, neither
 rows nor a log: a failure shows the count and the first rows at the
-console, and the rest stay on the condition, in memory. See
+console, and the rest stay in memory, for
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+to return. See
 [`?checkpoints`](https://dataniel.github.io/inshape/reference/checkpoints.md).
 
 ## Built for registers
@@ -81,10 +121,10 @@ dplyr::tbl(con, "persons") |>
 
 ## The name
 
-Each Roman census was closed by the *inshape*, a purification of the
-people just registered, before the register was accepted. This package
-is that last step for register data: a registration of the
-registrations.
+Register data has a shape: one row per unit, per unit and period, or per
+spell. An analysis is written for one of them. inshape asks whether the
+data is *in shape*, the shape the analysis assumes, before anything is
+built on it.
 
 ## Origin
 
@@ -133,6 +173,12 @@ in a pipeline.
   : Assert that observations lie within each unit's lifetime
 - [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md)
   : Assert that a column only holds codes from a code list
+- [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md)
+  : Assert that spell boundaries are valid
+- [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
+  : Assert that every key occurs in a reference register
+- [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+  : The rows that break a check
 - [`checkpoints`](https://dataniel.github.io/inshape/reference/checkpoints.md)
   : Checkpoints: shared arguments, personal data and database tables
 

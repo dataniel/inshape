@@ -114,7 +114,9 @@ run to the latest date found in <code>start</code> and <code>end</code>.</p></dd
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble (a data.table if <code>data</code> is one) with the <code>id</code> columns,
 <code>year</code>, <code>quarter</code> or <code>month</code> for sub-year periods, and <code>primo</code> and
-<code>ultimo</code>. Rows are sorted by unit and period.</p>
+<code>ultimo</code>. Units come in the order they first appear in <code>data</code>, each
+with its periods in order; use <code><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">dplyr::arrange()</a></code> to sort by the id
+columns.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -145,7 +147,10 @@ by start. A compiled pass keeps the running maximum of end dates within a
 unit, so "is a spell running at this point?" and "which spell ended most
 recently?" are constant-time lookups. Spells are never expanded to days or
 periods, so the cost is one sort plus a linear pass over spells and output
-rows.</p>
+rows. The sort is on an integer id per unit, not on the id columns: on a
+population register sorting a character cpr took most of the time. That
+is why units keep the order of the data, as in <code><a href="merge_spells.html">merge_spells()</a></code>; for an
+extract sorted by cpr it is the same order.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

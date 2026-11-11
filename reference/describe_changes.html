@@ -80,7 +80,8 @@ database tables on the same connection (see <em>Database tables</em>).</p></dd>
 a list with the counts <code>n_old</code>, <code>n_new</code>, <code>n_kept</code> (keys in both),
 <code>n_added</code>, <code>n_removed</code> and <code>n_changed</code> (kept keys with any changed
 column); <code>columns_added</code>, <code>columns_removed</code> and <code>type_changed</code>
-(column names); <code>columns</code>, a tibble with one row per shared column:
+(column names); <code>columns_skipped</code> (shared columns not compared);
+<code>columns</code>, a tibble with one row per compared shared column:
 <code>column</code>, <code>changed</code> (another value), <code>went_missing</code> (a value, now
 missing), <code>filled_in</code> (missing, now a value) and <code>share</code> (of the kept
 keys with any of the three), most changed first; and <code>added</code> and
@@ -92,7 +93,9 @@ number of columns that changed).</p>
     <p>Both extracts must be unique on the key; check with <code><a href="ensure_unique.html">ensure_unique()</a></code> or
 <code><a href="describe_key.html">describe_key()</a></code> first. Two missing values are equal. A column whose
 type changed, e.g. from integer to character, is compared as text, and
-integer and double columns as numbers.</p>
+integer and double columns as numbers.
+Shared non-key list or matrix columns are not compared. Their names are
+returned in <code>columns_skipped</code> and shown when the summary is printed.</p>
     </div>
     <div class="section level2">
     <h2 id="why-it-is-fast">Why it is fast<a class="anchor" aria-label="anchor" href="#why-it-is-fast"></a></h2>

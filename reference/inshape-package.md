@@ -12,13 +12,10 @@ registers. See
 
 ### The name
 
-In Rome the censors registered every citizen, and each census was closed
-by the *inshape*: a ceremony that purified the people just counted,
-before the register was accepted. This package is that last step for
-register data, a registration of the registrations: are the keys unique,
-the panels whole, the spells consistent, before anyone builds on them?
-The word also came to mean the five-year period between two censuses,
-which suits a package about periods.
+Register data has a shape, and an analysis is written for one of them.
+inshape asks whether the data is *in shape*, the shape the analysis
+assumes: are the keys unique, the panels whole, the spells consistent,
+before anyone builds on them?
 
 ### Where to start
 
@@ -39,6 +36,9 @@ which suits a package about periods.
 - [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md):
   every unit is observed in every period, or at least has no gaps.
 
+- [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md):
+  a spell has a start and does not end before it.
+
 - [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md):
   a unit is in one spell at a time.
 
@@ -49,7 +49,14 @@ which suits a package about periods.
   no one is observed after death or emigration, or before birth.
 
 - [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md):
-  a coded column holds only codes from the code list.
+  a coded column holds only codes from the code list, valid at the time
+  of the row.
+
+- [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md):
+  every key occurs in a reference register.
+
+- [`violations()`](https://dataniel.github.io/inshape/reference/violations.md):
+  the rows that break a check, all of them.
 
 - [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md):
   one spell recorded as several, merged into one.
@@ -63,6 +70,12 @@ The `ensure_*()` functions are checkpoints: they warn or abort with the
 offending rows and return the data, so they sit in a pipeline. What they
 share (messages, personal data, database tables) is described in
 [checkpoints](https://dataniel.github.io/inshape/reference/checkpoints.md).
+
+    persons |>
+      ensure_unique(cpr, year, abort_msg = "Duplicate person-years") |>
+      ensure_balanced(cpr, year, gaps_only = TRUE)
+
+    gaps <- violations(ensure_balanced(persons, cpr, year, gaps_only = TRUE))
 
 ### Why a package of its own
 

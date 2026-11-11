@@ -462,20 +462,68 @@ population |>
 #> 4   c 2020         <NA>          <NA>
 ```
 
+## Valid boundaries and reference coverage
+
+Validate spell boundaries before checking their relationships. Missing
+ends represent ongoing spells; `open_end = FALSE` requires closed
+spells.
+
+``` r
+ensure_valid_spells(education, start, end)
+#> ✔ Valid spells: start to end
+```
+
+Check that each observation can be linked to a reference register.
+Duplicate reference keys do not multiply rows, and missing keys do not
+match unless `na_matches = "na"` is specified.
+
+``` r
+observations <- tibble(cpr = c("a", "b", "c"), year = 2020)
+reference <- tibble(person_id = c("a", "b"), year = 2020)
+ensure_matched(observations, reference, by = c(cpr = "person_id", "year"))
+#> Warning in ensure_matched(observations, reference, by = c(cpr = "person_id", : Keys missing from the reference: cpr, year
+#> ℹ 1 row found:
+#>     cpr    year
+#>     <chr> <dbl>
+#>   1 c      2020
+```
+
+## Codes valid at the observation time
+
+A temporal code list has `code`, `valid_from` and `valid_to`. Bounds are
+inclusive, missing bounds are open, and a code may have several
+intervals. Time and bounds use the same scale: dates, date-times, or
+numeric periods. Missing observation times fail for non-missing codes.
+`na_ok` controls missing codes separately.
+
+``` r
+codebook <- tibble(code = c("A", "B"),
+                   valid_from = c(2015, 2020), valid_to = c(2019, NA_real_))
+coded <- tibble(classification = c("A", "A", "B"), year = c(2019, 2020, 2020))
+ensure_codes(coded, classification, codebook, time = year)
+#> Warning in ensure_codes(coded, classification, codebook, time = year): Codes not in the code list: classification
+#> ℹ 1 row in 1 group:
+#>     classification  year
+#>     <chr>          <dbl>
+#>   1 A               2020
+```
+
 ## Personal data and large registers
 
 inshape is made for interactive review of registers, at the console in
 the environment where the data lives. The offending rows of a check are
 personal data, so inshape writes nothing to disk, neither rows nor a
-log. A failure shows the count and the first rows, and signals a
-condition of class `inshape_failure` that carries all of them, to look
-at in the session:
+log. A failure shows the count and the first rows. Wrap the check in
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+to get all of them, to look at in the session; when the check passes, it
+returns no rows:
 
 ``` r
-dups <- tryCatch(
-  ensure_unique(persons, cpr, year, abort_msg = "Duplicate person-years"),
-  inshape_failure = \(e) e$violations
-)
+gaps <- violations(ensure_balanced(panel, cpr, year, gaps_only = TRUE))
+#> ✔ No gaps in year per cpr
+gaps
+#> # A tibble: 0 × 4
+#> # ℹ 4 variables: cpr <chr>, year <dbl>, born <date>, death <date>
 ```
 
 A DuckDB or Arrow table is checked where it lives, and only the count

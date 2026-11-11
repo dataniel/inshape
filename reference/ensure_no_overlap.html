@@ -110,9 +110,8 @@ each conflict can be inspected as a group.</p>
 spell ending 31 January and one starting 1 February do not overlap, while
 one ending and one starting on 1 February do. A missing <code>end</code> means an
 ongoing spell and overlaps everything after its start. Rows with a missing
-<code>start</code> are ignored; find them with <code>dplyr::filter(data, is.na(start))</code>,
-and spells that end before they start with
-<code>dplyr::filter(data, end &lt; start)</code>.</p>
+<code>start</code> are ignored. Check missing starts and ends before starts with
+<code><a href="ensure_valid_spells.html">ensure_valid_spells()</a></code> before checking overlaps.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

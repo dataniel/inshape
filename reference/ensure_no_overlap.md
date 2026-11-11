@@ -71,9 +71,10 @@ Spells are treated as closed intervals, as register dates usually are: a
 spell ending 31 January and one starting 1 February do not overlap,
 while one ending and one starting on 1 February do. A missing `end`
 means an ongoing spell and overlaps everything after its start. Rows
-with a missing `start` are ignored; find them with
-`dplyr::filter(data, is.na(start))`, and spells that end before they
-start with `dplyr::filter(data, end < start)`.
+with a missing `start` are ignored. Check missing starts and ends before
+starts with
+[`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md)
+before checking overlaps.
 
 ## See also
 

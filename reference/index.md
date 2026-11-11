@@ -36,6 +36,12 @@ in a pipeline.
   : Assert that observations lie within each unit's lifetime
 - [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md)
   : Assert that a column only holds codes from a code list
+- [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md)
+  : Assert that spell boundaries are valid
+- [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
+  : Assert that every key occurs in a reference register
+- [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+  : The rows that break a check
 - [`checkpoints`](https://dataniel.github.io/inshape/reference/checkpoints.md)
   : Checkpoints: shared arguments, personal data and database tables
 

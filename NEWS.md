@@ -1,5 +1,23 @@
 # inshape 0.1.0
 
+* The general checkpoints from the expectr package are now part of
+  inshape, renamed to the `ensure_` prefix and built on the same reporting
+  as the structure checks:
+
+  | expectr              | inshape              |
+  |----------------------|----------------------|
+  | `expect_empty()`     | `ensure_empty()`     |
+  | `expect_none()`      | `ensure_none()`      |
+  | `expect_all()`       | `ensure_all()`       |
+  | `tally_violations()` | `tally_violations()` |
+
+  A failure signals `inshape_failure`, and `violations()` returns its rows.
+* expectr's `log` and `dump` arguments and the options `expectr.log`,
+  `expectr.dump` and `expectr.quiet` are gone: inshape never writes rows to
+  disk itself. Save the rows from `violations()` if you need them. A call
+  that still passes `log =` or `dump =` fails with "unused argument"
+  instead of being ignored.
+
 * New `describe_match()` says what a join will do before it is made: the
   keys found in both tables, only in the data and only in the reference,
   the rows without a match, and how many rows a left join returns when the

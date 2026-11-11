@@ -4,7 +4,7 @@
 \name{inshape-package}
 \alias{inshape}
 \alias{inshape-package}
-\title{inshape: structure checks for register microdata}
+\title{inshape: checks for register microdata}
 \description{
 Register microdata comes in a few shapes: one row per unit, one row per
 unit and period (a panel), or one row per spell with a start and an end.
@@ -46,6 +46,9 @@ before birth.
 \item \code{\link[=ensure_codes]{ensure_codes()}}: a coded column holds only codes from the code list,
 valid at the time of the row.
 \item \code{\link[=ensure_matched]{ensure_matched()}}: every key occurs in a reference register.
+\item \code{\link[=ensure_none]{ensure_none()}}, \code{\link[=ensure_all]{ensure_all()}} and \code{\link[=ensure_empty]{ensure_empty()}}: any other rule
+dplyr can express, such as no negative amounts.
+\item \code{\link[=tally_violations]{tally_violations()}}: count many rules at once, without judging.
 \item \code{\link[=violations]{violations()}}: the rows that break a check, all of them.
 \item \code{\link[=merge_spells]{merge_spells()}}: one spell recorded as several, merged into one.
 \item \code{\link[=spells_to_panel]{spells_to_panel()}} and \code{\link[=add_spell_status]{add_spell_status()}}: from spells to a panel.
@@ -66,13 +69,14 @@ gaps <- violations(ensure_balanced(persons, cpr, year, gaps_only = TRUE))
 
 \subsection{Why a package of its own}{
 
-The key, panel and spell checks started in the expectr package and the
-spell conversions in daos. They moved here because they share an engine
-the rest does not: the grouping of keys such as cpr without sorting
-them, and the compiled pass over sorted spells. expectr keeps the
-general checkpoints (\code{expect_empty()}, \code{expect_none()}), and the two
-packages do not depend on each other; the \code{ensure_} prefix keeps their
-functions apart in a script that uses both.
+The checkpoints and the spell conversions started in the daos package.
+They moved here because they share an engine the rest of daos does not:
+the grouping of keys such as cpr without sorting them, the compiled pass
+over sorted spells, and one way of reporting a broken rule. The general
+checkpoints, \code{\link[=ensure_none]{ensure_none()}}, \code{\link[=ensure_all]{ensure_all()}}, \code{\link[=ensure_empty]{ensure_empty()}} and
+\code{\link[=tally_violations]{tally_violations()}}, spent a while in the expectr package and joined
+the rest here, since they share the same contract, the same reporting
+and the same dependencies.
 }
 }
 \seealso{

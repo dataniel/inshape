@@ -1,19 +1,21 @@
 # inshape
 
-Structure checks for register microdata.
+Checks for register microdata.
 
 Register data comes as one row per unit, one row per unit and period (a
 panel), or one row per spell. Every analysis assumes that shape is right:
 no duplicated persons, no missing years in the middle of a panel, no
 person with two addresses at once. inshape checks those assumptions, fast
-enough for full-population registers, and converts spells to panels.
+enough for full-population registers, and converts spells to panels. Any
+other rule dplyr can express is a checkpoint too.
 
 ```r
 library(inshape)
 
 persons |>
   ensure_unique(cpr, year, abort_msg = "Duplicate person-years") |>
-  ensure_balanced(cpr, year, periods = 2015:2024, gaps_only = TRUE)
+  ensure_balanced(cpr, year, periods = 2015:2024, gaps_only = TRUE) |>
+  ensure_none(income < 0, warn_msg = "Negative income")
 
 addresses |>
   ensure_no_overlap(cpr, start, end)
@@ -40,18 +42,22 @@ pak::pak("dataniel/inshape")
 | `describe_panel()` | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
 | `describe_spells()` | Spell data: gaps, transfers (adjacent spells), overlapping, nested and duplicate spells, ongoing and invalid spells |
 | `describe_varying()` | Which columns vary within units: constant, nearly constant (errors) and varying |
+| `ensure_all()` | Every row meets a condition written as in `filter()`; a missing value is a violation |
 | `ensure_balanced()` | Every unit observed in every period, or no gaps (`gaps_only`) |
 | `ensure_codes()` | Codes belong to a code list, optionally within their validity periods |
 | `ensure_complete()` | Columns an analysis cannot do without (an id, a date) have no missing values; the rows are reported with the columns missing in each |
 | `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
+| `ensure_empty()` | A violation set built with `filter()` or an anti-join has no rows |
 | `ensure_matched()` | Every key occurs in a reference register, including composite or renamed keys |
 | `ensure_no_gaps()` | Spells cover a unit without a break between them, or with gaps of at most `max_gap` days |
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
+| `ensure_none()` | No row matches a condition written as in `filter()` |
 | `ensure_unique()` | Key columns identify each row uniquely |
 | `ensure_valid_spells()` | Spells have a start and do not end before it, optionally requiring a closed end |
 | `ensure_within()` | No rows after death or emigration, or before birth: each row within its unit's lifetime |
 | `merge_spells()` | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
+| `tally_violations()` | Violations counted for many rules at once, judging nothing; filter and pipe into `ensure_empty()` |
 | `violations()` | The rows that break a check, all of them: wrap the check in it |
 
 The `ensure_*()` checkpoints warn or abort with the offending rows and
@@ -127,9 +133,9 @@ built on it.
 
 ## Origin
 
-The checks started as `expect_unique()`, `expect_balanced()` and
-`expect_no_overlap()` in [expectr](https://github.com/dataniel/expectr),
-and the spell conversions in [daos](https://github.com/dataniel/daos).
-They were renamed to `ensure_*()` when they moved, so a script using both
-packages cannot confuse them. expectr keeps the general checkpoints, and
-the packages do not depend on each other.
+The checkpoints and the spell conversions started in
+[daos](https://github.com/dataniel/daos). The general checkpoints spent a
+while in the expectr package as `expect_empty()`, `expect_none()` and
+`expect_all()`, and joined the structure checks here as `ensure_empty()`,
+`ensure_none()` and `ensure_all()`, since they share the same contract,
+reporting and dependencies.

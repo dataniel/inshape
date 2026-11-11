@@ -29,7 +29,17 @@ reference:
       - describe_spells
       - describe_varying
 
-  - title: Checkpoints
+  - title: Rules
+    desc: >
+      Any rule dplyr can express, stated as "the set of violations must
+      be empty". `tally_violations()` counts many rules and judges nothing.
+    contents:
+      - ensure_empty
+      - ensure_none
+      - ensure_all
+      - tally_violations
+
+  - title: Structure checks
     desc: >
       Each checkpoint states one rule about the structure of the data,
       warns or aborts with the offending rows, and returns its input, so it

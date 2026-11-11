@@ -26,7 +26,8 @@ inshape checks the shape before anything is built on it, in two steps.
 The `describe_*()` functions look at the structure and judge nothing; the
 `ensure_*()` functions are *checkpoints*: each states one rule, warns or
 aborts with the rows that break it, and returns the data, so it sits in a
-pipeline.
+pipeline. Most rules are about structure; `ensure_none()`, `ensure_all()`
+and `ensure_empty()` take any rule dplyr can express.
 
 | Function | The rule | Returns |
 |---|---|---|
@@ -47,6 +48,10 @@ pipeline.
 | `ensure_within()` | no rows after death or emigration, or before birth | the data |
 | `ensure_valid_spells()` | a spell has a start and does not end before it | the data |
 | `ensure_matched()` | every key occurs in a reference register | the data |
+| `ensure_none()` | no row matches a condition (`NA` passes) | the data |
+| `ensure_all()` | every row meets a condition (`NA` fails) | the data |
+| `ensure_empty()` | a violation set you built yourself has no rows | the set |
+| `tally_violations()` | (count) violations for many rules at once | a tally |
 | `merge_spells()` | (conversion) spells recorded as several, merged | merged spells |
 | `spells_to_panel()` | (conversion) spells to a period panel | a panel |
 | `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
@@ -413,6 +418,92 @@ coded <- tibble(classification = c("A", "A", "B"), year = c(2019, 2020, 2020))
 ensure_codes(coded, classification, codebook, time = year)
 ```
 
+## Rules of your own: `ensure_none()`, `ensure_all()` and `ensure_empty()`
+
+The structure checks cover the rules every register has. The rest are
+particular to a delivery: no negative amounts, every cvr eight digits, a
+total that matches its parts. Any rule dplyr can express is a checkpoint,
+stated as "the set of violations must be empty".
+
+`ensure_none()` takes the condition for a violating row and returns the
+full data, so checks chain before the real work continues:
+
+```{r}
+sales <- tibble(
+  order_id    = 1001:1006,
+  customer_id = c(12, 17, NA, 25, 31, NA),
+  amount      = c(250, -40, 120, 80, -15, 300)
+)
+
+sales |>
+  ensure_none(amount < 0, warn_msg = "Negative amounts") |>
+  ensure_none(amount > 1e6) |>
+  nrow()
+```
+
+Without a message, the condition becomes one, which is often enough at
+the console. Give checks that stay in a script a message in your own
+words. Messages are shown literally, so `"cvr must match ^\\d{8}$"` is
+safe.
+
+The condition follows `filter()`: a row where it is `NA` is not a
+violation. `ensure_all()` states the rule positively instead, and there a
+row passes only when the condition is `TRUE`, so a missing value is a
+violation:
+
+```{r}
+sales |>
+  ensure_none(customer_id < 0)
+
+sales |>
+  ensure_all(customer_id > 0)
+```
+
+No customer id is negative, but two are missing. Use `ensure_all()` when a
+value has to be present *and* right, and `ensure_none()` when a missing
+value is acceptable or a rule of its own, such as `ensure_complete()`.
+
+`ensure_empty()` is the most general form: build the violation set
+yourself, with a `filter()` or an anti-join, and pipe it in.
+
+```{r, eval = FALSE}
+expected |>
+  dplyr::anti_join(delivery, by = "cvr") |>
+  ensure_empty(warn_msg = "Firms missing from the delivery")
+```
+
+### Many rules at once: `tally_violations()`
+
+A chain of checkpoints stops at the first abort. When a delivery has five
+problems, you want to hear about all five in one go. `tally_violations()`
+evaluates every rule and counts the violating rows, but never warns or
+stops: the checkpoints judge, the tally only counts.
+
+```{r}
+report <- sales |>
+  tally_violations(
+    "Negative amount" = amount < 0,
+    "No customer"     = is.na(customer_id),
+    "Huge amount"     = amount > 1e6
+  )
+report
+```
+
+`rows` holds the row numbers of each rule's violations. Filtered to the
+rules that failed, the tally is itself a violation set. `total` is the
+number of rows checked, so the same tally can warn about every broken
+rule and stop only for those broken at scale:
+
+```{r, eval = FALSE}
+report |>
+  dplyr::filter(n > 0) |>
+  ensure_empty(warn_msg = "Rules with violations")
+
+report |>
+  dplyr::filter(n / total > 0.001) |>
+  ensure_empty(abort_msg = "Rules broken by more than 0.1 % of the rows")
+```
+
 ## Personal data and large registers
 
 inshape is made for interactive review of registers, at the console in
@@ -425,6 +516,15 @@ check passes, it returns no rows:
 ```{r}
 gaps <- violations(ensure_balanced(panel, cpr, year, gaps_only = TRUE))
 gaps
+```
+
+Whether rows are kept anywhere is for the analysis and its data agreement
+to decide. To save them, do it yourself, from the rows `violations()`
+returns:
+
+```{r, eval = FALSE}
+violations(ensure_none(sales, amount < 0)) |>
+  data.table::fwrite("negative_amounts.csv")
 ```
 
 A DuckDB or Arrow table is checked where it lives, and only the count and

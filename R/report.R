@@ -1,9 +1,11 @@
 #' Checkpoints: shared arguments, personal data and database tables
 #'
 #' The `ensure_*()` functions are checkpoints: each states a rule about the
-#' structure of the data, warns or aborts with the offending rows when it is
-#' broken, and returns `data` invisibly, so it can sit in the middle of a
-#' pipeline. This page documents what they share.
+#' data, warns or aborts with the offending rows when it is broken, and
+#' returns `data` invisibly, so it can sit in the middle of a pipeline. Most
+#' rules are about structure; [ensure_none()], [ensure_all()] and
+#' [ensure_empty()] take any rule dplyr can express. This page documents
+#' what they share.
 #'
 #' The offending rows are deliberately not kept in the session afterwards: on
 #' a population register a failed check can hold millions of rows, and they
@@ -37,6 +39,13 @@
 #' * **The condition** carries the rows in memory, until it is caught, by
 #'   [violations()] for one, or dropped. Whether any of them are stored, and where, is for the analysis
 #'   and its data agreement to decide, not the package.
+#'
+#' To keep the rows, save them yourself, from what [violations()] returns:
+#'
+#' ```r
+#' violations(ensure_none(sales, amount < 0)) |>
+#'   data.table::fwrite("negative_amounts.csv")
+#' ```
 #'
 #' ## Speed
 #'
@@ -100,8 +109,10 @@
 #' @seealso [ensure_unique()], [ensure_complete()], [ensure_balanced()],
 #'   [ensure_no_overlap()], [ensure_no_gaps()],
 #'   [ensure_valid_spells()], [ensure_constant()], [ensure_within()],
-#'   [ensure_codes()] and [ensure_matched()] for the rules, and
-#'   [violations()] for the rows that break one.
+#'   [ensure_codes()] and [ensure_matched()] for the structure,
+#'   [ensure_none()], [ensure_all()], [ensure_empty()] and
+#'   [tally_violations()] for rules of your own, and [violations()] for the
+#'   rows that break one.
 NULL
 
 

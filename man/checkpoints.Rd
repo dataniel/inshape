@@ -21,9 +21,11 @@ issued instead.}
 }
 \description{
 The \verb{ensure_*()} functions are checkpoints: each states a rule about the
-structure of the data, warns or aborts with the offending rows when it is
-broken, and returns \code{data} invisibly, so it can sit in the middle of a
-pipeline. This page documents what they share.
+data, warns or aborts with the offending rows when it is broken, and
+returns \code{data} invisibly, so it can sit in the middle of a pipeline. Most
+rules are about structure; \code{\link[=ensure_none]{ensure_none()}}, \code{\link[=ensure_all]{ensure_all()}} and
+\code{\link[=ensure_empty]{ensure_empty()}} take any rule dplyr can express. This page documents
+what they share.
 }
 \details{
 The offending rows are deliberately not kept in the session afterwards: on
@@ -57,6 +59,12 @@ shared screen, keeps them too, so run the checks at the console.
 \code{\link[=violations]{violations()}} for one, or dropped. Whether any of them are stored, and where, is for the analysis
 and its data agreement to decide, not the package.
 }
+
+To keep the rows, save them yourself, from what \code{\link[=violations]{violations()}} returns:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{violations(ensure_none(sales, amount < 0)) |>
+  data.table::fwrite("negative_amounts.csv")
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Speed}{
@@ -110,6 +118,8 @@ queries, to \code{collect()}.
 \code{\link[=ensure_unique]{ensure_unique()}}, \code{\link[=ensure_complete]{ensure_complete()}}, \code{\link[=ensure_balanced]{ensure_balanced()}},
 \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}, \code{\link[=ensure_no_gaps]{ensure_no_gaps()}},
 \code{\link[=ensure_valid_spells]{ensure_valid_spells()}}, \code{\link[=ensure_constant]{ensure_constant()}}, \code{\link[=ensure_within]{ensure_within()}},
-\code{\link[=ensure_codes]{ensure_codes()}} and \code{\link[=ensure_matched]{ensure_matched()}} for the rules, and
-\code{\link[=violations]{violations()}} for the rows that break one.
+\code{\link[=ensure_codes]{ensure_codes()}} and \code{\link[=ensure_matched]{ensure_matched()}} for the structure,
+\code{\link[=ensure_none]{ensure_none()}}, \code{\link[=ensure_all]{ensure_all()}}, \code{\link[=ensure_empty]{ensure_empty()}} and
+\code{\link[=tally_violations]{tally_violations()}} for rules of your own, and \code{\link[=violations]{violations()}} for the
+rows that break one.
 }

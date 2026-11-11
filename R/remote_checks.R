@@ -296,3 +296,28 @@ check_remote_logical <- function(tbl, rules, labels, call, what = "Rule") {
     )
   }
 }
+
+# Violation counts for all rules, and the number of rows checked, in one
+# query. Rows have no numbers in a database, so there is no `rows` column.
+remote_tally <- function(tbl, rules, call) {
+  tbl  <- dplyr::ungroup(tbl)
+  cols <- paste0(".inshape_r", seq_along(rules))
+  check_remote_logical(tbl, stats::setNames(rules, cols), names(rules), call)
+
+  sums <- lapply(rules, function(rule) {
+    rlang::quo(sum(dplyr::if_else(!!rule, 1L, 0L), na.rm = TRUE))
+  })
+  names(sums) <- cols
+  counts <- tryCatch(
+    dplyr::collect(dplyr::summarise(tbl, !!!sums, .inshape_total = dplyr::n())),
+    error = function(e) {
+      cli::cli_abort("The rules could not be evaluated in the database.",
+                     parent = e, call = call)
+    }
+  )
+  tibble::tibble(
+    rule  = names(rules),
+    n     = as.integer(dplyr::coalesce(unlist(counts[cols], use.names = FALSE), 0)),
+    total = as.integer(counts$.inshape_total)
+  )
+}

@@ -222,3 +222,32 @@ test_that("ensure_none() refuses a condition that is not logical in a database",
   tbl <- local_duck(df)
   expect_error(ensure_none(tbl, amount * 2), "must give a logical vector")
 })
+
+test_that("ensure_empty() takes a lazy violation set", {
+  tbl <- local_duck(df)
+  expect_message(ensure_empty(dplyr::filter(tbl, year > 2030)), "The dataset is empty")
+  expect_error(ensure_empty(dplyr::filter(tbl, is.na(id)), abort_msg = "NA ids"),
+               "2 rows found")
+})
+
+test_that("tally_violations() counts all rules in one query", {
+  tbl <- local_duck(df)
+  remote <- tally_violations(tbl, "Negative" = amount < 0, "No id" = is.na(id), "None" = year > 3000)
+  local  <- tally_violations(df,  "Negative" = amount < 0, "No id" = is.na(id), "None" = year > 3000)
+  expect_equal(remote, local[c("rule", "n", "total")])
+  expect_equal(remote$total, rep(6L, 3))
+})
+
+test_that("tally_violations() refuses a rule that is not logical in a database", {
+  tbl <- local_duck(df)
+  expect_error(tally_violations(tbl, "Fine" = amount < 0, "Not logical" = amount * 2),
+               "Rule \"Not logical\" must give a logical")
+  expect_error(tally_violations(tbl, "Typo" = amuont < 0), "could not be evaluated")
+})
+
+test_that("tally_violations() counts an empty database table as zero", {
+  tbl <- local_duck(df[0, ])
+  out <- tally_violations(tbl, "Negative" = amount < 0)
+  expect_equal(out$n, 0L)
+  expect_equal(out$total, 0L)
+})

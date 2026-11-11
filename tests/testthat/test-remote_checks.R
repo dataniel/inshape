@@ -203,3 +203,22 @@ test_that("ensure_complete() takes an Arrow table", {
   expect_message(out <- ensure_complete(tbl, year), "Complete: year")
   expect_identical(out, tbl)
 })
+
+test_that("ensure_none() checks a database table and returns it unchanged", {
+  tbl <- local_duck(df)
+  expect_message(out <- ensure_none(tbl, amount > 100), "No rows where amount > 100")
+  expect_s3_class(out, "tbl_lazy")
+
+  cnd <- rlang::catch_cnd(ensure_none(tbl, amount < 0), classes = "inshape_failure")
+  expect_match(conditionMessage(cnd), "2 rows found")
+  expect_s3_class(cnd$violations, "tbl_lazy")
+  expect_equal(sort(dplyr::collect(cnd$violations)$amount), c(-5, -2))
+
+  passed <- suppressMessages(violations(ensure_none(tbl, amount > 100)))
+  expect_equal(nrow(dplyr::collect(passed)), 0)
+})
+
+test_that("ensure_none() refuses a condition that is not logical in a database", {
+  tbl <- local_duck(df)
+  expect_error(ensure_none(tbl, amount * 2), "must give a logical vector")
+})

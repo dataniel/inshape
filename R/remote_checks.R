@@ -270,3 +270,29 @@ remote_incomplete <- function(tbl, cols, diagnostic) {
     dplyr::relocate(dplyr::all_of(diagnostic)) |>
     sort_by(c(list(rlang::sym(diagnostic)), na_first(cols)))
 }
+
+# A database casts a number to a boolean without complaint, so a rule such
+# as `amount * 2` would count every row. The types are read from a query
+# that fetches no rows, which keeps the check as strict as on a data frame.
+#
+# `rules` are named with the column names to use in the query, `labels` are
+# what the user called them. A grouped table keeps its grouping columns in
+# the result, so the rules are picked out by name.
+check_remote_logical <- function(tbl, rules, labels, call, what = "Rule") {
+  probe <- tryCatch(
+    dplyr::collect(utils::head(dplyr::transmute(tbl, !!!rules), 0)),
+    error = function(e) {
+      cli::cli_abort("The {tolower(what)}s could not be evaluated in the database.",
+                     parent = e, call = call)
+    }
+  )
+  probe <- probe[names(rules)]
+  bad <- which(!vapply(probe, is.logical, logical(1)))
+  if (length(bad) > 0) {
+    i <- bad[1]
+    cli::cli_abort(
+      "{what} {.val {labels[[i]]}} must give a logical vector, not {.cls {class(probe[[i]])}}.",
+      call = call
+    )
+  }
+}

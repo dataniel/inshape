@@ -49,8 +49,14 @@ ensure_matched <- function(data, reference, by, na_matches = c("never", "na"),
   } else if (is_remote(ref)) {
     cli::cli_abort("A local {.arg data} requires a local {.arg reference}.")
   }
-  rows <- dplyr::anti_join(tbl, ref, by = by, na_matches = na_matches)
-  if (is_remote(tbl)) rows <- sort_by(rows, na_first(left))
+  rows <- if (is_remote(tbl)) {
+    sort_by(dplyr::anti_join(tbl, ref, by = by, na_matches = na_matches), na_first(left))
+  } else if (same_classes(data, ref, left, unname(by))) {
+    tibble::as_tibble(data)[unmatched_rows(data, ref, left, unname(by), na_matches), ]
+  } else {
+    # Keys of different classes are left to the join, which converts them
+    dplyr::anti_join(tbl, ref, by = by, na_matches = na_matches)
+  }
   report_check(
     rows,
     pass = paste0("Matched in the reference: ", toString(left)),
@@ -59,4 +65,29 @@ ensure_matched <- function(data, reference, by, na_matches = c("never", "na"),
     key = left
   )
   invisible(data)
+}
+
+# Whether the columns `x_cols` of `x` and `y_cols` of `y` have the same
+# classes pairwise, so that their values can be combined with c()
+same_classes <- function(x, y, x_cols, y_cols) {
+  all(mapply(function(a, b) identical(class(x[[a]]), class(y[[b]])), x_cols, y_cols))
+}
+
+# Rows of `data` whose key is not in `ref`, in the order of the data. The
+# keys of both tables are compressed together in one hash pass (see
+# group_ids()), where a join on a character cpr is several times slower.
+# A missing value is a value of its own there, as with na_matches = "na";
+# with "never" a row with a missing key is unmatched whatever `ref` holds.
+unmatched_rows <- function(data, ref, cols, ref_cols, na_matches) {
+  n <- nrow(data)
+  both <- lapply(seq_along(cols), function(k) c(data[[cols[k]]], ref[[ref_cols[k]]]))
+  names(both) <- paste0("k", seq_along(cols))
+  id <- group_ids(data.table::setDT(both), names(both))
+  in_ref <- logical(attr(id, "n"))
+  in_ref[id[n + seq_len(nrow(ref))]] <- TRUE
+  bad <- !in_ref[id[seq_len(n)]]
+  if (na_matches == "never") {
+    for (col in cols) bad <- bad | is.na(data[[col]])
+  }
+  which(bad)
 }

@@ -1,5 +1,18 @@
 # inshape 0.1.0
 
+* `spells_to_panel()` returns the units in the order they first appear in
+  the data, as `merge_spells()` does, instead of sorted by the id columns;
+  sort with `dplyr::arrange()` if needed. The spells are sorted on an
+  integer id per unit, and sorting a character cpr was most of the time:
+  on 2.5 million spells it went from 1.9 to about 1 second.
+* `ensure_matched()` hashes the keys of the data and the reference
+  together instead of joining them (1.2 to 0.3 seconds on 4.5 million
+  rows), and `ensure_codes()` with a temporal code list joins only the
+  distinct pairs of code and time with the list (1.6 to 0.2 seconds).
+  The rows reported are the same.
+* `add_spell_status()` converts the distinct periods to days, not the
+  rows, and sorts the rows once for primo and ultimo.
+* `describe_panel()` on a database table works with dbplyr 2.6.0.
 * New `violations()` returns the rows that break a check: wrap the check in
   it, `violations(ensure_unique(persons, cpr))`. It replaces catching the
   `inshape_failure` condition by hand, where a check that passed handed

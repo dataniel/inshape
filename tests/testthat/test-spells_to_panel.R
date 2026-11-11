@@ -111,3 +111,16 @@ test_that("empty data gives an empty panel", {
   expect_equal(nrow(p), 0)
   expect_named(p, c("cpr", "year", "primo", "ultimo"))
 })
+
+test_that("units come in the order they first appear in the data", {
+  spells <- data.frame(
+    cpr    = c("b", "a", "b", "c"),
+    start  = as.Date(c("2021-03-01", "2020-01-01", "2020-01-01", "2020-06-01")),
+    end    = as.Date(c("2021-12-31", "2020-12-31", "2020-12-31", "2021-06-30")),
+    status = c("x", "y", "z", "w")
+  )
+  out <- spells_to_panel(spells, cpr, start, end, status, from = 2020, to = 2021)
+  expect_equal(out$cpr, rep(c("b", "a", "c"), each = 2))
+  expect_equal(out$year, rep(2020:2021, 3))
+  expect_equal(out$ultimo, c("z", "x", "y", NA, "w", NA))
+})

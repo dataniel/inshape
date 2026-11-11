@@ -107,9 +107,21 @@ temporal_code_violations <- function(tbl, col, codes, time, na_ok) {
   if (is.factor(codes$code)) codes$code <- as.character(codes$code)
   if (is.character(proto[[col]]) || is.factor(proto[[col]])) codes$code <- as.character(codes$code)
   keys <- unique(c(col, time))
-  candidates <- tbl |>
-    dplyr::select(dplyr::all_of(keys)) |>
-    dplyr::filter(!is.na(.data[[col]]), !is.na(.data[[time]]))
+  # In memory only the distinct pairs of code and time are joined with the
+  # code list, a few thousand where the rows are millions; `pair` numbers
+  # them, and the rows look their pair up afterwards
+  local <- !is_remote(tbl)
+  if (local) {
+    pair  <- group_ids(tbl, keys)
+    first <- first_row_by(pair, attr(pair, "n"))
+    seen  <- which(first > 0L)
+    pair_col <- diagnostic_name(tbl, ".inshape_pair")
+    candidates <- tibble::as_tibble(lapply(unclass(tbl)[keys], `[`, first[seen]))
+    candidates[[pair_col]] <- seen
+  } else {
+    candidates <- dplyr::select(tbl, dplyr::all_of(keys))
+  }
+  candidates <- dplyr::filter(candidates, !is.na(.data[[col]]), !is.na(.data[[time]]))
   matches <- NULL
   for (lower in c(FALSE, TRUE)) for (upper in c(FALSE, TRUE)) {
     part <- codes[(!is.na(codes$valid_from) == lower) & (!is.na(codes$valid_to) == upper), ]
@@ -127,8 +139,14 @@ temporal_code_violations <- function(tbl, col, codes, time, na_ok) {
     hit <- dplyr::semi_join(candidates, part, by = dplyr::join_by(!!!tests), na_matches = "never")
     matches <- if (is.null(matches)) hit else dplyr::union_all(matches, hit)
   }
+  if (local) {
+    valid <- logical(length(first))
+    if (!is.null(matches)) valid[matches[[pair_col]]] <- TRUE
+    bad <- !valid[pair]
+    if (na_ok) bad <- bad & !is.na(tbl[[col]])
+    return(tibble::as_tibble(tbl)[which(bad), ])
+  }
   rows <- if (is.null(matches)) tbl else dplyr::anti_join(tbl, matches, by = keys, na_matches = "never")
   if (na_ok) rows <- dplyr::filter(rows, !is.na(.data[[col]]))
-  if (is_remote(tbl)) rows <- sort_by(rows, na_first(keys))
-  rows
+  sort_by(rows, na_first(keys))
 }

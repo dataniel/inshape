@@ -46,7 +46,9 @@ run to the latest date found in \code{start} and \code{end}.}
 \value{
 A tibble (a data.table if \code{data} is one) with the \code{id} columns,
 \code{year}, \code{quarter} or \code{month} for sub-year periods, and \code{primo} and
-\code{ultimo}. Rows are sorted by unit and period.
+\code{ultimo}. Units come in the order they first appear in \code{data}, each
+with its periods in order; use \code{dplyr::arrange()} to sort by the id
+columns.
 }
 \description{
 Spell data has one row per spell: an education, an address, a benefit
@@ -86,7 +88,10 @@ by start. A compiled pass keeps the running maximum of end dates within a
 unit, so "is a spell running at this point?" and "which spell ended most
 recently?" are constant-time lookups. Spells are never expanded to days or
 periods, so the cost is one sort plus a linear pass over spells and output
-rows.
+rows. The sort is on an integer id per unit, not on the id columns: on a
+population register sorting a character cpr took most of the time. That
+is why units keep the order of the data, as in \code{\link[=merge_spells]{merge_spells()}}; for an
+extract sorted by cpr it is the same order.
 }
 
 \examples{

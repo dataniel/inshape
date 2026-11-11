@@ -181,3 +181,20 @@ test_that("database changes report skipped lists even when no columns are compar
   expect_output(print(out), "Columns not compared: details")
   expect_equal(describe_changes(tbl, tbl, id)$columns_skipped, character())
 })
+
+test_that("ensure_matched() finds the same rows whatever the key classes", {
+  data <- data.frame(cpr = c("a", "b", NA, "d", "b"), n = c(1L, 2L, 3L, NA, 9L))
+  ref  <- data.frame(id = c("a", "b", NA), n = c(1, 2, 3))
+  rows <- function(...) suppressWarnings(violations(ensure_matched(...)))
+  # Same classes: the keys are hashed together
+  expect_equal(rows(data, ref, by = c(cpr = "id"))$cpr, c(NA, "d"))
+  expect_equal(rows(data, ref, by = c(cpr = "id"), na_matches = "na")$cpr, "d")
+  # Integer against double: left to the join
+  expect_equal(rows(data, ref, by = "n")$n, c(NA, 9L))
+  expect_equal(rows(data, ref, by = c(cpr = "id", "n"), na_matches = "na")$cpr, c("d", "b"))
+  # A factor key against a factor with other levels
+  f <- function(x) factor(x)
+  expect_equal(as.character(rows(transform(data, cpr = f(cpr)), transform(ref, id = f(id)),
+                                 by = c(cpr = "id"))$cpr), c(NA, "d"))
+  expect_equal(nrow(rows(data, ref[0, ], by = c(cpr = "id"))), 5L)
+})

@@ -156,10 +156,15 @@ add_spell_status <- function(data, spells, id, at, start, end, status,
 
   values <- spells[[status_col]][keys$.row]
   ambiguous <- 0L
+  # The rows sorted by unit and day, once: primo and ultimo are days of the
+  # same period, missing in the same rows and in the same order, so the
+  # sort of the first serves both
+  day1 <- points[[1]]
+  ok   <- which(!is.na(unit_of) & !is.na(day1))
+  ord  <- ok[order(unit_of[ok], day1[ok])]
+  qgroups <- c(0L, cumsum(tabulate(unit_of[ord], nbins = length(prep$first))))
+  rm(day1, ok)
   new <- lapply(points, function(day) {
-    ok  <- which(!is.na(unit_of) & !is.na(day))
-    ord <- ok[order(unit_of[ok], day[ok])]
-    qgroups <- c(0L, cumsum(tabulate(unit_of[ord], nbins = length(prep$first))))
     res <- .Call(C_inshape_spell_lookup, keys$.start, keys$.end,
                  as.integer(prep$groups), as.integer(qgroups),
                  as.integer(day[ord]), status_is == "outcome")
@@ -199,23 +204,30 @@ spell_points <- function(data, at_cols, by, when, primo) {
   sub  <- if (n_cols == 2) whole_numbers(data[[at_cols[2]]], at_cols[2], 1, per_year) else 1L
   code <- year * per_year + sub - 1L
 
-  first_day <- codes_first_day(code, per_year)
-  ultimo    <- codes_first_day(code + 1L, per_year) - 1L
+  # The few distinct periods are converted to days, never the rows: the
+  # rows only look their period up
+  id    <- dense_codes(code)
+  value <- code[first_row_by(id, attr(id, "n"))]
+  days  <- function(codes) {
+    out <- rep(NA_integer_, length(codes))
+    out[!is.na(codes)] <- period_first_day(codes[!is.na(codes)], per_year)
+    out[id]
+  }
+  first_day <- days(value)
+  ultimo    <- days(value + 1L) - 1L
   primo_day <- if (primo == "first_day") first_day else first_day - 1L
   switch(when, both = list(primo_day, ultimo), primo = list(primo_day),
          ultimo = list(ultimo))
 }
 
 whole_numbers <- function(x, col, lo, hi) {
-  if (!is.numeric(x) || is.object(x) ||
-      any(!is.na(x) & (x != round(x) | x < lo | x > hi))) {
+  # Tested on the distinct values, which are few for a year or a quarter
+  u <- if (is.numeric(x) && !is.object(x)) {
+    id <- dense_codes(x)
+    x[first_row_by(id, attr(id, "n"))]
+  }
+  if (is.null(u) || any(!is.na(u) & (u != round(u) | u < lo | u > hi))) {
     cli::cli_abort("{.var {col}} must contain whole numbers from {lo} to {hi}.")
   }
   as.integer(x)
-}
-
-# period_first_day() for codes that may be missing; converts unique codes only
-codes_first_day <- function(code, per_year) {
-  u <- unique(code[!is.na(code)])
-  period_first_day(u, per_year)[match(code, u)]
 }

@@ -34,7 +34,10 @@
 #' unit, so "is a spell running at this point?" and "which spell ended most
 #' recently?" are constant-time lookups. Spells are never expanded to days or
 #' periods, so the cost is one sort plus a linear pass over spells and output
-#' rows.
+#' rows. The sort is on an integer id per unit, not on the id columns: on a
+#' population register sorting a character cpr took most of the time. That
+#' is why units keep the order of the data, as in [merge_spells()]; for an
+#' extract sorted by cpr it is the same order.
 #'
 #' @param data A data frame or tibble with one row per spell.
 #' @param id Column(s) identifying the unit (tidy-select), e.g. `cpr`.
@@ -54,7 +57,9 @@
 #'
 #' @return A tibble (a data.table if `data` is one) with the `id` columns,
 #'   `year`, `quarter` or `month` for sub-year periods, and `primo` and
-#'   `ultimo`. Rows are sorted by unit and period.
+#'   `ultimo`. Units come in the order they first appear in `data`, each
+#'   with its periods in order; use `dplyr::arrange()` to sort by the id
+#'   columns.
 #'
 #' @examples
 #' education <- data.frame(
@@ -115,7 +120,8 @@ spells_to_panel <- function(data, id, start, end, status,
                      "i" = "{cli::qty(clash)}Rename {?it/them} first."))
   }
 
-  prep   <- prepare_spells(data, ids, start_col, end_col)
+  prep   <- prepare_spells(data, ids, start_col, end_col,
+                           uid = first_appearance_ids(data, ids))
   keys   <- prep$keys
   unit   <- prep$unit
   first  <- prep$first
@@ -159,7 +165,7 @@ spells_to_panel <- function(data, id, start, end, status,
   unit_row <- rep(first, rows)
   code <- sequence(rows, from = lo)
   values <- data[[status_col]][keys$.row]
-  out <- lapply(keys[, ids, with = FALSE], `[`, unit_row)
+  out <- lapply(unclass(data)[ids], `[`, keys$.row[unit_row])
   out$year <- as.integer(code %/% per_year)
   if (by != "year") out[[by]] <- as.integer(code %% per_year + 1L)
   out$primo  <- status_values(values, res[[1]], status_is, ongoing)

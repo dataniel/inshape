@@ -77,6 +77,14 @@ rm(sid, len, pause, offset, begin, k)
 
 # ---- Cases ----------------------------------------------------------------
 codes <- c("955", "956", "957", "960", "961")
+# A code list with validity periods, and a reference register that lacks
+# 0.01% of the persons
+code_list <- data.frame(
+  code       = codes,
+  valid_from = c(NA, 2016, 2016, 2017, NA),
+  valid_to   = c(NA, NA, 2019, NA, 2018)
+)
+reference <- data.frame(cpr = cpr[-sample.int(persons, persons / 10000)])
 cases <- list(
   describe_key      = function() describe_key(panel, cpr, year),
   describe_panel    = function() describe_panel(panel, cpr, year),
@@ -89,6 +97,9 @@ cases <- list(
   ensure_constant   = function() ensure_constant(panel, cpr, sex, born),
   ensure_within     = function() ensure_within(panel, year, from = born, to = left),
   ensure_codes      = function() ensure_codes(panel, kommune, codes),
+  ensure_codes_time = function() ensure_codes(panel, kommune, code_list, time = year),
+  ensure_matched    = function() ensure_matched(panel, reference, by = "cpr"),
+  ensure_valid_spells = function() ensure_valid_spells(spells, start, end),
   ensure_no_overlap = function() ensure_no_overlap(spells, cpr, start, end),
   merge_spells      = function() merge_spells(spells, cpr, start, end),
   spells_to_panel   = function() spells_to_panel(spells, cpr, start, end, status,

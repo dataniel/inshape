@@ -111,5 +111,5 @@ add_spell_status(events, education, cpr, date, start, end, status,
 }
 \seealso{
 \code{\link[=spells_to_panel]{spells_to_panel()}} to build the panel from the spells,
-\code{ensure_no_overlap()} to check the spells first.
+\code{\link[=ensure_no_overlap]{ensure_no_overlap()}} to check the spells first.
 }

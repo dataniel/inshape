@@ -351,15 +351,13 @@ ensure_codes(coded, classification, codebook, time = year)
 inshape is made for interactive review of registers, at the console in
 the environment where the data lives. The offending rows of a check are
 personal data, so inshape writes nothing to disk, neither rows nor a log.
-A failure shows the count and the first rows, and signals a condition of
-class `inshape_failure` that carries all of them, to look at in the
-session:
+A failure shows the count and the first rows. Wrap the check in
+`violations()` to get all of them, to look at in the session; when the
+check passes, it returns no rows:
 
-```{r, eval = FALSE}
-dups <- tryCatch(
-  ensure_unique(persons, cpr, year, abort_msg = "Duplicate person-years"),
-  inshape_failure = \(e) e$violations
-)
+```{r}
+gaps <- violations(ensure_balanced(panel, cpr, year, gaps_only = TRUE))
+gaps
 ```
 
 A DuckDB or Arrow table is checked where it lives, and only the count and

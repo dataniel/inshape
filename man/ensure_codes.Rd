@@ -8,11 +8,11 @@ ensure_codes(
   data,
   column,
   codes,
+  time = NULL,
   na_ok = TRUE,
   success_msg = NULL,
   warn_msg = NULL,
-  abort_msg = NULL,
-  time = NULL
+  abort_msg = NULL
 )
 }
 \arguments{
@@ -23,6 +23,9 @@ DuckDB) or an Arrow table or dataset; see \emph{Database and Arrow tables}.}
 
 \item{codes}{A vector of valid codes, or a local data frame with columns
 \code{code}, \code{valid_from}, \code{valid_to}. An empty temporal list allows no codes.}
+
+\item{time}{Observation time column (tidy-select), required for a
+time-dependent code list and omitted for a vector.}
 
 \item{na_ok}{Whether a missing value passes. Default \code{TRUE}.}
 
@@ -38,9 +41,6 @@ check.}
 \item{abort_msg}{If provided, \code{cli::cli_abort()} is called with this
 message when the rule is broken. If \code{NULL} (default), a warning is
 issued instead.}
-
-\item{time}{Observation time column (tidy-select), required for a
-time-dependent code list and omitted for a vector.}
 }
 \value{
 \code{data} invisibly, unchanged.

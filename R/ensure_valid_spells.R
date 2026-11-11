@@ -39,10 +39,13 @@ ensure_valid_spells <- function(data, start, end, open_end = TRUE,
     )) |>
     dplyr::filter(!is.na(.data[[diagnostic]]))
   if (is_remote(tbl)) rows <- sort_by(rows, na_first(c(s, e)))
-  label <- abort_msg %||% warn_msg
-  report_check(rows, success_msg %||% if (is.null(label)) "Valid spell boundaries" else paste0("Check passed: ", label),
-               label %||% "Invalid spell boundaries", !is.null(abort_msg),
-               key = c(s, e), group = diagnostic)
+  report_check(
+    rows,
+    pass = paste0("Valid spells: ", s, " to ", e),
+    fail = paste0("Invalid spells: ", s, " to ", e),
+    success_msg, warn_msg, abort_msg,
+    key = c(s, e), group = diagnostic
+  )
   invisible(data)
 }
 

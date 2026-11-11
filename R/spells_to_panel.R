@@ -11,7 +11,7 @@
 #' * `status_is = "state"` (default): the status holds for the whole spell,
 #'   e.g. enrolled, on leave. The status at a point is the status of the spell
 #'   covering it, and `NA` if no spell does. Spells are closed intervals, as
-#'   in `ensure_no_overlap()`.
+#'   in [ensure_no_overlap()].
 #' * `status_is = "outcome"`: the status is what happened when the spell
 #'   ended, e.g. passed or dropped out, as in education registers. While a
 #'   spell is running (start <= point < end, or no end) the status is
@@ -25,7 +25,7 @@
 #'
 #' If spells overlap, the spell with the latest start decides the status. In
 #' state mode, a message counts the points where this happened; find the
-#' spells with `ensure_no_overlap()`. Rows with a missing start, or an end
+#' spells with [ensure_no_overlap()]. Rows with a missing start, or an end
 #' before the start, are dropped with a message.
 #'
 #' @section Why it is fast:
@@ -78,7 +78,7 @@
 #' )
 #' spells_to_panel(leave, cpr, start, end, status, by = "quarter")
 #'
-#' @seealso `ensure_no_overlap()` to check spells first, `ensure_balanced()`
+#' @seealso [ensure_no_overlap()] to check spells first, [ensure_balanced()]
 #'   to check the resulting panel.
 #'
 #' @export
@@ -94,10 +94,10 @@ spells_to_panel <- function(data, id, start, end, status,
   by        <- rlang::arg_match(by)
   status_is <- rlang::arg_match(status_is)
   primo     <- rlang::arg_match(primo)
-  ids        <- names(dplyr::select(data, {{ id }}))
-  start_col  <- names(dplyr::select(data, {{ start }}))
-  end_col    <- names(dplyr::select(data, {{ end }}))
-  status_col <- names(dplyr::select(data, {{ status }}))
+  ids        <- select_names(data, {{ id }})
+  start_col  <- select_names(data, {{ start }})
+  end_col    <- select_names(data, {{ end }})
+  status_col <- select_names(data, {{ status }})
   if (length(ids) == 0) cli::cli_abort("{.arg id} must select at least one column.")
   for (arg in c("start", "end", "status")) {
     if (length(get(paste0(arg, "_col"))) != 1) {

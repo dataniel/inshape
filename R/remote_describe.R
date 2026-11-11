@@ -132,7 +132,10 @@ remote_units <- function(cells, ids, n_per) {
     .inshape_runs = sum(.data$.inshape_new, na.rm = TRUE)
   )
   if (n_per <= 52) summary$.inshape_pattern <- rlang::expr(sum(2^(!!pos - 1L), na.rm = TRUE))
-  dplyr::summarise(runs, !!!summary, .groups = "drop")
+  # The window order is dropped again: dbplyr 2.6.0 keeps it through
+  # summarise(), and a later arrange() would then sort by a position that
+  # the summary no longer has
+  dbplyr::window_order(dplyr::summarise(runs, !!!summary, .groups = "drop"))
 }
 
 remote_describe_panel <- function(tbl, ids, time_col, periods, keep) {

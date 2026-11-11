@@ -36,12 +36,10 @@ example \code{dupid.1}). All original columns keep their names and values.
 
 A failed check signals a condition of class \code{inshape_failure} (a warning or
 an error) that carries the offending rows in its \code{violations} field.
-Catch it to look at all of them in the session:
+\code{\link[=violations]{violations()}} catches it and returns the rows, to look at all of them
+in the session:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{dups <- tryCatch(
-  ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-  inshape_failure = \\(e) e$violations
-)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{dups <- violations(ensure_unique(persons, cpr))
 }\if{html}{\out{</div>}}
 \subsection{Personal data}{
 
@@ -54,8 +52,8 @@ the rows nor a log of the checks, and keeps nothing after a check:
 \item \strong{The message} shows the number of rows and the first 5 of them at
 the console. Output that is kept, such as a rendered report or a
 shared screen, keeps them too, so run the checks at the console.
-\item \strong{The condition} carries the rows in memory, until it is caught or
-dropped. Whether any of them are stored, and where, is for the analysis
+\item \strong{The condition} carries the rows in memory, until it is caught, by
+\code{\link[=violations]{violations()}} for one, or dropped. Whether any of them are stored, and where, is for the analysis
 and its data agreement to decide, not the package.
 }
 }
@@ -90,8 +88,8 @@ dplyr::tbl(con, "persons") |>
 
 A checkpoint returns the table it was given, still unevaluated, so the
 pipeline continues in the database. On a failure the condition's
-\code{violations} field holds the violation set as a query: \code{collect()} it to
-get the rows. Two things differ
+\code{violations} field, and so \code{\link[=violations]{violations()}}, holds the violation set as a
+query: \code{collect()} it to get the rows. Two things differ
 from data frames, because a database table has no row order:
 \code{\link[=ensure_unique]{ensure_unique()}} numbers \code{dupid} in the order of the key instead of
 first appearance, and spells starting on the same day are ordered by
@@ -109,5 +107,7 @@ queries, to \code{collect()}.
 }
 \seealso{
 \code{\link[=ensure_unique]{ensure_unique()}}, \code{\link[=ensure_balanced]{ensure_balanced()}}, \code{\link[=ensure_no_overlap]{ensure_no_overlap()}},
-\code{\link[=ensure_constant]{ensure_constant()}}, \code{\link[=ensure_within]{ensure_within()}}
+\code{\link[=ensure_valid_spells]{ensure_valid_spells()}}, \code{\link[=ensure_constant]{ensure_constant()}}, \code{\link[=ensure_within]{ensure_within()}},
+\code{\link[=ensure_codes]{ensure_codes()}} and \code{\link[=ensure_matched]{ensure_matched()}} for the rules, and
+\code{\link[=violations]{violations()}} for the rows that break one.
 }

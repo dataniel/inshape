@@ -100,7 +100,7 @@ test_that("matching handles mapped composite keys and explicit missing-key polic
     v <- addition_violations(ensure_matched(x, ref[0, ], by = c(id = "person", "year")))
     expect_equal(sort(v$row), 1:6)
   }
-  expect_message(out <- ensure_matched(df, df, by = c("id", "year"), na_matches = "na"), "All keys matched")
+  expect_message(out <- ensure_matched(df, df, by = c("id", "year"), na_matches = "na"), "Matched in the reference")
   expect_identical(out, df)
   expect_error(ensure_matched(df, ref), "non-empty character")
   expect_error(ensure_matched(df, ref, by = "absent"), "must exist")
@@ -163,7 +163,7 @@ test_that("Arrow inputs support the new checks and return unchanged", {
   expect_equal(addition_violations(ensure_matched(x, data.frame(id = "a"), by = "id"))$id, "b")
   codes <- data.frame(code = c("a", "b"), valid_from = c(1L, 1L), valid_to = c(2L, 2L))
   expect_equal(addition_violations(ensure_codes(x, id, codes, time = start))$id, "b")
-  expect_message(out <- ensure_matched(x, data.frame(id = c("a", "b")), by = "id"), "All keys matched")
+  expect_message(out <- ensure_matched(x, data.frame(id = c("a", "b")), by = "id"), "Matched in the reference")
   expect_identical(out, x)
 })
 

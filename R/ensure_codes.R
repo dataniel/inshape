@@ -45,10 +45,10 @@
 #'   [checkpoints].
 #'
 #' @export
-ensure_codes <- function(data, column, codes, na_ok = TRUE,
+ensure_codes <- function(data, column, codes, time = NULL, na_ok = TRUE,
                          success_msg = NULL,
                          warn_msg    = NULL,
-                         abort_msg   = NULL, time = NULL) {
+                         abort_msg   = NULL) {
 
   tbl <- check_table(data)
   col <- select_names(tbl, {{ column }})
@@ -78,15 +78,12 @@ ensure_codes <- function(data, column, codes, na_ok = TRUE,
     tibble::as_tibble(data)[which(bad), ]
   }
 
-  label <- abort_msg %||% warn_msg
   report_check(
-    violations  = rows,
-    success_msg = success_msg %||%
-      if (is.null(label)) paste0("Valid codes: ", col) else paste0("Check passed: ", label),
-    fail_msg    = label %||% paste0("Codes not in the code list: ", col),
-    abort       = !is.null(abort_msg),
-    key         = col,
-    group       = col
+    rows,
+    pass = paste0("Valid codes: ", col),
+    fail = paste0("Codes not in the code list: ", col),
+    success_msg, warn_msg, abort_msg,
+    key = col, group = col
   )
   invisible(data)
 }

@@ -32,11 +32,11 @@ test_that("failure messages report the row count and preview rows", {
   cnd <- rlang::catch_cnd(check_rows(big, warn_msg = "Many"))
   expect_match(conditionMessage(cnd), "12 rows found")
   expect_match(conditionMessage(cnd), "7 more rows")
-  expect_match(conditionMessage(cnd), "Catch the <inshape_failure> condition", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "Wrap the check in violations()", fixed = TRUE)
 
   # All rows are shown, so there is nothing to point to
   few <- rlang::catch_cnd(check_rows(data.frame(x = 1:3), warn_msg = "Few"))
-  expect_no_match(conditionMessage(few), "Catch the", fixed = TRUE)
+  expect_no_match(conditionMessage(few), "violations()", fixed = TRUE)
 })
 
 test_that("the preview keeps columns aligned and drops the tibble header", {
@@ -90,4 +90,34 @@ test_that("the checkpoints take no path to write to", {
     args <- names(formals(getExportedValue("inshape", f)))
     expect_false(any(c("log", "dump") %in% args), info = f)
   }
+})
+
+test_that("an aborting check keeps the preview aligned, as a warning does", {
+  df <- data.frame(id = c(1, 22222), name = c("a", "bbbbbbbb"))
+  lines <- function(cnd) strsplit(cli::ansi_strip(conditionMessage(cnd)), "\n")[[1]]
+  warned  <- rlang::catch_cnd(check_rows(df), classes = "inshape_failure")
+  aborted <- rlang::catch_cnd(check_rows(df, abort_msg = "Bad rows"),
+                              classes = "inshape_failure")
+  expect_s3_class(aborted, "error")
+  expect_equal(lines(aborted), lines(warned))
+
+  rows <- grep("^\\s+[12]\\s", lines(aborted), value = TRUE)
+  expect_equal(regexpr("a", rows[1]), regexpr("bbbbbbbb", rows[2]),
+               ignore_attr = TRUE)
+})
+
+test_that("the user's messages replace the descriptions of the check", {
+  bad <- data.frame(x = 1)
+  expect_message(check_rows(data.frame(), success_msg = NULL, warn_msg = NULL), "^.*OK")
+  expect_message(check_rows(data.frame(), success_msg = NULL, warn_msg = "No x"),
+                 "Check passed: No x", fixed = TRUE)
+  expect_message(check_rows(data.frame(), success_msg = "Fine", abort_msg = "No x"),
+                 "Fine", fixed = TRUE)
+  expect_warning(check_rows(bad, warn_msg = NULL), "Bad rows")
+  expect_error(check_rows(bad, warn_msg = "warned", abort_msg = "aborted"), "aborted")
+})
+
+test_that("large counts are written with thousands separators", {
+  cnd <- rlang::catch_cnd(check_rows(data.frame(x = seq_len(12345))))
+  expect_match(conditionMessage(cnd), "12,345 rows found", fixed = TRUE)
 })

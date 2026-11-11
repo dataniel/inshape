@@ -56,11 +56,14 @@ ensure_unique <- function(data, ...,
   tbl <- check_table(data)
   key_cols <- if (...length() > 0) select_names(tbl, ...)
   keys <- if (is.null(key_cols)) "all columns" else paste(key_cols, collapse = ", ")
+  cols <- key_cols %||% colnames(tbl)
+  check_key(cols)
 
   if (is_remote(tbl)) {
-    dups <- remote_duplicates(tbl, key_cols %||% colnames(tbl))
+    dups <- remote_duplicates(tbl, cols)
   } else {
-    dupid <- dup_ids(data, dup_cols(data, ...))
+    check_atomic(data, cols)
+    dupid <- dup_ids(data, cols)
     rows  <- which(dupid > 0L)
     rows  <- rows[order(dupid[rows])]
     dups  <- tibble::as_tibble(data)[rows, ]
@@ -68,23 +71,31 @@ ensure_unique <- function(data, ...,
       !!diagnostic_name(data, "dupid") := dupid[rows], .before = 1)
   }
 
-  label <- abort_msg %||% warn_msg
   report_check(
-    violations  = dups,
-    success_msg = success_msg %||%
-      if (is.null(label)) paste0("Unique on ", keys) else paste0("Check passed: ", label),
-    fail_msg    = label %||% paste0("Duplicate rows on ", keys),
-    abort       = !is.null(abort_msg),
-    key         = key_cols,
-    group       = diagnostic_name(tbl, "dupid")
+    dups,
+    pass = paste0("Unique on ", keys),
+    fail = paste0("Duplicate rows on ", keys),
+    success_msg, warn_msg, abort_msg,
+    key   = key_cols,
+    group = diagnostic_name(tbl, "dupid")
   )
   invisible(data)
 }
 
-# The key columns for a duplicate check: the selection, or all columns.
-dup_cols <- function(data, ..., call = rlang::caller_env()) {
-  cols <- if (...length() == 0) names(data) else names(dplyr::select(data, ...))
+# A key of no columns would make every row a copy of every other. It comes
+# from a selection that matched nothing, e.g. a misspelt starts_with(), and
+# passing it by would report a key as unique that was never looked at.
+check_key <- function(cols, call = rlang::caller_env()) {
+  if (length(cols) == 0) {
+    cli::cli_abort(c(
+      "The key selects no columns.",
+      "i" = "Leave the selection out to use all columns."
+    ), call = call)
+  }
+}
 
+# Key columns must be vectors: a list column has no values to group by.
+check_atomic <- function(data, cols, call = rlang::caller_env()) {
   non_atomic <- cols[!vapply(unclass(data)[cols], is.atomic, logical(1))]
   if (length(non_atomic) > 0) {
     cli::cli_abort(c(
@@ -92,7 +103,6 @@ dup_cols <- function(data, ..., call = rlang::caller_env()) {
       "x" = "These columns are not atomic: {.var {non_atomic}}."
     ), call = call)
   }
-  cols
 }
 
 # Per row: 0 for a unique key, otherwise the number of its duplicate group,

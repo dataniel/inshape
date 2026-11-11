@@ -2,8 +2,7 @@
 # without the rule of any particular ensure_*() function
 check_rows <- function(data, success_msg = "OK", warn_msg = "Bad rows",
                        abort_msg = NULL) {
-  report_check(data, success_msg = success_msg,
-               fail_msg = if (is.null(abort_msg)) warn_msg else abort_msg,
-               abort = !is.null(abort_msg))
+  report_check(data, pass = "OK", fail = "Bad rows",
+               success_msg, warn_msg, abort_msg)
   invisible(data)
 }

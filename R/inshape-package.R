@@ -9,13 +9,10 @@
 #'
 #' ## The name
 #'
-#' In Rome the censors registered every citizen, and each census was closed
-#' by the *inshape*: a ceremony that purified the people just counted,
-#' before the register was accepted. This package is that last step for
-#' register data, a registration of the registrations: are the keys
-#' unique, the panels whole, the spells consistent, before anyone builds on
-#' them? The word also came to mean the five-year period between two
-#' censuses, which suits a package about periods.
+#' Register data has a shape, and an analysis is written for one of them.
+#' inshape asks whether the data is *in shape*, the shape the analysis
+#' assumes: are the keys unique, the panels whole, the spells consistent,
+#' before anyone builds on them?
 #'
 #' ## Where to start
 #'
@@ -26,12 +23,16 @@
 #' * [ensure_unique()]: a key identifies each row.
 #' * [ensure_balanced()]: every unit is observed in every period, or at
 #'   least has no gaps.
+#' * [ensure_valid_spells()]: a spell has a start and does not end before it.
 #' * [ensure_no_overlap()]: a unit is in one spell at a time.
 #' * [ensure_constant()]: sex, birth date and the like do not change within a
 #'   unit.
 #' * [ensure_within()]: no one is observed after death or emigration, or
 #'   before birth.
-#' * [ensure_codes()]: a coded column holds only codes from the code list.
+#' * [ensure_codes()]: a coded column holds only codes from the code list,
+#'   valid at the time of the row.
+#' * [ensure_matched()]: every key occurs in a reference register.
+#' * [violations()]: the rows that break a check, all of them.
 #' * [merge_spells()]: one spell recorded as several, merged into one.
 #' * [spells_to_panel()] and [add_spell_status()]: from spells to a panel.
 #'
@@ -39,6 +40,14 @@
 #' offending rows and return the data, so they sit in a pipeline. What they
 #' share (messages, personal data, database tables) is described in
 #' [checkpoints].
+#'
+#' ```r
+#' persons |>
+#'   ensure_unique(cpr, year, abort_msg = "Duplicate person-years") |>
+#'   ensure_balanced(cpr, year, gaps_only = TRUE)
+#'
+#' gaps <- violations(ensure_balanced(persons, cpr, year, gaps_only = TRUE))
+#' ```
 #'
 #' ## Why a package of its own
 #'

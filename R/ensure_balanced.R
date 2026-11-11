@@ -80,17 +80,13 @@ ensure_balanced <- function(data, id, time,
     find_panel_gaps(data, ids, time_col, periods, gaps_only)
   }
 
-  what  <- if (gaps_only) "Gaps in panel" else "Panel is not balanced"
-  label <- abort_msg %||% warn_msg
+  what <- if (gaps_only) "Gaps in panel" else "Panel is not balanced"
   report_check(
-    violations  = missing_periods,
-    success_msg = success_msg %||%
-      if (!is.null(label)) paste0("Check passed: ", label)
-      else if (gaps_only) paste0("No gaps in ", time_col, " per ", toString(ids))
-      else paste0("Balanced panel: ", toString(ids), " by ", time_col),
-    fail_msg    = label %||%
-      paste0(what, ": missing ", toString(ids), "-", time_col, " combinations"),
-    abort       = !is.null(abort_msg)
+    missing_periods,
+    pass = if (gaps_only) paste0("No gaps in ", time_col, " per ", toString(ids))
+           else paste0("Balanced panel: ", toString(ids), " by ", time_col),
+    fail = paste0(what, ": missing ", toString(ids), "-", time_col, " combinations"),
+    success_msg, warn_msg, abort_msg
   )
   invisible(data)
 }

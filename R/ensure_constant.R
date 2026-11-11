@@ -61,15 +61,13 @@ ensure_constant <- function(data, id, ...,
     out[o, ]
   }
 
-  label <- abort_msg %||% warn_msg
-  what  <- paste0(toString(cols), " per ", toString(ids))
+  what <- paste0(toString(cols), " per ", toString(ids))
   report_check(
-    violations  = rows,
-    success_msg = success_msg %||%
-      if (is.null(label)) paste0("Constant: ", what) else paste0("Check passed: ", label),
-    fail_msg    = label %||% paste0("Varies within units: ", what),
-    abort       = !is.null(abort_msg),
-    key         = c(ids, cols)
+    rows,
+    pass = paste0("Constant: ", what),
+    fail = paste0("Varies within units: ", what),
+    success_msg, warn_msg, abort_msg,
+    key = c(ids, cols)
   )
   invisible(data)
 }

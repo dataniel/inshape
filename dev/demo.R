@@ -100,11 +100,8 @@ ryddet |>
                   warn_msg = "Huller i befolkningspanelet") |>
   invisible()
 
-# En fejl som betingelse: alle rækkerne, til at se på i sessionen
-fejl <- tryCatch(
-  ensure_unique(panel, cpr, aar, abort_msg = "Dublerede personår"),
-  inshape_failure = function(e) e$violations
-)
+# Alle rækkerne bag en fejl, til at se på i sessionen
+fejl <- violations(ensure_unique(panel, cpr, aar))
 fejl
 
 

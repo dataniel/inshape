@@ -42,6 +42,7 @@ reference:
       - ensure_codes
       - ensure_valid_spells
       - ensure_matched
+      - violations
       - checkpoints
 
   - title: Spells and panels

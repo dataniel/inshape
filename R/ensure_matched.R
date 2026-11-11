@@ -51,8 +51,12 @@ ensure_matched <- function(data, reference, by, na_matches = c("never", "na"),
   }
   rows <- dplyr::anti_join(tbl, ref, by = by, na_matches = na_matches)
   if (is_remote(tbl)) rows <- sort_by(rows, na_first(left))
-  label <- abort_msg %||% warn_msg
-  report_check(rows, success_msg %||% if (is.null(label)) "All keys matched" else paste0("Check passed: ", label),
-               label %||% "Keys missing from reference", !is.null(abort_msg), key = left)
+  report_check(
+    rows,
+    pass = paste0("Matched in the reference: ", toString(left)),
+    fail = paste0("Keys missing from the reference: ", toString(left)),
+    success_msg, warn_msg, abort_msg,
+    key = left
+  )
   invisible(data)
 }

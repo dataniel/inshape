@@ -74,7 +74,7 @@
 #'                  name = "education")
 #'
 #' @seealso [spells_to_panel()] to build the panel from the spells,
-#'   `ensure_no_overlap()` to check the spells first.
+#'   [ensure_no_overlap()] to check the spells first.
 #'
 #' @export
 add_spell_status <- function(data, spells, id, at, start, end, status,
@@ -93,11 +93,11 @@ add_spell_status <- function(data, spells, id, at, start, end, status,
   status_is <- rlang::arg_match(status_is)
   primo     <- rlang::arg_match(primo)
   overlap   <- rlang::arg_match(overlap)
-  ids        <- names(dplyr::select(data, {{ id }}))
-  at_cols    <- names(dplyr::select(data, {{ at }}))
-  start_col  <- names(dplyr::select(spells, {{ start }}))
-  end_col    <- names(dplyr::select(spells, {{ end }}))
-  status_col <- names(dplyr::select(spells, {{ status }}))
+  ids        <- select_names(data, {{ id }})
+  at_cols    <- select_names(data, {{ at }})
+  start_col  <- select_names(spells, {{ start }})
+  end_col    <- select_names(spells, {{ end }})
+  status_col <- select_names(spells, {{ status }})
   if (length(ids) == 0) cli::cli_abort("{.arg id} must select at least one column.")
   for (arg in c("start", "end", "status")) {
     if (length(get(paste0(arg, "_col"))) != 1) {

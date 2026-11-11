@@ -41,11 +41,10 @@
 #' @export
 describe_key <- function(data, ...) {
   tbl <- check_table(data)
-  if (is_remote(tbl)) {
-    key <- if (...length() == 0) colnames(tbl) else select_names(tbl, ...)
-    return(remote_describe_key(tbl, key))
-  }
-  key <- dup_cols(data, ...)
+  key <- if (...length() == 0) colnames(tbl) else select_names(tbl, ...)
+  check_key(key)
+  if (is_remote(tbl)) return(remote_describe_key(tbl, key))
+  check_atomic(data, key)
 
   id     <- group_ids(data, key)
   counts <- tabulate(id, attr(id, "n"))

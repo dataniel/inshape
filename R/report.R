@@ -15,13 +15,11 @@
 #'
 #' A failed check signals a condition of class `inshape_failure` (a warning or
 #' an error) that carries the offending rows in its `violations` field.
-#' Catch it to look at all of them in the session:
+#' [violations()] catches it and returns the rows, to look at all of them
+#' in the session:
 #'
 #' ```r
-#' dups <- tryCatch(
-#'   ensure_unique(persons, cpr, abort_msg = "Duplicate persons"),
-#'   inshape_failure = \(e) e$violations
-#' )
+#' dups <- violations(ensure_unique(persons, cpr))
 #' ```
 #'
 #' ## Personal data
@@ -35,8 +33,8 @@
 #' * **The message** shows the number of rows and the first 5 of them at
 #'   the console. Output that is kept, such as a rendered report or a
 #'   shared screen, keeps them too, so run the checks at the console.
-#' * **The condition** carries the rows in memory, until it is caught or
-#'   dropped. Whether any of them are stored, and where, is for the analysis
+#' * **The condition** carries the rows in memory, until it is caught, by
+#'   [violations()] for one, or dropped. Whether any of them are stored, and where, is for the analysis
 #'   and its data agreement to decide, not the package.
 #'
 #' ## Speed
@@ -69,8 +67,8 @@
 #'
 #' A checkpoint returns the table it was given, still unevaluated, so the
 #' pipeline continues in the database. On a failure the condition's
-#' `violations` field holds the violation set as a query: `collect()` it to
-#' get the rows. Two things differ
+#' `violations` field, and so [violations()], holds the violation set as a
+#' query: `collect()` it to get the rows. Two things differ
 #' from data frames, because a database table has no row order:
 #' [ensure_unique()] numbers `dupid` in the order of the key instead of
 #' first appearance, and spells starting on the same day are ordered by
@@ -99,7 +97,9 @@
 #'
 #' @name checkpoints
 #' @seealso [ensure_unique()], [ensure_balanced()], [ensure_no_overlap()],
-#'   [ensure_constant()], [ensure_within()]
+#'   [ensure_valid_spells()], [ensure_constant()], [ensure_within()],
+#'   [ensure_codes()] and [ensure_matched()] for the rules, and
+#'   [violations()] for the rows that break one.
 NULL
 
 
@@ -198,11 +198,14 @@ first_row_by <- function(group, n_groups) {
 }
 
 # Reports a violation set: success alert when empty, otherwise warning or
-# error of class `inshape_failure` carrying the rows. `key` names the
-# columns the rule is about; they are moved to the front so a narrow console
-# cuts the other columns, not these. `group` names a column grouping the rows
-# (`dupid`, `overlap_id`), counted in the summary. `call` defaults to the
-# exported checkpoint that called this, so errors name that function.
+# error of class `inshape_failure` carrying the rows. `pass` and `fail`
+# describe the check; the user's `success_msg`, `warn_msg` and `abort_msg`
+# replace them, and an `abort_msg` turns the warning into an error. `key`
+# names the columns the rule is about; they are moved to the front so a
+# narrow console cuts the other columns, not these. `group` names a column
+# grouping the rows (`dupid`, `overlap_id`), counted in the summary. `call`
+# defaults to the exported checkpoint that called this, so errors name that
+# function.
 #
 # `violations` may be a lazy table (see check_table()). It is then counted
 # and previewed by queries, never fetched in full, and carried on the
@@ -210,13 +213,17 @@ first_row_by <- function(group, n_groups) {
 #
 # Nothing is written to disk here, neither rows nor a log: the rows are
 # personal data, and inshape is for interactive review (see ?checkpoints).
-report_check <- function(violations, success_msg, fail_msg, abort,
+report_check <- function(violations, pass, fail,
+                         success_msg = NULL, warn_msg = NULL, abort_msg = NULL,
                          key = character(), group = NULL,
                          call = rlang::caller_env()) {
+  label  <- abort_msg %||% warn_msg
   remote <- is_remote(violations)
   n <- if (remote) remote_nrow(violations) else nrow(violations)
 
   if (n == 0) {
+    success_msg <- success_msg %||%
+      if (is.null(label)) pass else paste0("Check passed: ", label)
     cli::cli_alert_success("{success_msg}")
     return(invisible(TRUE))
   }
@@ -239,17 +246,22 @@ report_check <- function(violations, success_msg, fail_msg, abort,
     shown <- violations
   }
 
-  bullets <- c(
-    "{fail_msg}",
-    "i" = if (is.null(n_groups)) "{n} row{?s} found:"
-          else "{n} row{?s} in {n_groups} group{?s}:",
+  # The message is laid out here, once, and signalled as it is. Handed to
+  # cli as bullets, an aborting check formats them twice, and the second
+  # pass collapses the spaces that align the columns of the preview.
+  info <- cli::col_cyan(cli::symbol$info)
+  lines <- c(
+    label %||% fail,
+    paste0(info, " ", count(n, "row"),
+           if (is.null(n_groups)) " found:"
+           else paste0(" in ", count(n_groups, "group"), ":")),
     preview_rows(shown, n = preview_n),
-    if (n > preview_n) c("i" = "Catch the {.cls inshape_failure} condition to get all rows; see {.topic inshape::checkpoints}.")
+    if (n > preview_n) paste0(info, " Wrap the check in violations() to get all rows.")
   )
 
-  signal <- if (abort) cli::cli_abort else cli::cli_warn
-  signal(bullets, class = "inshape_failure", violations = violations,
-         call = call)
+  signal <- if (is.null(abort_msg)) rlang::warn else rlang::abort
+  signal(paste(lines, collapse = "\n"), class = "inshape_failure",
+         violations = violations, call = call, use_cli_format = FALSE)
   invisible(FALSE)
 }
 
@@ -261,18 +273,12 @@ diagnostic_name <- function(data, name) {
   utils::tail(make.unique(c(colnames(data), name)), 1L)
 }
 
-# The first rows as a tibble printout, one escaped cli bullet per line. The
-# "# A tibble" header repeats the summary bullet and the "print(n = ...)"
-# hint does not apply to a message, so both are dropped. Spaces become
-# non-breaking, because cli would otherwise collapse the column alignment.
-preview_rows <- function(data, n = 5, width = cli::console_width() - 2) {
+# The first rows as the lines of a tibble printout, indented. The
+# "# A tibble" header repeats the summary line and the "print(n = ...)" hint
+# does not apply to a message, so both are dropped.
+preview_rows <- function(data, n = 5, width = cli::console_width() - 4) {
   if (ncol(data) == 0) return(character())
   lines <- format(tibble::as_tibble(data), n = n, width = width)
   lines <- lines[!grepl("^# A tibble|print\\(n = ", cli::ansi_strip(lines))]
-  lines <- gsub(" ", "\u00a0", cli_escape(sub("\\s+$", "", lines)), fixed = TRUE)
-  stats::setNames(lines, rep(" ", length(lines)))
-}
-
-cli_escape <- function(x) {
-  gsub("}", "}}", gsub("{", "{{", x, fixed = TRUE), fixed = TRUE)
+  paste0("  ", sub("\\s+$", "", lines))
 }

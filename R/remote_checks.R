@@ -29,7 +29,11 @@ check_table <- function(data, call = rlang::caller_env()) {
 is_remote <- function(data) !is.data.frame(data)
 
 # Column names of a selection; names() of a lazy table are its internals.
-select_names <- function(data, ...) colnames(dplyr::select(data, ...))
+# Ungrouped first: select() on grouped data adds the grouping columns, and
+# a key or an id would then hold columns that were never asked for.
+select_names <- function(data, ...) {
+  colnames(dplyr::select(dplyr::ungroup(data), ...))
+}
 
 remote_nrow <- function(x) {
   n <- dplyr::pull(dplyr::summarise(dplyr::ungroup(x), .inshape_n = dplyr::n()))

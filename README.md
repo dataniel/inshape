@@ -49,10 +49,15 @@ pak::pak("dataniel/inshape")
 | `ensure_within()` | No rows after death or emigration, or before birth: each row within its unit's lifetime |
 | `merge_spells()` | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
+| `violations()` | The rows that break a check, all of them: wrap the check in it |
 
 The `ensure_*()` checkpoints warn or abort with the offending rows and
-return the data. A failure signals a condition of class `inshape_failure`
-that carries the rows.
+return the data. The message shows the first rows; `violations()` returns
+all of them:
+
+```r
+dups <- violations(ensure_unique(persons, cpr, year))
+```
 
 Check a reference before linking it, or validate a code at the time it was
 observed:
@@ -84,7 +89,8 @@ in `columns_skipped` and in its printed summary.
 inshape is made for interactive review of registers. The offending rows of
 a check are personal data, so inshape writes nothing to disk, neither rows
 nor a log: a failure shows the count and the first rows at the console,
-and the rest stay on the condition, in memory. See `?checkpoints`.
+and the rest stay in memory, for `violations()` to return. See
+`?checkpoints`.
 
 ## Built for registers
 
@@ -108,9 +114,10 @@ dplyr::tbl(con, "persons") |>
 
 ## The name
 
-Each Roman census was closed by the *inshape*, a purification of the
-people just registered, before the register was accepted. This package is
-that last step for register data: a registration of the registrations.
+Register data has a shape: one row per unit, per unit and period, or per
+spell. An analysis is written for one of them. inshape asks whether the
+data is *in shape*, the shape the analysis assumes, before anything is
+built on it.
 
 ## Origin
 

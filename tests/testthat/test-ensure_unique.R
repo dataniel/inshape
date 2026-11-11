@@ -44,3 +44,23 @@ test_that("ensure_unique() works on a data.table and leaves it untouched", {
 test_that("ensure_unique() aborts with abort_msg", {
   expect_error(ensure_unique(df, cvr, abort_msg = "Dup cvr"), "Dup cvr")
 })
+
+test_that("a key that selects no columns is an error, not a pass", {
+  df <- data.frame(cpr = c("a", "a"), year = 2020)
+  expect_error(ensure_unique(df, dplyr::starts_with("zzz")), "selects no columns")
+  expect_error(describe_key(df, dplyr::starts_with("zzz")), "selects no columns")
+  expect_error(ensure_unique(df[, 0]), "selects no columns")
+})
+
+test_that("grouping of the data does not add columns to the key", {
+  df <- data.frame(cpr = c("a", "a", "b"), year = c(2020, 2021, 2020))
+  grouped <- dplyr::group_by(df, year)
+  # cpr is duplicated; cpr and year together are not
+  expect_warning(out <- ensure_unique(grouped, cpr), "Duplicate rows on cpr$|Duplicate rows on cpr\n")
+  expect_identical(out, grouped)
+  expect_equal(describe_key(grouped, cpr)$key, "cpr")
+  expect_no_message(
+    expect_warning(ensure_balanced(grouped, cpr, year), "not balanced"),
+    message = "grouping variables"
+  )
+})

@@ -95,15 +95,13 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
   what <- if (length(from_col) == 0) paste(time_col, "until", to_col)
           else if (length(to_col) == 0) paste(time_col, "from", from_col)
           else paste(time_col, "within", from_col, "to", to_col)
-  label <- abort_msg %||% warn_msg
   report_check(
-    violations  = rows,
-    success_msg = success_msg %||%
-      if (is.null(label)) paste0("All rows: ", what) else paste0("Check passed: ", label),
-    fail_msg    = label %||% paste0("Rows outside: ", what),
-    abort       = !is.null(abort_msg),
-    key         = c(time_col, from_col, to_col),
-    group       = diagnostic_name(tbl, "outside")
+    rows,
+    pass = paste0("All rows: ", what),
+    fail = paste0("Rows outside: ", what),
+    success_msg, warn_msg, abort_msg,
+    key   = c(time_col, from_col, to_col),
+    group = diagnostic_name(tbl, "outside")
   )
   invisible(data)
 }

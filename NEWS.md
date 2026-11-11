@@ -1,5 +1,22 @@
 # inshape 0.1.0
 
+* New `violations()` returns the rows that break a check: wrap the check in
+  it, `violations(ensure_unique(persons, cpr))`. It replaces catching the
+  `inshape_failure` condition by hand, where a check that passed handed
+  back the whole data as if it were the violations.
+* A check that aborts (`abort_msg`) now shows the first rows as an aligned
+  table. The columns were run together, because the message was formatted
+  twice; a warning was not affected.
+* `ensure_unique()` and `describe_key()` stop when the key selects no
+  columns, e.g. a `starts_with()` that matched nothing. The check passed
+  before, with "Unique on" and no columns named.
+* Grouped data no longer adds its grouping columns to a key or an id:
+  `ensure_unique(group_by(df, year), cpr)` checked `year` and `cpr`.
+* `ensure_codes()` takes `time` right after `codes`, before `na_ok`, as in
+  `describe_codes()`. Name `na_ok` if it was passed by position.
+* `ensure_matched()` and `ensure_valid_spells()` name their columns in the
+  default messages, as the other checkpoints do, and counts in failure
+  messages have thousands separators.
 * Diagnostic columns in uniqueness, overlap and lifetime failures now get
   collision-safe names, preserving original columns in local and database
   violation sets.

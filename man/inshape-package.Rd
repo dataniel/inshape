@@ -16,13 +16,10 @@ registers. See \code{vignette("inshape")}.
 \details{
 \subsection{The name}{
 
-In Rome the censors registered every citizen, and each census was closed
-by the \emph{inshape}: a ceremony that purified the people just counted,
-before the register was accepted. This package is that last step for
-register data, a registration of the registrations: are the keys
-unique, the panels whole, the spells consistent, before anyone builds on
-them? The word also came to mean the five-year period between two
-censuses, which suits a package about periods.
+Register data has a shape, and an analysis is written for one of them.
+inshape asks whether the data is \emph{in shape}, the shape the analysis
+assumes: are the keys unique, the panels whole, the spells consistent,
+before anyone builds on them?
 }
 
 \subsection{Where to start}{
@@ -34,12 +31,16 @@ before choosing a rule.
 \item \code{\link[=ensure_unique]{ensure_unique()}}: a key identifies each row.
 \item \code{\link[=ensure_balanced]{ensure_balanced()}}: every unit is observed in every period, or at
 least has no gaps.
+\item \code{\link[=ensure_valid_spells]{ensure_valid_spells()}}: a spell has a start and does not end before it.
 \item \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}: a unit is in one spell at a time.
 \item \code{\link[=ensure_constant]{ensure_constant()}}: sex, birth date and the like do not change within a
 unit.
 \item \code{\link[=ensure_within]{ensure_within()}}: no one is observed after death or emigration, or
 before birth.
-\item \code{\link[=ensure_codes]{ensure_codes()}}: a coded column holds only codes from the code list.
+\item \code{\link[=ensure_codes]{ensure_codes()}}: a coded column holds only codes from the code list,
+valid at the time of the row.
+\item \code{\link[=ensure_matched]{ensure_matched()}}: every key occurs in a reference register.
+\item \code{\link[=violations]{violations()}}: the rows that break a check, all of them.
 \item \code{\link[=merge_spells]{merge_spells()}}: one spell recorded as several, merged into one.
 \item \code{\link[=spells_to_panel]{spells_to_panel()}} and \code{\link[=add_spell_status]{add_spell_status()}}: from spells to a panel.
 }
@@ -48,6 +49,13 @@ The \verb{ensure_*()} functions are checkpoints: they warn or abort with the
 offending rows and return the data, so they sit in a pipeline. What they
 share (messages, personal data, database tables) is described in
 \link{checkpoints}.
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{persons |>
+  ensure_unique(cpr, year, abort_msg = "Duplicate person-years") |>
+  ensure_balanced(cpr, year, gaps_only = TRUE)
+
+gaps <- violations(ensure_balanced(persons, cpr, year, gaps_only = TRUE))
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Why a package of its own}{

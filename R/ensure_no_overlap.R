@@ -62,16 +62,13 @@ ensure_no_overlap <- function(data, id, start, end,
     find_overlaps(data, ids, start_col, end_col)
   }
 
-  label <- abort_msg %||% warn_msg
   report_check(
-    violations  = overlaps,
-    success_msg = success_msg %||%
-      if (is.null(label)) paste0("No overlapping spells per ", toString(ids))
-      else paste0("Check passed: ", label),
-    fail_msg    = label %||% paste0("Overlapping spells per ", toString(ids)),
-    abort       = !is.null(abort_msg),
-    key         = c(ids, start_col, end_col),
-    group       = diagnostic_name(tbl, "overlap_id")
+    overlaps,
+    pass = paste0("No overlapping spells per ", toString(ids)),
+    fail = paste0("Overlapping spells per ", toString(ids)),
+    success_msg, warn_msg, abort_msg,
+    key   = c(ids, start_col, end_col),
+    group = diagnostic_name(tbl, "overlap_id")
   )
   invisible(data)
 }

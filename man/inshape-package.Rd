@@ -46,6 +46,9 @@ before birth.
 \item \code{\link[=ensure_codes]{ensure_codes()}}: a coded column holds only codes from the code list,
 valid at the time of the row.
 \item \code{\link[=ensure_matched]{ensure_matched()}}: every key occurs in a reference register.
+\item \code{\link[=ensure_panel]{ensure_panel()}}, \code{\link[=ensure_spells]{ensure_spells()}} and \code{\link[=ensure_lookup]{ensure_lookup()}}: the checks
+a panel, a set of spells or a lookup table nearly always needs, in one
+call with one overview.
 \item \code{\link[=ensure_none]{ensure_none()}}, \code{\link[=ensure_all]{ensure_all()}} and \code{\link[=ensure_empty]{ensure_empty()}}: any other rule
 dplyr can express, such as no negative amounts.
 \item \code{\link[=tally_violations]{tally_violations()}}: count many rules at once, without judging.

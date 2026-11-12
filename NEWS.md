@@ -1,5 +1,27 @@
 # inshape 0.1.0
 
+* New `ensure_panel()`, `ensure_spells()` and `ensure_lookup()` run the
+  checks a panel, a set of spells or a lookup table nearly always needs and
+  report them in one overview: what passed, what failed with its counts,
+  and the call that gives the rows. All checks run, so every problem shows
+  at once; overlaps and gaps wait until the spells are valid.
+  `violations()` on a wrapper names the single checks to wrap instead.
+* A failed structure check now shows the pattern before the rows: exact
+  copies against copies that differ, and in which columns
+  (`ensure_unique()`); units and periods (`ensure_balanced()`); codes,
+  missing values per column, units per varying column, gap lengths and
+  reasons; and the values that half the rows, or all of them on a few
+  values, share, such as `By year: 2019 (388), 2021 (24)`. Counts are
+  computed only on failure, as queries on a database table.
+* The message ends with the next step as code to copy, with the column
+  names filled in: `violations(ensure_unique(persons, cpr, year))`,
+  `dplyr::distinct()` for exact copies, `merge_spells()` for overlaps and
+  gaps, `gaps_only = TRUE` for a panel with late entries. Where the fix
+  takes a choice, the code has a hole in it, such as `<column>`.
+* On a console too narrow for all columns, the preview keeps the key, the
+  diagnostic column and the columns that explain the failure, and names
+  the ones it leaves out.
+
 * The general checkpoints from the expectr package are now part of
   inshape, renamed to the `ensure_` prefix and built on the same reporting
   as the structure checks:

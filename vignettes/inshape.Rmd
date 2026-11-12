@@ -48,6 +48,9 @@ and `ensure_empty()` take any rule dplyr can express.
 | `ensure_within()` | no rows after death or emigration, or before birth | the data |
 | `ensure_valid_spells()` | a spell has a start and does not end before it | the data |
 | `ensure_matched()` | every key occurs in a reference register | the data |
+| `ensure_panel()` | the key is complete and unique, and no unit skips a period | the data |
+| `ensure_spells()` | the unit is complete, the spells valid and not overlapping | the data |
+| `ensure_lookup()` | a lookup table's key is unique and covers the data | the data |
 | `ensure_none()` | no row matches a condition (`NA` passes) | the data |
 | `ensure_all()` | every row meets a condition (`NA` fails) | the data |
 | `ensure_empty()` | a violation set you built yourself has no rows | the set |
@@ -109,6 +112,25 @@ df |>
 
 The reported rows carry a `dupid`, so the copies in each group sit
 together.
+
+Every failure is laid out the same way: what broke, how many rows, counts
+that show the pattern, the first rows, and the next step as code to copy.
+Here some duplicates are exact copies and one person has two
+municipalities in the same year:
+
+```{r}
+persons_2019 <- tibble(
+  cpr  = c("a", "a", "b", "b", "c", "c", "d"),
+  year = c(2019, 2019, 2019, 2019, 2021, 2021, 2021),
+  kom  = c("955", "955", "955", "956", "957", "957", "955")
+)
+
+ensure_unique(persons_2019, cpr, year)
+```
+
+The hints never choose for you. Exact copies can only be dropped one way,
+so the hint is the code; copies that differ need a rule for which to keep,
+so the code has a hole, `<column>`, for you to fill.
 
 ## Missing values: `ensure_complete()`
 
@@ -376,6 +398,37 @@ observations <- tibble(cpr = c("a", "b", "c"), year = 2020)
 reference <- tibble(person_id = c("a", "b"), year = 2020)
 ensure_matched(observations, reference, by = c(cpr = "person_id", "year"))
 ```
+
+## The common checks in one call: `ensure_panel()`, `ensure_spells()` and `ensure_lookup()`
+
+A panel nearly always needs the same three checks: the key is complete,
+unique and without gaps. `ensure_panel()` runs them all, also after one has
+failed, and shows one overview instead of three messages, each pointing to
+the single check that gives the rows:
+
+```{r}
+yearly <- tibble(
+  cpr  = c("a", "a", "a", "b", "b", "c", "d", "d", "d", "d"),
+  year = c(2020, 2021, 2022, 2020, 2022, 2022, 2020, 2021, 2022, 2022)
+)
+
+ensure_panel(yearly, cpr, year)
+```
+
+`ensure_spells()` does the same for spells: the unit is complete, the spells
+are valid and do not overlap, and with `no_gaps = TRUE` leave no gaps.
+Overlaps mean nothing until the spells are valid, so they are not checked
+until then. `ensure_lookup()` checks a table before a join: its key is
+unique, so the join does not multiply rows, and every key of the data is in
+it.
+
+```{r}
+ensure_lookup(observations, reference, by = c(cpr = "person_id", "year"))
+```
+
+The choices are fixed where registers nearly always need the same; a panel
+may have late entries and early exits (`gaps_only = TRUE`). For anything
+else, run the single checks.
 
 ## Before a join: `describe_match()`
 

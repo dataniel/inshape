@@ -62,12 +62,54 @@ ensure_constant <- function(data, id, ...,
   }
 
   what <- paste0(toString(cols), " per ", toString(ids))
+  name <- data_label(rlang::caller_arg(data))
   report_check(
     rows,
     pass = paste0("Constant: ", what),
     fail = paste0("Varies within units: ", what),
     success_msg, warn_msg, abort_msg,
-    key = c(ids, cols)
+    key = c(ids, cols),
+    show = character(),
+    summary = function(v, n) {
+      per <- varying_per_column(v, ids, cols)
+      per <- sort(per[per > 0], decreasing = TRUE)
+      list(
+        lines = c(paste0("In ", count(n_distinct_rows(v, ids), "unit")),
+                  if (length(cols) > 1) paste0(
+                    "Units per column: ",
+                    paste0(names(per), " (", big(per), ")", collapse = ", "))),
+        hints = paste0(
+          "Which value holds is a choice, e.g. dplyr::mutate(", name, ", ",
+          code_name(names(per)[1]), " = <first, last or most common>, .by = ",
+          code_cols(ids), ")")
+      )
+    }
   )
   invisible(data)
+}
+
+# Per column, the number of units in `v` where it has two different
+# non-missing values
+varying_per_column <- function(v, ids, cols) {
+  if (is_remote(v)) {
+    tests <- lapply(rlang::syms(cols), function(col) {
+      rlang::expr(dplyr::if_else(min(!!col, na.rm = TRUE) != max(!!col, na.rm = TRUE), 1L, 0L,
+                                 missing = 0L))
+    })
+    flag_cols <- paste0(".inshape_v", seq_along(cols))
+    names(tests) <- flag_cols
+    sums <- lapply(rlang::syms(flag_cols), function(col) rlang::expr(sum(!!col, na.rm = TRUE)))
+    names(sums) <- flag_cols
+    out <- v |>
+      dplyr::ungroup() |>
+      dplyr::group_by(!!!rlang::syms(ids)) |>
+      dplyr::summarise(!!!tests, .groups = "drop") |>
+      dplyr::summarise(!!!sums) |>
+      dplyr::collect()
+    return(stats::setNames(as.numeric(unlist(out[flag_cols])), cols))
+  }
+  unit <- group_ids(v, ids)
+  n_units <- attr(unit, "n")
+  vapply(cols, function(col) sum(varying_units(v[[col]], unit, n_units)$varying),
+         numeric(1))
 }

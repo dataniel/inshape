@@ -14,7 +14,50 @@ test_that("ensure_unique() reports duplicated rows grouped by dupid", {
   expect_equal(nrow(cnd$violations), 2)
   expect_true("dupid" %in% names(cnd$violations))
   expect_false("isdup" %in% names(cnd$violations))
-  expect_match(conditionMessage(cnd), "2 rows in 1 group:")
+  expect_match(conditionMessage(cnd), "2 rows in 1 group\n")
+})
+
+test_that("the message separates exact copies from copies that differ", {
+  df <- data.frame(
+    cpr  = c("a", "a", "b", "b", "c", "c", "d"),
+    year = c(2019, 2019, 2019, 2019, 2021, 2021, 2021),
+    kom  = c("955", "955", "955", "956", "957", "957", "955"),
+    sex  = c("F", "F", NA, "M", "M", "M", "F")
+  )
+  msg <- cli::ansi_strip(conditionMessage(
+    rlang::catch_cnd(ensure_unique(df, cpr, year), classes = "inshape_failure")
+  ))
+  expect_match(msg, "6 rows in 3 groups\n", fixed = TRUE)
+  expect_match(msg, "2 groups are exact copies", fixed = TRUE)
+  # a missing and a present value differ
+  expect_match(msg, "1 group differs in: kom (1), sex (1)", fixed = TRUE)
+  expect_match(msg, "By year: 2019 (4), 2021 (2)", fixed = TRUE)
+  # cpr has a value per group and shows no pattern
+  expect_no_match(msg, "By cpr")
+  expect_match(msg, "To drop the exact copies: dplyr::distinct(df)", fixed = TRUE)
+  expect_match(msg, "dplyr::slice_max(df, <column>, by = c(cpr, year))", fixed = TRUE)
+})
+
+test_that("one group of identical copies reads as such, with no rule to pick", {
+  msg <- conditionMessage(rlang::catch_cnd(ensure_unique(df, cvr, year)))
+  expect_match(msg, "The copies are identical in every column", fixed = TRUE)
+  expect_no_match(msg, "slice_max", fixed = TRUE)
+})
+
+test_that("a narrow console keeps the key and the columns that differ", {
+  wide <- data.frame(cpr = c("x", "x", "y"), year = 2020, kom = c("955", "956", "955"))
+  for (i in 1:20) wide[[paste0("variable_", i)]] <- 1.123456
+  msg <- cli::ansi_strip(conditionMessage(rlang::catch_cnd(
+    withr::with_options(list(width = 80), ensure_unique(wide, cpr, year))
+  )))
+  expect_match(msg, "dupid cpr    year kom", fixed = TRUE)
+  expect_match(msg, "20 more columns not shown: variable_1, variable_2", fixed = TRUE)
+  expect_match(msg, "For all rows and columns: violations(ensure_unique(wide, cpr, year))",
+               fixed = TRUE)
+
+  # When everything fits, nothing is left out
+  msg <- conditionMessage(rlang::catch_cnd(ensure_unique(wide[1:4], cpr, year)))
+  expect_no_match(msg, "not shown")
 })
 
 test_that("ensure_unique() puts dupid and the key columns first", {

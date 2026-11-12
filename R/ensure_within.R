@@ -101,7 +101,11 @@ ensure_within <- function(data, time, from = NULL, to = NULL,
     fail = paste0("Rows outside: ", what),
     success_msg, warn_msg, abort_msg,
     key   = c(time_col, from_col, to_col),
-    group = diagnostic_name(tbl, "outside")
+    group = diagnostic_name(tbl, "outside"),
+    summary = function(v, n) {
+      c(tally_line("Bounds broken", top_values(v, diagnostic_name(tbl, "outside"))),
+        pattern_lines(v, time_col, n))
+    }
   )
   invisible(data)
 }

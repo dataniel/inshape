@@ -45,10 +45,20 @@
 #' @export
 violations <- function(check) {
   rows <- NULL
+  overview <- NULL
   data <- tryCatch(check, inshape_failure = function(cnd) {
+    if (inherits(cnd, "inshape_overview")) overview <<- cnd$checks
     rows <<- cnd$violations
     NULL
   })
+  if (!is.null(overview)) {
+    # ensure_panel() and the other wrappers carry no rows; see run_checks()
+    cli::cli_abort(c(
+      "{.arg check} runs several checks; wrap the one you want the rows of.",
+      stats::setNames(paste0("{.code violations(", gsub("([{}])", "\\1\\1", overview), ")}"),
+                      rep("i", length(overview)))
+    ))
+  }
   if (!is.null(rows)) return(rows)
   if (is.data.frame(data)) return(tibble::as_tibble(utils::head(data, 0L)))
   if (inherits(data, c("tbl_lazy", "ArrowTabular", "Dataset", "arrow_dplyr_query"))) {

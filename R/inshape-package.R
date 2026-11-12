@@ -38,6 +38,9 @@
 #' * [ensure_codes()]: a coded column holds only codes from the code list,
 #'   valid at the time of the row.
 #' * [ensure_matched()]: every key occurs in a reference register.
+#' * [ensure_panel()], [ensure_spells()] and [ensure_lookup()]: the checks
+#'   a panel, a set of spells or a lookup table nearly always needs, in one
+#'   call with one overview.
 #' * [ensure_none()], [ensure_all()] and [ensure_empty()]: any other rule
 #'   dplyr can express, such as no negative amounts.
 #' * [tally_violations()]: count many rules at once, without judging.

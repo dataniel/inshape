@@ -44,7 +44,9 @@ ensure_valid_spells <- function(data, start, end, open_end = TRUE,
     pass = paste0("Valid spells: ", s, " to ", e),
     fail = paste0("Invalid spells: ", s, " to ", e),
     success_msg, warn_msg, abort_msg,
-    key = c(s, e), group = diagnostic
+    key = c(s, e), group = diagnostic,
+    show = character(),
+    summary = function(v, n) tally_line("Reasons", top_values(v, diagnostic))
   )
   invisible(data)
 }

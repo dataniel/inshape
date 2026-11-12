@@ -33,7 +33,7 @@ test_that("max_gap accepts gaps up to that length", {
 
 test_that("the message counts the rows, and abort_msg aborts", {
   expect_warning(ensure_no_gaps(spells, cpr, start, end),
-                 "Gaps between spells per cpr\n.*2 rows found")
+                 "Gaps between spells per cpr\n.*2 rows\n")
   expect_error(ensure_no_gaps(spells, cpr, start, end, abort_msg = "Holes"),
                "Holes", class = "inshape_failure")
 })

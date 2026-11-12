@@ -32,7 +32,11 @@ test_that("failure messages report the row count and preview rows", {
   cnd <- rlang::catch_cnd(check_rows(big, warn_msg = "Many"))
   expect_match(conditionMessage(cnd), "12 rows found")
   expect_match(conditionMessage(cnd), "7 more rows")
-  expect_match(conditionMessage(cnd), "Wrap the check in violations()", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "For all rows: violations(check_rows(big))", fixed = TRUE)
+
+  # A call too long to read on one line is not repeated
+  long <- rlang::catch_cnd(check_rows(data.frame(x = 1:12, a_long_column_name = 1, another_long_column_name = 2)))
+  expect_match(conditionMessage(long), "Wrap the check in violations() to get all rows.", fixed = TRUE)
 
   # All rows are shown, so there is nothing to point to
   few <- rlang::catch_cnd(check_rows(data.frame(x = 1:3), warn_msg = "Few"))

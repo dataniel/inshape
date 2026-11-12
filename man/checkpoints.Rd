@@ -28,6 +28,24 @@ rules are about structure; \code{\link[=ensure_none]{ensure_none()}}, \code{\lin
 what they share.
 }
 \details{
+\subsection{The failure message}{
+
+A failure is laid out in the same order by every structure check: what
+broke, the number of rows, counts that show the pattern (exact copies
+against copies that differ, units, periods, codes, the columns that
+vary), the first rows, and the next step. Five rows do not show whether
+40,000 duplicates are one year or the whole table; the counts do, and
+show fewer personal data. They are computed only when the check fails.
+
+The next step is code to copy, with the column names filled in: the
+call to wrap in \code{\link[=violations]{violations()}}, and a fix where one is unambiguous, such
+as \code{dplyr::distinct()} for exact copies or \code{\link[=merge_spells]{merge_spells()}} for
+overlapping spells. Where a fix takes a choice the package cannot make,
+such as which of two differing copies to keep, the code has a hole in
+it, \verb{<column>}. When the console is too narrow for every column, the
+preview keeps the key, the diagnostic column and the columns that
+explain the failure, and names the others.
+
 The offending rows are deliberately not kept in the session afterwards: on
 a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
@@ -44,6 +62,8 @@ in the session:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{dups <- violations(ensure_unique(persons, cpr))
 }\if{html}{\out{</div>}}
+}
+
 \subsection{Personal data}{
 
 inshape is made for interactive review of registers, at the console in
@@ -52,7 +72,8 @@ personal data: they hold the key, often a cpr number, and every other
 column of the rows. inshape therefore writes nothing to disk, neither
 the rows nor a log of the checks, and keeps nothing after a check:
 \itemize{
-\item \strong{The message} shows the number of rows and the first 5 of them at
+\item \strong{The message} shows the number of rows, counts that show their
+pattern (per year, per code, per column), and the first 5 of them at
 the console. Output that is kept, such as a rendered report or a
 shared screen, keeps them too, so run the checks at the console.
 \item \strong{The condition} carries the rows in memory, until it is caught, by
@@ -119,6 +140,8 @@ queries, to \code{collect()}.
 \code{\link[=ensure_no_overlap]{ensure_no_overlap()}}, \code{\link[=ensure_no_gaps]{ensure_no_gaps()}},
 \code{\link[=ensure_valid_spells]{ensure_valid_spells()}}, \code{\link[=ensure_constant]{ensure_constant()}}, \code{\link[=ensure_within]{ensure_within()}},
 \code{\link[=ensure_codes]{ensure_codes()}} and \code{\link[=ensure_matched]{ensure_matched()}} for the structure,
+\code{\link[=ensure_panel]{ensure_panel()}}, \code{\link[=ensure_spells]{ensure_spells()}} and \code{\link[=ensure_lookup]{ensure_lookup()}} for the
+common ones in one call,
 \code{\link[=ensure_none]{ensure_none()}}, \code{\link[=ensure_all]{ensure_all()}}, \code{\link[=ensure_empty]{ensure_empty()}} and
 \code{\link[=tally_violations]{tally_violations()}} for rules of your own, and \code{\link[=violations]{violations()}} for the
 rows that break one.

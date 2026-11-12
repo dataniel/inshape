@@ -39,6 +39,13 @@ reference:
       - ensure_all
       - tally_violations
 
+  - title: Common checks in one call
+    desc: >
+      The structure checks a panel, a set of spells or a lookup table
+      nearly always needs, run together and reported in one overview.
+    contents:
+      - ensure_panel
+
   - title: Structure checks
     desc: >
       Each checkpoint states one rule about the structure of the data,

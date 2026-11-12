@@ -39,7 +39,7 @@ test_that("the failure message reports the row count and preview rows", {
 
   big <- rlang::catch_cnd(ensure_empty(data.frame(x = 1:12), warn_msg = "Many"))
   expect_match(conditionMessage(big), "12 rows found")
-  expect_match(conditionMessage(big), "violations()", fixed = TRUE)
+  expect_match(conditionMessage(big), "violations(ensure_empty(data.frame(x = 1:12)))", fixed = TRUE)
 })
 
 test_that("messages are shown literally, braces included", {

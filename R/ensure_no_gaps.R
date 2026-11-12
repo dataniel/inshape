@@ -79,14 +79,44 @@ ensure_no_gaps <- function(data, id, start, end, max_gap = 0,
   }
 
   what <- paste0(if (max_gap > 0) paste0(" longer than ", max_gap), " per ", toString(ids))
+  gap_col <- diagnostic_name(tbl, "gap")
+  name <- data_label(rlang::caller_arg(data))
   report_check(
     gaps,
     pass = paste0("No gaps between spells", what),
     fail = paste0("Gaps between spells", what),
     success_msg, warn_msg, abort_msg,
-    key = c(diagnostic_name(tbl, "gap"), ids, start_col, end_col)
+    key  = c(gap_col, ids, start_col, end_col),
+    show = character(),
+    summary = function(v, n) {
+      len <- gap_lengths(v, gap_col)
+      list(
+        lines = c(paste0("In ", count(n_distinct_rows(v, ids), "unit")),
+                  paste0("Gap length: shortest ", big(len[1]), ", median ", big(len[2]),
+                         ", longest ", big(len[3]))),
+        hints = if (!is_remote(v)) paste0(
+          "To join spells across gaps up to a length you choose: merge_spells(",
+          name, ", ", code_cols(ids), ", ", code_name(start_col), ", ",
+          code_name(end_col), ", max_gap = <length>)")
+      )
+    }
   )
   invisible(data)
+}
+
+# Shortest, median and longest gap
+gap_lengths <- function(v, gap_col) {
+  if (is_remote(v)) {
+    out <- v |>
+      dplyr::ungroup() |>
+      dplyr::summarise(lo  = min(.data[[gap_col]], na.rm = TRUE),
+                       mid = stats::median(.data[[gap_col]], na.rm = TRUE),
+                       hi  = max(.data[[gap_col]], na.rm = TRUE)) |>
+      dplyr::collect()
+    return(as.numeric(unlist(out)))
+  }
+  x <- v[[gap_col]]
+  c(min(x), stats::median(x), max(x))
 }
 
 # The spells that start after a gap longer than `max_gap`, with the length

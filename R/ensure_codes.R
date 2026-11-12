@@ -83,7 +83,12 @@ ensure_codes <- function(data, column, codes, time = NULL, na_ok = TRUE,
     pass = paste0("Valid codes: ", col),
     fail = paste0("Codes not in the code list: ", col),
     success_msg, warn_msg, abort_msg,
-    key = col, group = col
+    key = col, group = col,
+    show = time_col,
+    summary = function(v, n) {
+      c(tally_line("Codes", top_values(v, col)),
+        if (length(time_col)) pattern_lines(v, time_col, n))
+    }
   )
   invisible(data)
 }

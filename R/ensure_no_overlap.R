@@ -63,13 +63,24 @@ ensure_no_overlap <- function(data, id, start, end,
     find_overlaps(data, ids, start_col, end_col)
   }
 
+  name <- data_label(rlang::caller_arg(data))
   report_check(
     overlaps,
     pass = paste0("No overlapping spells per ", toString(ids)),
     fail = paste0("Overlapping spells per ", toString(ids)),
     success_msg, warn_msg, abort_msg,
     key   = c(ids, start_col, end_col),
-    group = diagnostic_name(tbl, "overlap_id")
+    group = diagnostic_name(tbl, "overlap_id"),
+    show  = character(),
+    summary = function(v, n) {
+      list(
+        lines = paste0("In ", count(n_distinct_rows(v, ids), "unit")),
+        # merge_spells() takes a data frame only
+        hints = if (!is_remote(v)) paste0(
+          "If they are one spell recorded more than once: merge_spells(", name, ", ",
+          code_cols(ids), ", ", code_name(start_col), ", ", code_name(end_col), ")")
+      )
+    }
   )
   invisible(data)
 }

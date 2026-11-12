@@ -69,9 +69,34 @@ ensure_complete <- function(data, ...,
     pass = paste0("Complete: ", what),
     fail = paste0("Missing values in: ", what),
     success_msg, warn_msg, abort_msg,
-    key = cols, group = diagnostic
+    key = cols, group = diagnostic,
+    show = character(),
+    summary = function(v, n) missing_per_column(v, cols, n)
   )
   invisible(data)
+}
+
+# "Missing per column: born (2), cpr (1)", most first. With one column the
+# row count already says it, and there is no line.
+missing_per_column <- function(v, cols, n) {
+  counts <- if (is_remote(v)) {
+    sums <- lapply(rlang::syms(cols), function(col) {
+      rlang::expr(sum(dplyr::if_else(is.na(!!col), 1L, 0L), na.rm = TRUE))
+    })
+    names(sums) <- paste0(".inshape_m", seq_along(cols))
+    as.numeric(unlist(dplyr::collect(dplyr::summarise(dplyr::ungroup(v), !!!sums))))
+  } else {
+    vapply(unclass(v)[cols], function(x) {
+      if (is.atomic(x) && is.null(dim(x))) sum(is.na(x)) else 0
+    }, numeric(1), USE.NAMES = FALSE)
+  }
+  names(counts) <- cols
+  counts <- sort(counts[counts > 0], decreasing = TRUE)
+  if (length(counts) < 2) return(character())
+  shown <- utils::head(counts, 8)
+  paste0("Missing per column: ",
+         paste0(names(shown), " (", big(shown), ")", collapse = ", "),
+         if (length(counts) > 8) paste0(" and ", count(length(counts) - 8, "more column")))
 }
 
 # Rows with a missing value in any of `cols`, in the order of the data,

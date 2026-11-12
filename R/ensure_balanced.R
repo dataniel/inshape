@@ -81,12 +81,24 @@ ensure_balanced <- function(data, id, time,
   }
 
   what <- if (gaps_only) "Gaps in panel" else "Panel is not balanced"
+  name <- data_label(rlang::caller_arg(data))
   report_check(
     missing_periods,
     pass = if (gaps_only) paste0("No gaps in ", time_col, " per ", toString(ids))
            else paste0("Balanced panel: ", toString(ids), " by ", time_col),
     fail = paste0(what, ": missing ", toString(ids), "-", time_col, " combinations"),
-    success_msg, warn_msg, abort_msg
+    success_msg, warn_msg, abort_msg,
+    summary = function(v, n) {
+      units <- n_distinct_rows(v, ids)
+      tv <- top_values(v, time_col)
+      list(
+        lines = c(paste0("Missing for ", count(units, "unit")),
+                  tally_line(paste("By", time_col), tv)),
+        hints = if (!gaps_only) paste0(
+          "If units may enter late and leave early: ensure_balanced(", name, ", ",
+          code_cols(ids), ", ", code_name(time_col), ", gaps_only = TRUE)")
+      )
+    }
   )
   invisible(data)
 }

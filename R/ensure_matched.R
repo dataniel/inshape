@@ -46,7 +46,13 @@ ensure_matched <- function(data, reference, by, na_matches = c("never", "na"),
     pass = paste0("Matched in the reference: ", toString(left)),
     fail = paste0("Keys missing from the reference: ", toString(left)),
     success_msg, warn_msg, abort_msg,
-    key = left
+    key = left,
+    show = character(),
+    summary = function(v, n) {
+      keys <- n_distinct_rows(v, left)
+      c(if (keys < n) paste0(count(keys, "distinct key"), " missing"),
+        pattern_lines(v, left, n, groups = keys))
+    }
   )
   invisible(data)
 }

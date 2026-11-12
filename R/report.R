@@ -7,6 +7,24 @@
 #' [ensure_empty()] take any rule dplyr can express. This page documents
 #' what they share.
 #'
+#' ## The failure message
+#'
+#' A failure is laid out in the same order by every structure check: what
+#' broke, the number of rows, counts that show the pattern (exact copies
+#' against copies that differ, units, periods, codes, the columns that
+#' vary), the first rows, and the next step. Five rows do not show whether
+#' 40,000 duplicates are one year or the whole table; the counts do, and
+#' show fewer personal data. They are computed only when the check fails.
+#'
+#' The next step is code to copy, with the column names filled in: the
+#' call to wrap in [violations()], and a fix where one is unambiguous, such
+#' as `dplyr::distinct()` for exact copies or [merge_spells()] for
+#' overlapping spells. Where a fix takes a choice the package cannot make,
+#' such as which of two differing copies to keep, the code has a hole in
+#' it, `<column>`. When the console is too narrow for every column, the
+#' preview keeps the key, the diagnostic column and the columns that
+#' explain the failure, and names the others.
+#'
 #' The offending rows are deliberately not kept in the session afterwards: on
 #' a population register a failed check can hold millions of rows, and they
 #' would stay in memory until the next failure. Messages are shown literally:
@@ -33,7 +51,8 @@
 #' column of the rows. inshape therefore writes nothing to disk, neither
 #' the rows nor a log of the checks, and keeps nothing after a check:
 #'
-#' * **The message** shows the number of rows and the first 5 of them at
+#' * **The message** shows the number of rows, counts that show their
+#'   pattern (per year, per code, per column), and the first 5 of them at
 #'   the console. Output that is kept, such as a rendered report or a
 #'   shared screen, keeps them too, so run the checks at the console.
 #' * **The condition** carries the rows in memory, until it is caught, by
@@ -110,6 +129,8 @@
 #'   [ensure_no_overlap()], [ensure_no_gaps()],
 #'   [ensure_valid_spells()], [ensure_constant()], [ensure_within()],
 #'   [ensure_codes()] and [ensure_matched()] for the structure,
+#'   [ensure_panel()], [ensure_spells()] and [ensure_lookup()] for the
+#'   common ones in one call,
 #'   [ensure_none()], [ensure_all()], [ensure_empty()] and
 #'   [tally_violations()] for rules of your own, and [violations()] for the
 #'   rows that break one.
@@ -226,9 +247,22 @@ first_row_by <- function(group, n_groups) {
 #
 # Nothing is written to disk here, neither rows nor a log: the rows are
 # personal data, and inshape is for interactive review (see ?checkpoints).
+#
+# The structure checks also hand over:
+#
+# * `summary`, a function of the violation set, called only on failure. It
+#   returns lines that show the pattern of the violations (see
+#   summaries.R), or a list of `lines`, `hints` (the next step, as code to
+#   copy) and `show` (columns to add to the preview).
+# * `show`, the columns besides `group` and `key` that explain a failure.
+#   When the console is too narrow for all columns, the preview holds only
+#   those, and names the columns it leaves out; all of them are in
+#   violations(). NULL leaves it to tibble, which cuts the columns at the
+#   right, as for the rules of ensure_none().
 report_check <- function(violations, pass, fail,
                          success_msg = NULL, warn_msg = NULL, abort_msg = NULL,
                          key = character(), group = NULL,
+                         show = NULL, summary = NULL,
                          call = rlang::caller_env()) {
   label  <- abort_msg %||% warn_msg
   remote <- is_remote(violations)
@@ -237,6 +271,9 @@ report_check <- function(violations, pass, fail,
   if (n == 0) {
     success_msg <- success_msg %||%
       if (is.null(label)) pass else paste0("Check passed: ", label)
+    # For the overview of ensure_panel() and the other wrappers, which
+    # catch it and the alert below
+    rlang::signal("", class = "inshape_pass", text = success_msg)
     cli::cli_alert_success("{success_msg}")
     return(invisible(TRUE))
   }
@@ -246,35 +283,74 @@ report_check <- function(violations, pass, fail,
     else length(unique(violations[[group]]))
   }
 
+  found <- if (is.null(summary)) NULL else if (remote) {
+    # A summary is a few more queries, in SQL a backend may not speak; the
+    # check has failed either way, so a summary that fails is left out
+    tryCatch(summary(violations, n), error = function(e) NULL)
+  } else {
+    summary(violations, n)
+  }
+  if (is.character(found)) found <- list(lines = found)
+  if (!is.null(show)) show <- c(show, found$show)
+
+  front <- c(group, key)
   if (remote) {
     # Sorted only now, for the rows that are fetched; see sort_by()
     order <- attr(violations, "inshape_order")
-    violations <- dplyr::relocate(violations, dplyr::any_of(c(group, key)))
+    violations <- dplyr::relocate(violations, dplyr::any_of(front))
     if (length(order) > 0) violations <- dplyr::arrange(violations, !!!order)
     shown <- dplyr::collect(utils::head(violations, preview_n))
   } else {
     violations <- tibble::as_tibble(violations)
-    violations <- violations[c(intersect(c(group, key), names(violations)),
-                               setdiff(names(violations), c(group, key)))]
+    violations <- violations[c(intersect(front, names(violations)),
+                               setdiff(names(violations), front))]
     shown <- violations
+  }
+  # Columns are left out only when the console would cut them anyway, and
+  # then the ones that explain the failure stay
+  preview <- preview_rows(shown, n = preview_n)
+  hidden <- character()
+  if (!is.null(show) && any(grepl("more variable", cli::ansi_strip(preview), fixed = TRUE))) {
+    keep <- intersect(c(front, show), names(shown))
+    hidden <- setdiff(names(shown), keep)
+    preview <- preview_rows(shown[keep], n = preview_n)
   }
 
   # The message is laid out here, once, and signalled as it is. Handed to
   # cli as bullets, an aborting check formats them twice, and the second
   # pass collapses the spaces that align the columns of the preview.
   info <- cli::col_cyan(cli::symbol$info)
+  counted <- paste0(count(n, "row"),
+                    if (!is.null(n_groups)) paste0(" in ", count(n_groups, "group")))
+  every <- n > preview_n || length(hidden) > 0
+  call_text <- if (every) check_call_text(call)
   lines <- c(
     label %||% fail,
-    paste0(info, " ", count(n, "row"),
-           if (is.null(n_groups)) " found:"
-           else paste0(" in ", count(n_groups, "group"), ":")),
-    preview_rows(shown, n = preview_n),
-    if (n > preview_n) paste0(info, " Wrap the check in violations() to get all rows.")
+    if (length(found$lines)) {
+      c(paste0(info, " ", counted),
+        paste0("  ", found$lines),
+        paste0(info, if (n > preview_n) paste0(" The first ", preview_n, " rows:") else " The rows:"))
+    } else {
+      paste0(info, " ", counted, if (is.null(n_groups)) " found:" else ":")
+    },
+    preview,
+    if (length(hidden)) {
+      paste0("  ", count(length(hidden), "more column"), " not shown: ",
+             paste(utils::head(hidden, 5), collapse = ", "),
+             if (length(hidden) > 5) ", ...")
+    },
+    if (every) {
+      what <- if (length(hidden)) "all rows and columns" else "all rows"
+      if (is.null(call_text)) paste0(info, " Wrap the check in violations() to get ", what, ".")
+      else paste0(info, " For ", what, ": violations(", call_text, ")")
+    },
+    if (length(found$hints)) paste0(info, " ", found$hints)
   )
 
   signal <- if (is.null(abort_msg)) rlang::warn else rlang::abort
   signal(paste(lines, collapse = "\n"), class = "inshape_failure",
-         violations = violations, call = call, use_cli_format = FALSE)
+         violations = violations, n = n, n_groups = n_groups,
+         summary = found$lines, call = call, use_cli_format = FALSE)
   invisible(FALSE)
 }
 

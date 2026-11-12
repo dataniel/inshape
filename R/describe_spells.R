@@ -219,28 +219,24 @@ summary_of_counts <- function(counts) {
 
 #' @export
 print.inshape_spells <- function(x, ...) {
-  cli::cat_rule(paste0("Spells: ", x$start, " to ", x$end, " per ", toString(x$ids)))
-  cli::cat_line(count(x$n_rows, "row"), ", ", count(x$n_spells, "usable spell"),
-                ", ", count(x$n_units, "unit"))
-  cli::cat_line()
-  if (x$n_missing_start > 0) cli::cat_bullet(paste0("Missing ", x$start, ": ", big(x$n_missing_start)))
-  if (x$n_end_before_start > 0) cli::cat_bullet(paste0("Ending before they start: ", big(x$n_end_before_start)))
-  cli::cat_bullet(paste0("Ongoing (no ", x$end, "): ", big(x$n_ongoing)))
-  cli::cat_bullet(paste0("Units with overlapping spells: ", big(x$n_units_overlapping),
-                         share(x$n_units_overlapping, x$n_units)))
-  cli::cat_line()
-  cli::cat_line("Relation to the unit's earlier spells:")
-  print_table(x$relations)
+  describe_header(
+    paste0("Spells: ", x$start, " to ", x$end, " per ", toString(x$ids)),
+    paste0(count(x$n_rows, "row"), ", ", count(x$n_spells, "usable spell"),
+           ", ", count(x$n_units, "unit"))
+  )
+  invalid <- x$n_missing_start + x$n_end_before_start
+  problem_line(x$n_missing_start, paste0("Missing ", x$start, ": ", big(x$n_missing_start)))
+  problem_line(x$n_end_before_start, paste0("Ending before they start: ", big(x$n_end_before_start)))
+  if (invalid == 0) problem_line(0, "", "Every spell has a start and ends after it")
+  problem_line(x$n_units_overlapping,
+               paste0("Units with overlapping spells: ", big(x$n_units_overlapping),
+                      share(x$n_units_overlapping, x$n_units)),
+               "No unit has overlapping spells")
+  note_line(paste0("Ongoing (no ", x$end, "): ", big(x$n_ongoing)))
+
+  table_block("Relation to the unit's earlier spells:", x$relations)
   w <- x$unit_word
-  if (x$gaps$n > 0) {
-    cli::cat_line()
-    cli::cat_line("Gaps between spells, in ", w, "s:")
-    print_table(x$gaps)
-  }
-  if (x$lengths$n > 0) {
-    cli::cat_line()
-    cli::cat_line("Length of ended spells, in ", w, "s:")
-    print_table(x$lengths)
-  }
+  if (x$gaps$n > 0) table_block(paste0("Gaps between spells, in ", w, "s:"), x$gaps)
+  if (x$lengths$n > 0) table_block(paste0("Length of ended spells, in ", w, "s:"), x$lengths)
   invisible(x)
 }

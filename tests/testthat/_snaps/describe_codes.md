@@ -6,9 +6,9 @@
       -- Codes: kom by year ----------------------------------------------------------
       16 rows, 6 codes, 4 periods, 2018-2021
       
+      v No code skips a period
+      ! Rows with a missing kom: 1
       * In every period: 2 codes (33.3%)
-      * Skipping periods: 0 codes (0.0%)
-      * Rows with a missing kom: 1
       
       By period:
           period codes   new  gone missing

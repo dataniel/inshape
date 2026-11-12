@@ -6,10 +6,10 @@
       -- Spells: start to end per cpr ------------------------------------------------
       11 rows, 9 usable spells, 5 units
       
-      * Missing start: 1
-      * Ending before they start: 1
+      ! Missing start: 1
+      ! Ending before they start: 1
+      ! Units with overlapping spells: 2 (40.0%)
       * Ongoing (no end): 1
-      * Units with overlapping spells: 2 (40.0%)
       
       Relation to the unit's earlier spells:
           relation    spells

@@ -140,26 +140,25 @@ code_periods <- function(unit, pos, n_units, n_per) {
 print.inshape_codes <- function(x, ...) {
   per <- x$periods
   span <- if (length(per)) paste0(", ", format(per[1]), "-", format(per[length(per)])) else ""
-  cli::cat_rule(paste0("Codes: ", x$code, " by ", x$time))
-  cli::cat_line(count(x$n_rows, "row"), ", ", count(x$n_codes, "code"), ", ",
-                count(length(per), "period"), span)
-  cli::cat_line()
-  cli::cat_bullet(paste0("In every period: ", count(x$n_every_period, "code"),
-                         share(x$n_every_period, x$n_codes)))
-  cli::cat_bullet(paste0("Skipping periods: ", count(x$n_with_gaps, "code"),
-                         share(x$n_with_gaps, x$n_codes)))
-  if (x$n_missing > 0) cli::cat_bullet(paste0("Rows with a missing ", x$code, ": ", big(x$n_missing)))
-  if (x$n_missing_time > 0) cli::cat_bullet(paste0("Rows with a missing ", x$time, ": ", big(x$n_missing_time)))
-  if (x$n_outside > 0) cli::cat_bullet(paste0("Rows outside the periods: ", big(x$n_outside)))
-  cli::cat_line()
-  cli::cat_line("By period:")
-  print_table(x$by_period)
+  describe_header(
+    paste0("Codes: ", x$code, " by ", x$time),
+    paste0(count(x$n_rows, "row"), ", ", count(x$n_codes, "code"), ", ",
+           count(length(per), "period"), span)
+  )
+  problem_line(x$n_with_gaps,
+               paste0("Skipping periods: ", count(x$n_with_gaps, "code"),
+                      share(x$n_with_gaps, x$n_codes)),
+               "No code skips a period")
+  problem_line(x$n_missing, paste0("Rows with a missing ", x$code, ": ", big(x$n_missing)))
+  problem_line(x$n_missing_time, paste0("Rows with a missing ", x$time, ": ", big(x$n_missing_time)))
+  problem_line(x$n_outside, paste0("Rows outside the periods: ", big(x$n_outside)))
+  note_line(paste0("In every period: ", count(x$n_every_period, "code"),
+                   share(x$n_every_period, x$n_codes)))
+  table_block("By period:", x$by_period)
   odd <- x$codes[x$codes$periods < length(per), ]
   if (nrow(odd)) {
     odd <- odd[order(-odd$gaps, odd$periods, odd$first), ]
-    cli::cat_line()
-    cli::cat_line("Codes not in every period, skipping first:")
-    print_table(odd, n = 10)
+    table_block("Codes not in every period, skipping first:", odd, n = 10)
   }
   invisible(x)
 }

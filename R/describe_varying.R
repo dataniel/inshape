@@ -110,14 +110,26 @@ varying_units <- function(x, unit, n_units) {
   )
 }
 
+# Below this share of units varying, a column is flagged as nearly constant
+nearly_constant <- 0.01
+
 #' @export
 print.inshape_varying <- function(x, ...) {
-  cli::cat_rule(paste0("Within ", toString(x$ids)))
-  cli::cat_line(count(x$n_units, "unit"), ", ", count(nrow(x$columns), "column"))
-  cli::cat_line()
+  describe_header(paste0("Within ", toString(x$ids)),
+                  paste0(count(x$n_units, "unit"), ", ", count(nrow(x$columns), "column")))
+  # A column that varies for a few units in a hundred is rarely meant to
+  # vary: those units are usually errors (see ensure_constant())
+  near <- x$columns[!is.na(x$columns$share) & x$columns$share > 0 &
+                      x$columns$share < nearly_constant, ]
+  problem_line(nrow(near),
+               paste0("Nearly constant, varying for under 1% of units: ",
+                      paste0(near$column, " (", big(near$varying), ")", collapse = ", ")),
+               "No column is nearly constant")
+  constant <- sum(x$columns$varying == 0 & x$columns$all_missing < x$n_units)
+  note_line(paste0("Constant: ", count(constant, "column")))
   shown <- x$columns
   shown$share <- ifelse(is.na(shown$share), "",
                         sprintf("%.2f%%", 100 * shown$share))
-  print_table(shown)
+  table_block("Per column:", shown)
   invisible(x)
 }

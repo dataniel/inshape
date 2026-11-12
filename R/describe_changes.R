@@ -187,24 +187,28 @@ pair_changes <- function(a, b, ia, ib) {
 
 #' @export
 print.inshape_changes <- function(x, ...) {
-  cli::cat_rule(paste0("Changes by ", toString(x$key)))
-  cli::cat_line(count(x$n_old, "row"), " before, ", count(x$n_new, "row"), " now, ",
-                count(x$n_kept, "key"), " in both")
-  cli::cat_line()
-  cli::cat_bullet(paste0("New keys: ", big(x$n_added), share(x$n_added, x$n_new)))
-  cli::cat_bullet(paste0("Keys gone: ", big(x$n_removed), share(x$n_removed, x$n_old)))
-  cli::cat_bullet(paste0("Keys with a changed value: ", big(x$n_changed),
-                         share(x$n_changed, x$n_kept)))
-  if (length(x$columns_added)) cli::cat_bullet(paste0("New columns: ", toString(x$columns_added)))
-  if (length(x$columns_removed)) cli::cat_bullet(paste0("Columns gone: ", toString(x$columns_removed)))
-  if (length(x$type_changed)) cli::cat_bullet(paste0("Columns with another type: ", toString(x$type_changed)))
-  if (length(x$columns_skipped)) cli::cat_bullet(paste0("Columns not compared: ", toString(x$columns_skipped)))
+  describe_header(
+    paste0("Changes by ", toString(x$key)),
+    paste0(count(x$n_old, "row"), " before, ", count(x$n_new, "row"), " now, ",
+           count(x$n_kept, "key"), " in both")
+  )
+  # A column that went or changed type breaks code written for the last
+  # extract; the rest is what a new extract is expected to bring
+  problem_line(length(x$columns_removed), paste0("Columns gone: ", toString(x$columns_removed)))
+  problem_line(length(x$type_changed), paste0("Columns with another type: ", toString(x$type_changed)))
+  if (length(x$columns_removed) + length(x$type_changed) == 0) {
+    problem_line(0, "", "The same columns, with the same types")
+  }
+  note_line(paste0("New keys: ", big(x$n_added), share(x$n_added, x$n_new)))
+  note_line(paste0("Keys gone: ", big(x$n_removed), share(x$n_removed, x$n_old)))
+  note_line(paste0("Keys with a changed value: ", big(x$n_changed),
+                   share(x$n_changed, x$n_kept)))
+  if (length(x$columns_added)) note_line(paste0("New columns: ", toString(x$columns_added)))
+  if (length(x$columns_skipped)) note_line(paste0("Columns not compared: ", toString(x$columns_skipped)))
   if (nrow(x$columns)) {
-    cli::cat_line()
-    cli::cat_line("Changes per column, among the keys in both:")
     shown <- x$columns
     shown$share <- ifelse(is.na(shown$share), "", sprintf("%.2f%%", 100 * shown$share))
-    print_table(shown)
+    table_block("Changes per column, among the keys in both:", shown)
   }
   invisible(x)
 }

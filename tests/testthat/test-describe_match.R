@@ -121,7 +121,7 @@ test_that("an empty table on either side is counted as such", {
 
   m <- describe_match(income[0, ], persons[0, ], by = c(cpr = "person_id"))
   expect_equal(m$keys$keys, c(0, 0, 0))
-  expect_output(print(m), "Rows of data without a match: 0")
+  expect_output(print(m), "Every row of data has a match")
 })
 
 test_that("the key must be stated and exist in both tables", {

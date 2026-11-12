@@ -6,12 +6,12 @@
       -- Changes by cpr, year --------------------------------------------------------
       5 rows before, 5 rows now, 4 keys in both
       
+      ! Columns gone: kom
+      ! Columns with another type: born
       * New keys: 1 (20.0%)
       * Keys gone: 1 (20.0%)
       * Keys with a changed value: 3 (75.0%)
       * New columns: inc
-      * Columns gone: kom
-      * Columns with another type: born
       
       Changes per column, among the keys in both:
           column changed went_missing filled_in share 

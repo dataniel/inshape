@@ -87,31 +87,28 @@ describe_key <- function(data, ...) {
 
 #' @export
 print.inshape_key <- function(x, ...) {
-  cli::cat_rule(paste0("Key: ", toString(x$key)))
-  cli::cat_line(count(x$n_rows, "row"), ", ", count(x$n_keys, "distinct key"))
-  cli::cat_line()
-  if (x$n_dup_keys == 0) {
-    cli::cat_bullet("Unique: every key occurs once")
-  } else {
-    cli::cat_bullet(paste0("Duplicated keys: ", big(x$n_dup_keys), " (",
-                           count(x$n_dup_rows, "row"), ", ",
-                           count(x$n_dup_rows - x$n_dup_keys, "extra row"), ")"))
-    cli::cat_bullet(paste0("Exact copies, identical in every column: ",
-                           big(x$n_exact), " of ", count(x$n_dup_keys, "key")))
-    if (nrow(x$conflicts)) {
-      shown <- utils::head(x$conflicts, 5)
-      more <- nrow(x$conflicts) - nrow(shown)
-      cli::cat_bullet(paste0("Copies differ in: ",
-                             paste0(shown$column, " (", big(shown$keys), ")", collapse = ", "),
-                             if (more > 0) paste0(" and ", count(more, "more column"))))
-    }
-    cli::cat_bullet(paste0("Copies per duplicated key: ",
-                           paste0(x$copies$copies, " (", big(x$copies$keys), ")", collapse = ", ")))
+  describe_header(paste0("Key: ", toString(x$key)),
+                  paste0(count(x$n_rows, "row"), ", ", count(x$n_keys, "distinct key")))
+  problem_line(x$n_dup_keys,
+               paste0("Duplicated keys: ", big(x$n_dup_keys), " (",
+                      count(x$n_dup_rows, "row"), ", ",
+                      count(x$n_dup_rows - x$n_dup_keys, "extra row"), ")"),
+               "Unique: every key occurs once")
+  if (nrow(x$conflicts)) {
+    shown <- utils::head(x$conflicts, 5)
+    more <- nrow(x$conflicts) - nrow(shown)
+    problem_line(1, paste0("Copies differ in: ",
+                           paste0(shown$column, " (", big(shown$keys), ")", collapse = ", "),
+                           if (more > 0) paste0(" and ", count(more, "more column"))))
   }
   na <- x$missing[x$missing$rows > 0, ]
-  if (nrow(na)) {
-    cli::cat_bullet(paste0("Missing values in the key: ",
-                           paste0(na$column, " (", big(na$rows), ")", collapse = ", ")))
+  problem_line(nrow(na), paste0("Missing values in the key: ",
+                                paste0(na$column, " (", big(na$rows), ")", collapse = ", ")))
+  if (x$n_dup_keys > 0) {
+    note_line(paste0("Exact copies, identical in every column: ",
+                     big(x$n_exact), " of ", count(x$n_dup_keys, "key")))
+    note_line(paste0("Copies per duplicated key: ",
+                     paste0(x$copies$copies, " (", big(x$copies$keys), ")", collapse = ", ")))
   }
   invisible(x)
 }

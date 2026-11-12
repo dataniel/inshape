@@ -6,8 +6,8 @@
       -- Key: cvr, year --------------------------------------------------------------
       8 rows, 4 distinct keys
       
-      * Duplicated keys: 3 (7 rows, 4 extra rows)
+      ! Duplicated keys: 3 (7 rows, 4 extra rows)
+      ! Copies differ in: industry (1), income (1)
       * Exact copies, identical in every column: 1 of 3 keys
-      * Copies differ in: industry (1), income (1)
       * Copies per duplicated key: 2 (2), 3 (1)
 

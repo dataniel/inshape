@@ -6,6 +6,12 @@
   and the call that gives the rows. All checks run, so every problem shows
   at once; overlaps and gaps wait until the spells are valid.
   `violations()` on a wrapper names the single checks to wrap instead.
+* The seven `describe_*()` summaries print in one layout: the size, then
+  the problems, then the neutral counts, then the tables. A problem that is
+  present has a warning sign and one that could be there but is not a
+  tick, so "Ongoing: 12,400" and "Ending before they start: 3" no longer
+  look alike. `describe_varying()` flags columns that vary for under 1% of
+  units as nearly constant. The returned objects are unchanged.
 * A failed structure check now shows the pattern before the rows: exact
   copies against copies that differ, and in which columns
   (`ensure_unique()`); units and periods (`ensure_balanced()`); codes,

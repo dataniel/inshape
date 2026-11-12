@@ -128,26 +128,23 @@ new_match <- function(by, n_rows, n_ref_rows, n_missing, n_ref_missing, counts,
 #' @export
 print.inshape_match <- function(x, ...) {
   same <- names(x$by) == x$by
-  cli::cat_rule(paste0("Match: ", toString(ifelse(same, x$by, paste0(names(x$by), " = ", x$by)))))
-  cli::cat_line("data: ", count(x$n_rows, "row"), ", reference: ", count(x$n_ref_rows, "row"))
-  cli::cat_line()
+  describe_header(
+    paste0("Match: ", toString(ifelse(same, x$by, paste0(names(x$by), " = ", x$by)))),
+    paste0("data: ", count(x$n_rows, "row"), ", reference: ", count(x$n_ref_rows, "row"))
+  )
   k <- x$keys
-  cli::cat_line("Keys:")
-  print_table(k)
-  cli::cat_line()
   unmatched <- k$rows[2] + x$n_missing
-  cli::cat_bullet(paste0("Rows of data without a match: ", big(unmatched),
-                         share(unmatched, x$n_rows),
-                         if (x$n_missing > 0) paste0(", ", big(x$n_missing), " of them with a missing key")))
-  if (x$n_ref_missing > 0) {
-    cli::cat_bullet(paste0("Rows of the reference with a missing key: ", big(x$n_ref_missing)))
-  }
+  problem_line(unmatched,
+               paste0("Rows of data without a match: ", big(unmatched),
+                      share(unmatched, x$n_rows),
+                      if (x$n_missing > 0) paste0(", ", big(x$n_missing), " of them with a missing key")),
+               "Every row of data has a match")
   extra <- x$n_join_rows - x$n_rows
-  cli::cat_bullet(if (x$n_ref_dup_keys == 0) {
-    "The reference has each key once: a left join keeps the rows of data as they are"
-  } else {
-    paste0("Keys repeated in the reference: ", big(x$n_ref_dup_keys), "; a left join returns ",
-           count(x$n_join_rows, "row"), ", ", big(extra), " more than data")
-  })
+  problem_line(x$n_ref_dup_keys,
+               paste0("Keys repeated in the reference: ", big(x$n_ref_dup_keys), "; a left join returns ",
+                      count(x$n_join_rows, "row"), ", ", big(extra), " more than data"),
+               "The reference has each key once: a left join keeps the rows of data as they are")
+  problem_line(x$n_ref_missing, paste0("Rows of the reference with a missing key: ", big(x$n_ref_missing)))
+  table_block("Keys:", k)
   invisible(x)
 }

@@ -152,36 +152,65 @@ print.inshape_panel <- function(x, ...) {
   per <- x$periods
   span <- if (length(per)) paste0(", ", format(per[1]), "-", format(per[length(per)])) else ""
 
-  cli::cat_rule(paste0("Panel: ", toString(x$ids), " by ", x$time))
-  cli::cat_line(count(x$n_rows, "row"), ", ", count(x$n_units, "unit"), ", ",
-                count(length(per), "period"), span)
-  cli::cat_line()
-  cli::cat_bullet(paste0("Observed in every period: ", count(x$n_complete, "unit"),
-                         share(x$n_complete, x$n_units)))
-  cli::cat_bullet(paste0("With gaps: ", count(x$n_with_gaps, "unit"),
-                         share(x$n_with_gaps, x$n_units), ", ",
-                         count(x$n_gap_cells, "missing unit-period"), " inside their span"))
-  cli::cat_bullet(paste0("Duplicated unit-periods: ", big(x$n_dup_cells),
-                         " (", count(x$n_dup_rows, "extra row"), ")"))
+  describe_header(
+    paste0("Panel: ", toString(x$ids), " by ", x$time),
+    paste0(count(x$n_rows, "row"), ", ", count(x$n_units, "unit"), ", ",
+           count(length(per), "period"), span)
+  )
+  problem_line(x$n_with_gaps,
+               paste0("With gaps: ", count(x$n_with_gaps, "unit"),
+                      share(x$n_with_gaps, x$n_units), ", ",
+                      count(x$n_gap_cells, "missing unit-period"), " inside their span"),
+               "No unit skips a period")
+  problem_line(x$n_dup_cells,
+               paste0("Duplicated unit-periods: ", big(x$n_dup_cells),
+                      " (", count(x$n_dup_rows, "extra row"), ")"),
+               "No duplicated unit-periods")
   empty <- per[x$by_period$units == 0]
-  if (length(empty)) {
-    cli::cat_bullet(paste0("Periods without units: ", toString(format(empty))))
-  }
-  if (x$n_missing_id > 0) cli::cat_bullet(paste0("Rows with a missing id: ", big(x$n_missing_id)))
-  if (x$n_missing_time > 0) cli::cat_bullet(paste0("Rows with a missing ", x$time, ": ", big(x$n_missing_time)))
-  if (x$n_outside > 0) cli::cat_bullet(paste0("Rows outside the periods: ", big(x$n_outside)))
+  problem_line(length(empty), paste0("Periods without units: ", toString(format(empty))))
+  problem_line(x$n_missing_id, paste0("Rows with a missing id: ", big(x$n_missing_id)))
+  problem_line(x$n_missing_time, paste0("Rows with a missing ", x$time, ": ", big(x$n_missing_time)))
+  problem_line(x$n_outside, paste0("Rows outside the periods: ", big(x$n_outside)))
+  note_line(paste0("Observed in every period: ", count(x$n_complete, "unit"),
+                   share(x$n_complete, x$n_units)))
 
-  cli::cat_line()
-  cli::cat_line("By period:")
-  print_table(x$by_period)
+  table_block("By period:", x$by_period)
   if (nrow(x$patterns)) {
-    cli::cat_line()
-    cli::cat_line("Most common patterns:")
     pat <- x$patterns
     pat$share <- sprintf("%.1f%%", 100 * pat$share)
-    print_table(pat)
+    table_block("Most common patterns:", pat)
   }
   invisible(x)
+}
+
+# The shared layout of the describe_*() summaries: a rule with the title,
+# the size, then the problems, then the neutral numbers, then the tables.
+# A problem that is present gets a warning sign, one that could be there
+# but is not gets a tick, so problems and plain counts never look alike.
+describe_header <- function(title, size) {
+  cli::cat_rule(title)
+  cli::cat_line(size)
+  cli::cat_line()
+}
+
+# A possible problem: a warning when `n` > 0, otherwise the tick line
+# `good`, or nothing when `good` is NULL (problems that are rare enough
+# not to be worth a line when absent)
+problem_line <- function(n, bad, good = NULL) {
+  if (isTRUE(n > 0)) {
+    cli::cat_line(cli::col_yellow(cli::symbol$warning), " ", bad)
+  } else if (!is.null(good)) {
+    cli::cat_line(cli::col_green(cli::symbol$tick), " ", good)
+  }
+}
+
+note_line <- function(text) cli::cat_bullet(text)
+
+# A table with a line of text above it, after a blank line
+table_block <- function(title, df, n = 20) {
+  cli::cat_line()
+  cli::cat_line(title)
+  print_table(df, n = n)
 }
 
 # Number formatting for the describe_*() summaries

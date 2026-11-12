@@ -62,6 +62,13 @@
 
         <dt>
 
+          <code><a href="describe_match.html">describe_match()</a></code>
+
+        </dt>
+        <dd>Describe how the keys of two tables match</dd>
+
+        <dt>
+
           <code><a href="describe_panel.html">describe_panel()</a></code>
 
         </dt>
@@ -81,7 +88,44 @@
         </dt>
         <dd>Describe which columns vary within a unit</dd>
       </dl></div><div class="section level2">
-      <h2 id="checkpoints">Checkpoints<a class="anchor" aria-label="anchor" href="#checkpoints"></a></h2>
+      <h2 id="rules">Rules<a class="anchor" aria-label="anchor" href="#rules"></a></h2>
+
+      <div class="section-desc"><p>Any rule dplyr can express, stated as “the set of violations must be empty”. <code><a href="../reference/tally_violations.html">tally_violations()</a></code> counts many rules and judges nothing.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="ensure_empty.html">ensure_empty()</a></code>
+
+        </dt>
+        <dd>Assert that a set of violations is empty</dd>
+
+        <dt>
+
+          <code><a href="ensure_none.html">ensure_none()</a></code>
+
+        </dt>
+        <dd>Assert that no rows match a condition</dd>
+
+        <dt>
+
+          <code><a href="ensure_all.html">ensure_all()</a></code>
+
+        </dt>
+        <dd>Assert that every row meets a condition</dd>
+
+        <dt>
+
+          <code><a href="tally_violations.html">tally_violations()</a></code>
+
+        </dt>
+        <dd>Count violations for several rules at once</dd>
+      </dl></div><div class="section level2">
+      <h2 id="structure-checks">Structure checks<a class="anchor" aria-label="anchor" href="#structure-checks"></a></h2>
 
       <div class="section-desc"><p>Each checkpoint states one rule about the structure of the data, warns or aborts with the offending rows, and returns its input, so it can sit in a pipeline.</p></div>
 
@@ -96,6 +140,13 @@
 
         </dt>
         <dd>Assert that key columns identify each row uniquely</dd>
+
+        <dt>
+
+          <code><a href="ensure_complete.html">ensure_complete()</a></code>
+
+        </dt>
+        <dd>Assert that columns have no missing values</dd>
 
         <dt>
 
@@ -211,7 +262,7 @@
           <code><a href="inshape-package.html">inshape</a></code> <code><a href="inshape-package.html">inshape-package</a></code>
 
         </dt>
-        <dd>inshape: structure checks for register microdata</dd>
+        <dd>inshape: checks for register microdata</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

@@ -11,6 +11,8 @@ that prints, and judges nothing.
   : Describe how the codes of a column change over periods
 - [`describe_key()`](https://dataniel.github.io/inshape/reference/describe_key.md)
   : Describe how well columns work as a key
+- [`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md)
+  : Describe how the keys of two tables match
 - [`describe_panel()`](https://dataniel.github.io/inshape/reference/describe_panel.md)
   : Describe the structure of a panel
 - [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md)
@@ -18,7 +20,23 @@ that prints, and judges nothing.
 - [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md)
   : Describe which columns vary within a unit
 
-## Checkpoints
+## Rules
+
+Any rule dplyr can express, stated as “the set of violations must be
+empty”.
+[`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md)
+counts many rules and judges nothing.
+
+- [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+  : Assert that a set of violations is empty
+- [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md)
+  : Assert that no rows match a condition
+- [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+  : Assert that every row meets a condition
+- [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md)
+  : Count violations for several rules at once
+
+## Structure checks
 
 Each checkpoint states one rule about the structure of the data, warns
 or aborts with the offending rows, and returns its input, so it can sit
@@ -26,6 +44,8 @@ in a pipeline.
 
 - [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md)
   : Assert that key columns identify each row uniquely
+- [`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md)
+  : Assert that columns have no missing values
 - [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md)
   : Assert that a panel is balanced, or has no gaps
 - [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md)
@@ -63,4 +83,4 @@ or add the status from spells to a panel you already have.
 
 - [`inshape`](https://dataniel.github.io/inshape/reference/inshape-package.md)
   [`inshape-package`](https://dataniel.github.io/inshape/reference/inshape-package.md)
-  : inshape: structure checks for register microdata
+  : inshape: checks for register microdata

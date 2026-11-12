@@ -1,4 +1,4 @@
-# inshape: structure checks for register microdata
+# inshape: checks for register microdata
 
 Register microdata comes in a few shapes: one row per unit, one row per
 unit and period (a panel), or one row per spell with a start and an end.
@@ -30,8 +30,14 @@ before anyone builds on them?
 - [`describe_changes()`](https://dataniel.github.io/inshape/reference/describe_changes.md):
   what changed since the last extract.
 
+- [`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md):
+  what a join of two tables will do, before it is made.
+
 - [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md):
   a key identifies each row.
+
+- [`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md):
+  the columns an analysis cannot do without have no missing values.
 
 - [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md):
   every unit is observed in every period, or at least has no gaps.
@@ -58,6 +64,15 @@ before anyone builds on them?
 - [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md):
   every key occurs in a reference register.
 
+- [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
+  [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+  and
+  [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md):
+  any other rule dplyr can express, such as no negative amounts.
+
+- [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md):
+  count many rules at once, without judging.
+
 - [`violations()`](https://dataniel.github.io/inshape/reference/violations.md):
   the rows that break a check, all of them.
 
@@ -82,13 +97,19 @@ share (messages, personal data, database tables) is described in
 
 ### Why a package of its own
 
-The key, panel and spell checks started in the expectr package and the
-spell conversions in daos. They moved here because they share an engine
-the rest does not: the grouping of keys such as cpr without sorting
-them, and the compiled pass over sorted spells. expectr keeps the
-general checkpoints (`expect_empty()`, `expect_none()`), and the two
-packages do not depend on each other; the `ensure_` prefix keeps their
-functions apart in a script that uses both.
+The checkpoints and the spell conversions started in the daos package.
+They moved here because they share an engine the rest of daos does not:
+the grouping of keys such as cpr without sorting them, the compiled pass
+over sorted spells, and one way of reporting a broken rule. The general
+checkpoints,
+[`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
+[`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md),
+[`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+and
+[`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md),
+spent a while in the expectr package and joined the rest here, since
+they share the same contract, the same reporting and the same
+dependencies.
 
 ## See also
 

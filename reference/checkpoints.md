@@ -1,9 +1,14 @@
 # Checkpoints: shared arguments, personal data and database tables
 
 The `ensure_*()` functions are checkpoints: each states a rule about the
-structure of the data, warns or aborts with the offending rows when it
-is broken, and returns `data` invisibly, so it can sit in the middle of
-a pipeline. This page documents what they share.
+data, warns or aborts with the offending rows when it is broken, and
+returns `data` invisibly, so it can sit in the middle of a pipeline.
+Most rules are about structure;
+[`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
+[`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+and
+[`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+take any rule dplyr can express. This page documents what they share.
 
 ## Arguments
 
@@ -37,9 +42,9 @@ The offending rows are deliberately not kept in the session afterwards:
 on a population register a failed check can hold millions of rows, and
 they would stay in memory until the next failure. Messages are shown
 literally: braces are not interpolated. Diagnostic columns such as
-`dupid`, `overlap_id`, `gap`, `outside` and `reason` receive a numeric
-suffix when their name is already in the input (for example `dupid.1`).
-All original columns keep their names and values.
+`dupid`, `missing`, `overlap_id`, `gap`, `outside` and `reason` receive
+a numeric suffix when their name is already in the input (for example
+`dupid.1`). All original columns keep their names and values.
 
 A failed check signals a condition of class `inshape_failure` (a warning
 or an error) that carries the offending rows in its `violations` field.
@@ -64,6 +69,13 @@ the rows nor a log of the checks, and keeps nothing after a check:
   [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
   for one, or dropped. Whether any of them are stored, and where, is for
   the analysis and its data agreement to decide, not the package.
+
+To keep the rows, save them yourself, from what
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+returns:
+
+    violations(ensure_none(sales, amount < 0)) |>
+      data.table::fwrite("negative_amounts.csv")
 
 ### Speed
 
@@ -118,6 +130,7 @@ the keys that came, went or changed stay queries, to `collect()`.
 ## See also
 
 [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md),
+[`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md),
 [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md),
 [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md),
 [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md),
@@ -127,6 +140,12 @@ the keys that came, went or changed stay queries, to `collect()`.
 [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md)
 and
 [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
-for the rules, and
+for the structure,
+[`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
+[`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md),
+[`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+and
+[`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md)
+for rules of your own, and
 [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
 for the rows that break one.

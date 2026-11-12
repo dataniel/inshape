@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Structure Checks for Register Microdata • inshape</title>
+<title>Checks for Register Microdata • inshape</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Structure Checks for Register Microdata">
-<meta name="description" content="Check that register microdata has the structure an analysis assumes: unique keys, balanced panels without gaps, spells that do not overlap, and turn spell data into period panels with primo and ultimo status. Built for full-population registers: keys are grouped in one linear pass without sorting them, spell lookups run in compiled code, and database and Arrow tables are checked where they live.">
-<meta property="og:description" content="Check that register microdata has the structure an analysis assumes: unique keys, balanced panels without gaps, spells that do not overlap, and turn spell data into period panels with primo and ultimo status. Built for full-population registers: keys are grouped in one linear pass without sorting them, spell lookups run in compiled code, and database and Arrow tables are checked where they live.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Checks for Register Microdata">
+<meta name="description" content="Check that register microdata is what an analysis assumes: unique keys, balanced panels without gaps, spells that do not overlap, and any rule written as a dplyr condition. Turn spell data into period panels with primo and ultimo status. Built for full-population registers: keys are grouped in one linear pass without sorting them, spell lookups run in compiled code, and database and Arrow tables are checked where they live.">
+<meta property="og:description" content="Check that register microdata is what an analysis assumes: unique keys, balanced panels without gaps, spells that do not overlap, and any rule written as a dplyr condition. Turn spell data into period panels with primo and ultimo status. Built for full-population registers: keys are grouped in one linear pass without sorting them, spell lookups run in compiled code, and database and Arrow tables are checked where they live.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -44,14 +44,15 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 
-<p>Structure checks for register microdata.</p>
-<p>Register data comes as one row per unit, one row per unit and period (a panel), or one row per spell. Every analysis assumes that shape is right: no duplicated persons, no missing years in the middle of a panel, no person with two addresses at once. inshape checks those assumptions, fast enough for full-population registers, and converts spells to panels.</p>
+<p>Checks for register microdata.</p>
+<p>Register data comes as one row per unit, one row per unit and period (a panel), or one row per spell. Every analysis assumes that shape is right: no duplicated persons, no missing years in the middle of a panel, no person with two addresses at once. inshape checks those assumptions, fast enough for full-population registers, and converts spells to panels. Any other rule dplyr can express is a checkpoint too.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dataniel.github.io/inshape">inshape</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">persons</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span>, abort_msg <span class="op">=</span> <span class="st">"Duplicate person-years"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span>, periods <span class="op">=</span> <span class="fl">2015</span><span class="op">:</span><span class="fl">2024</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span>, periods <span class="op">=</span> <span class="fl">2015</span><span class="op">:</span><span class="fl">2024</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ensure_none.html">ensure_none</a></span><span class="op">(</span><span class="va">income</span> <span class="op">&lt;</span> <span class="fl">0</span>, warn_msg <span class="op">=</span> <span class="st">"Negative income"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">addresses</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ensure_no_overlap.html">ensure_no_overlap</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span></code></pre></div>
@@ -93,6 +94,10 @@
 <td>How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in</td>
 </tr>
 <tr>
+<td><code><a href="reference/describe_match.html">describe_match()</a></code></td>
+<td>What a join will do: keys in both tables, only in one, rows without a match, and the rows a left join returns when the reference repeats a key</td>
+</tr>
+<tr>
 <td><code><a href="reference/describe_panel.html">describe_panel()</a></code></td>
 <td>The structure of a panel: units, gaps, entries and exits per period, participation patterns</td>
 </tr>
@@ -105,6 +110,10 @@
 <td>Which columns vary within units: constant, nearly constant (errors) and varying</td>
 </tr>
 <tr>
+<td><code><a href="reference/ensure_all.html">ensure_all()</a></code></td>
+<td>Every row meets a condition written as in <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>; a missing value is a violation</td>
+</tr>
+<tr>
 <td><code><a href="reference/ensure_balanced.html">ensure_balanced()</a></code></td>
 <td>Every unit observed in every period, or no gaps (<code>gaps_only</code>)</td>
 </tr>
@@ -113,8 +122,16 @@
 <td>Codes belong to a code list, optionally within their validity periods</td>
 </tr>
 <tr>
+<td><code><a href="reference/ensure_complete.html">ensure_complete()</a></code></td>
+<td>Columns an analysis cannot do without (an id, a date) have no missing values; the rows are reported with the columns missing in each</td>
+</tr>
+<tr>
 <td><code><a href="reference/ensure_constant.html">ensure_constant()</a></code></td>
 <td>Columns such as sex or birth date are constant within each unit</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_empty.html">ensure_empty()</a></code></td>
+<td>A violation set built with <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code> or an anti-join has no rows</td>
 </tr>
 <tr>
 <td><code><a href="reference/ensure_matched.html">ensure_matched()</a></code></td>
@@ -127,6 +144,11 @@
 <tr>
 <td><code><a href="reference/ensure_no_overlap.html">ensure_no_overlap()</a></code></td>
 <td>Spells (addresses, employment) do not overlap within a unit</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_none.html">ensure_none()</a></code></td>
+<td>No row matches a condition written as in <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>
+</td>
 </tr>
 <tr>
 <td><code><a href="reference/ensure_unique.html">ensure_unique()</a></code></td>
@@ -149,6 +171,11 @@
 <td>Spells to a yearly, quarterly or monthly panel with primo and ultimo status</td>
 </tr>
 <tr>
+<td><code><a href="reference/tally_violations.html">tally_violations()</a></code></td>
+<td>Violations counted for many rules at once, judging nothing; filter and pipe into <code><a href="reference/ensure_empty.html">ensure_empty()</a></code>
+</td>
+</tr>
+<tr>
 <td><code><a href="reference/violations.html">violations()</a></code></td>
 <td>The rows that break a check, all of them: wrap the check in it</td>
 </tr>
@@ -157,9 +184,12 @@
 <p>The <code>ensure_*()</code> checkpoints warn or abort with the offending rows and return the data. The message shows the first rows; <code><a href="reference/violations.html">violations()</a></code> returns all of them:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">year</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Check a reference before linking it, or validate a code at the time it was observed:</p>
+<p>Look at a reference before linking it and require the match, or validate a code at the time it was observed:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">income</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/describe_match.html">describe_match</a></span><span class="op">(</span><span class="va">income</span>, <span class="va">population</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cpr"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">income</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ensure_complete.html">ensure_complete</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ensure_matched.html">ensure_matched</a></span><span class="op">(</span><span class="va">population</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cpr"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">codebook</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -196,7 +226,7 @@
 <div class="section level2">
 <h2 id="origin">Origin<a class="anchor" aria-label="anchor" href="#origin"></a>
 </h2>
-<p>The checks started as <code>expect_unique()</code>, <code>expect_balanced()</code> and <code>expect_no_overlap()</code> in <a href="https://github.com/dataniel/expectr" class="external-link">expectr</a>, and the spell conversions in <a href="https://github.com/dataniel/daos" class="external-link">daos</a>. They were renamed to <code>ensure_*()</code> when they moved, so a script using both packages cannot confuse them. expectr keeps the general checkpoints, and the packages do not depend on each other.</p>
+<p>The checkpoints and the spell conversions started in <a href="https://github.com/dataniel/daos" class="external-link">daos</a>. The general checkpoints spent a while in the expectr package as <code>expect_empty()</code>, <code>expect_none()</code> and <code>expect_all()</code>, and joined the structure checks here as <code><a href="reference/ensure_empty.html">ensure_empty()</a></code>, <code><a href="reference/ensure_none.html">ensure_none()</a></code> and <code><a href="reference/ensure_all.html">ensure_all()</a></code>, since they share the same contract, reporting and dependencies.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

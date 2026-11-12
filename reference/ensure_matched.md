@@ -69,6 +69,8 @@ ensure_matched(
 
 ## See also
 
+[`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md)
+to look at the match from both sides first,
 [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md),
 [checkpoints](https://dataniel.github.io/inshape/reference/checkpoints.md).
 

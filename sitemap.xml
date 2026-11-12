@@ -12,15 +12,20 @@
 <url><loc>https://dataniel.github.io/inshape/reference/describe_changes.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/describe_codes.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/describe_key.html</loc></url>
+<url><loc>https://dataniel.github.io/inshape/reference/describe_match.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/describe_panel.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/describe_spells.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/describe_varying.html</loc></url>
+<url><loc>https://dataniel.github.io/inshape/reference/ensure_all.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_balanced.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_codes.html</loc></url>
+<url><loc>https://dataniel.github.io/inshape/reference/ensure_complete.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_constant.html</loc></url>
+<url><loc>https://dataniel.github.io/inshape/reference/ensure_empty.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_matched.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_no_gaps.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_no_overlap.html</loc></url>
+<url><loc>https://dataniel.github.io/inshape/reference/ensure_none.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_unique.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_valid_spells.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/ensure_within.html</loc></url>
@@ -28,6 +33,7 @@
 <url><loc>https://dataniel.github.io/inshape/reference/inshape-package.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/merge_spells.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/spells_to_panel.html</loc></url>
+<url><loc>https://dataniel.github.io/inshape/reference/tally_violations.html</loc></url>
 <url><loc>https://dataniel.github.io/inshape/reference/violations.html</loc></url>
 </urlset>
 

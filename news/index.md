@@ -2,6 +2,50 @@
 
 ## inshape 0.1.0
 
+- The general checkpoints from the expectr package are now part of
+  inshape, renamed to the `ensure_` prefix and built on the same
+  reporting as the structure checks:
+
+  | expectr | inshape |
+  |----|----|
+  | `expect_empty()` | [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md) |
+  | `expect_none()` | [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md) |
+  | `expect_all()` | [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md) |
+  | [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md) | [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md) |
+
+  A failure signals `inshape_failure`, and
+  [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+  returns its rows.
+
+- expectr’s `log` and `dump` arguments and the options `expectr.log`,
+  `expectr.dump` and `expectr.quiet` are gone: inshape never writes rows
+  to disk itself. Save the rows from
+  [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+  if you need them. A call that still passes `log =` or `dump =` fails
+  instead of being ignored:
+  [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+  with “unused argument”,
+  [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md)
+  and
+  [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+  because their conditions must not be named.
+
+- New
+  [`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md)
+  says what a join will do before it is made: the keys found in both
+  tables, only in the data and only in the reference, the rows without a
+  match, and how many rows a left join returns when the reference
+  repeats a key. Missing keys match nothing and are counted on their
+  own. Keys of different types, such as a number against text, stop with
+  an error instead of matching nothing.
+
+- New
+  [`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md)
+  checks that columns have no missing values, all columns if none are
+  named. The rows are reported with a `missing` column that names the
+  columns missing in each, e.g. `"cpr, born"`. Both new functions take
+  database and Arrow tables too.
+
 - New
   [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md)
   checks that a unit’s spells cover it without a break, e.g. that a

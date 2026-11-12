@@ -32,7 +32,24 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="inshape-010">inshape 0.1.0<a class="anchor" aria-label="anchor" href="#inshape-010"></a></h2>
-<ul><li><p>New <code><a href="../reference/ensure_no_gaps.html">ensure_no_gaps()</a></code> checks that a unit’s spells cover it without a break, e.g. that a resident has an address every day: the spell after each gap is reported with the length of the gap, and <code>max_gap</code> accepts short ones. It is the counterpart of <code><a href="../reference/ensure_no_overlap.html">ensure_no_overlap()</a></code> and takes database and Arrow tables too.</p></li>
+<ul><li>
+<p>The general checkpoints from the expectr package are now part of inshape, renamed to the <code>ensure_</code> prefix and built on the same reporting as the structure checks:</p>
+<table class="table"><thead><tr><th>expectr</th>
+<th>inshape</th>
+</tr></thead><tbody><tr><td><code>expect_empty()</code></td>
+<td><code><a href="../reference/ensure_empty.html">ensure_empty()</a></code></td>
+</tr><tr><td><code>expect_none()</code></td>
+<td><code><a href="../reference/ensure_none.html">ensure_none()</a></code></td>
+</tr><tr><td><code>expect_all()</code></td>
+<td><code><a href="../reference/ensure_all.html">ensure_all()</a></code></td>
+</tr><tr><td><code><a href="../reference/tally_violations.html">tally_violations()</a></code></td>
+<td><code><a href="../reference/tally_violations.html">tally_violations()</a></code></td>
+</tr></tbody></table><p>A failure signals <code>inshape_failure</code>, and <code><a href="../reference/violations.html">violations()</a></code> returns its rows.</p>
+</li>
+<li><p>expectr’s <code>log</code> and <code>dump</code> arguments and the options <code>expectr.log</code>, <code>expectr.dump</code> and <code>expectr.quiet</code> are gone: inshape never writes rows to disk itself. Save the rows from <code><a href="../reference/violations.html">violations()</a></code> if you need them. A call that still passes <code>log =</code> or <code>dump =</code> fails instead of being ignored: <code><a href="../reference/ensure_empty.html">ensure_empty()</a></code> with “unused argument”, <code><a href="../reference/ensure_none.html">ensure_none()</a></code> and <code><a href="../reference/ensure_all.html">ensure_all()</a></code> because their conditions must not be named.</p></li>
+<li><p>New <code><a href="../reference/describe_match.html">describe_match()</a></code> says what a join will do before it is made: the keys found in both tables, only in the data and only in the reference, the rows without a match, and how many rows a left join returns when the reference repeats a key. Missing keys match nothing and are counted on their own. Keys of different types, such as a number against text, stop with an error instead of matching nothing.</p></li>
+<li><p>New <code><a href="../reference/ensure_complete.html">ensure_complete()</a></code> checks that columns have no missing values, all columns if none are named. The rows are reported with a <code>missing</code> column that names the columns missing in each, e.g. <code>"cpr, born"</code>. Both new functions take database and Arrow tables too.</p></li>
+<li><p>New <code><a href="../reference/ensure_no_gaps.html">ensure_no_gaps()</a></code> checks that a unit’s spells cover it without a break, e.g. that a resident has an address every day: the spell after each gap is reported with the length of the gap, and <code>max_gap</code> accepts short ones. It is the counterpart of <code><a href="../reference/ensure_no_overlap.html">ensure_no_overlap()</a></code> and takes database and Arrow tables too.</p></li>
 <li><p><code><a href="../reference/spells_to_panel.html">spells_to_panel()</a></code> returns the units in the order they first appear in the data, as <code><a href="../reference/merge_spells.html">merge_spells()</a></code> does, instead of sorted by the id columns; sort with <code><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">dplyr::arrange()</a></code> if needed. The spells are sorted on an integer id per unit, and sorting a character cpr was most of the time: on 2.5 million spells it went from 1.9 to about 1 second.</p></li>
 <li><p><code><a href="../reference/ensure_matched.html">ensure_matched()</a></code> hashes the keys of the data and the reference together instead of joining them (1.2 to 0.3 seconds on 4.5 million rows), and <code><a href="../reference/ensure_codes.html">ensure_codes()</a></code> with a temporal code list joins only the distinct pairs of code and time with the list (1.6 to 0.2 seconds). The rows reported are the same.</p></li>
 <li><p><code><a href="../reference/add_spell_status.html">add_spell_status()</a></code> converts the distinct periods to days, not the rows, and sorts the rows once for primo and ultimo.</p></li>

@@ -11,7 +11,12 @@ inshape checks the shape before anything is built on it, in two steps.
 The `describe_*()` functions look at the structure and judge nothing;
 the `ensure_*()` functions are *checkpoints*: each states one rule,
 warns or aborts with the rows that break it, and returns the data, so it
-sits in a pipeline.
+sits in a pipeline. Most rules are about structure;
+[`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
+[`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+and
+[`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+take any rule dplyr can express.
 
 | Function | The rule | Returns |
 |----|----|----|
@@ -21,13 +26,21 @@ sits in a pipeline.
 | [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md) | (look) which columns vary within units | a summary |
 | [`describe_codes()`](https://dataniel.github.io/inshape/reference/describe_codes.md) | (look) how the codes of a column change over periods | a summary |
 | [`describe_changes()`](https://dataniel.github.io/inshape/reference/describe_changes.md) | (look) what changed between two extracts | a summary |
+| [`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md) | (look) what a join of two tables will do | a summary |
 | [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md) | a coded column holds only codes from the code list | the data |
+| [`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md) | the columns named have no missing values | the data |
 | [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md) | sex, birth date and the like are constant within a unit | the data |
 | [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md) | the key columns identify each row | the data |
 | [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md) | every unit is observed in every period, or has no gaps | the data |
 | [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md) | a unit’s spells do not overlap | the data |
 | [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md) | a unit’s spells leave no gaps between them | the data |
 | [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md) | no rows after death or emigration, or before birth | the data |
+| [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md) | a spell has a start and does not end before it | the data |
+| [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md) | every key occurs in a reference register | the data |
+| [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md) | no row matches a condition (`NA` passes) | the data |
+| [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md) | every row meets a condition (`NA` fails) | the data |
+| [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md) | a violation set you built yourself has no rows | the set |
+| [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md) | (count) violations for many rules at once | a tally |
 | [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md) | (conversion) spells recorded as several, merged | merged spells |
 | [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md) | (conversion) spells to a period panel | a panel |
 | [`add_spell_status()`](https://dataniel.github.io/inshape/reference/add_spell_status.md) | (conversion) status from spells on an existing panel | the data plus status |
@@ -119,6 +132,34 @@ df |>
 
 The reported rows carry a `dupid`, so the copies in each group sit
 together.
+
+## Missing values: `ensure_complete()`
+
+Some columns an analysis cannot do without: the id, the date, the
+outcome. A missing value in them drops the row from a model without a
+word, or becomes a group of its own in a count.
+[`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md)
+requires the columns named to have a value in every row, or all columns
+if none are named. The reported rows carry a `missing` column that names
+the columns missing in each:
+
+``` r
+register <- tibble(
+  cpr  = c("a", "b", NA, "d"),
+  born = as.Date(c("1980-05-01", NA, NA, "1975-02-11")),
+  sex  = c("F", "M", "F", NA)
+)
+
+ensure_complete(register, cpr, born)
+#> Warning in ensure_complete(register, cpr, born): Missing values in: cpr, born
+#> ℹ 2 rows in 2 groups:
+#>     missing   cpr   born   sex
+#>     <chr>     <chr> <date> <chr>
+#>   1 born      b     NA     M
+#>   2 cpr, born NA    NA     F
+```
+
+Missing means `NA`; an empty string is a value.
 
 ## Panels: `ensure_balanced()`
 
@@ -511,6 +552,45 @@ ensure_matched(observations, reference, by = c(cpr = "person_id", "year"))
 #>   1 c      2020
 ```
 
+## Before a join: `describe_match()`
+
+[`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
+asks one question of a join, whether every row finds a match.
+[`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md)
+looks at the whole of it first: how many keys are in both tables, how
+many only in one, and whether the reference repeats a key, so that a
+left join returns more rows than it was given. Here `c` is not in the
+register, `d` has no income, and `b` is registered twice:
+
+``` r
+income <- tibble(
+  cpr    = c("a", "a", "b", "c", NA),
+  year   = c(2023, 2024, 2024, 2024, 2024),
+  income = c(10, 12, 7, 9, 3)
+)
+population_register <- tibble(
+  person_id = c("a", "b", "b", "d"),
+  kommune   = c("955", "956", "957", "960")
+)
+
+describe_match(income, population_register, by = c(cpr = "person_id"))
+#> ── Match: cpr = person_id ──────────────────────────────────────────────────────
+#> data: 5 rows, reference: 4 rows
+#> 
+#> Keys:
+#>     found              keys  rows ref_rows
+#>   1 in both               2     3        3
+#>   2 only in data          1     1        0
+#>   3 only in reference     1     0        1
+#> 
+#> • Rows of data without a match: 2 (40.0%), 1 of them with a missing key
+#> • Keys repeated in the reference: 1; a left join returns 6 rows, 1 more than data
+```
+
+A row with a missing key matches nothing and is counted on its own. The
+key must be stated in `by`: a join on whatever names two registers
+happen to share is how a wrong key goes unnoticed.
+
 ## Codes valid at the observation time
 
 A temporal code list has `code`, `valid_from` and `valid_to`. Bounds are
@@ -531,6 +611,121 @@ ensure_codes(coded, classification, codebook, time = year)
 #>   1 A               2020
 ```
 
+## Rules of your own: `ensure_none()`, `ensure_all()` and `ensure_empty()`
+
+The structure checks cover the rules every register has. The rest are
+particular to a delivery: no negative amounts, every cvr eight digits, a
+total that matches its parts. Any rule dplyr can express is a
+checkpoint, stated as “the set of violations must be empty”.
+
+[`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md)
+takes the condition for a violating row and returns the full data, so
+checks chain before the real work continues:
+
+``` r
+sales <- tibble(
+  order_id    = 1001:1006,
+  customer_id = c(12, 17, NA, 25, 31, NA),
+  amount      = c(250, -40, 120, 80, -15, 300)
+)
+
+sales |>
+  ensure_none(amount < 0, warn_msg = "Negative amounts") |>
+  ensure_none(amount > 1e6) |>
+  nrow()
+#> Warning in ensure_none(sales, amount < 0, warn_msg = "Negative amounts"): Negative amounts
+#> ℹ 2 rows found:
+#>     order_id customer_id amount
+#>        <int>       <dbl>  <dbl>
+#>   1     1002          17    -40
+#>   2     1005          31    -15
+#> ✔ No rows where amount > 1e+06
+#> [1] 6
+```
+
+Without a message, the condition becomes one, which is often enough at
+the console. Give checks that stay in a script a message in your own
+words. Messages are shown literally, so `"cvr must match ^\\d{8}$"` is
+safe.
+
+The condition follows [`filter()`](https://rdrr.io/r/stats/filter.html):
+a row where it is `NA` is not a violation.
+[`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+states the rule positively instead, and there a row passes only when the
+condition is `TRUE`, so a missing value is a violation:
+
+``` r
+sales |>
+  ensure_none(customer_id < 0)
+#> ✔ No rows where customer_id < 0
+
+sales |>
+  ensure_all(customer_id > 0)
+#> Warning in ensure_all(sales, customer_id > 0): Found rows that do not meet customer_id > 0
+#> ℹ 2 rows found:
+#>     order_id customer_id amount
+#>        <int>       <dbl>  <dbl>
+#>   1     1003          NA    120
+#>   2     1006          NA    300
+```
+
+No customer id is negative, but two are missing. Use
+[`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
+when a value has to be present *and* right, and
+[`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md)
+when a missing value is acceptable or a rule of its own, such as
+[`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md).
+
+[`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)
+is the most general form: build the violation set yourself, with a
+[`filter()`](https://rdrr.io/r/stats/filter.html) or an anti-join, and
+pipe it in.
+
+``` r
+expected |>
+  dplyr::anti_join(delivery, by = "cvr") |>
+  ensure_empty(warn_msg = "Firms missing from the delivery")
+```
+
+### Many rules at once: `tally_violations()`
+
+A chain of checkpoints stops at the first abort. When a delivery has
+five problems, you want to hear about all five in one go.
+[`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md)
+evaluates every rule and counts the violating rows, but never warns or
+stops: the checkpoints judge, the tally only counts.
+
+``` r
+report <- sales |>
+  tally_violations(
+    "Negative amount" = amount < 0,
+    "No customer"     = is.na(customer_id),
+    "Huge amount"     = amount > 1e6
+  )
+report
+#> # A tibble: 3 × 4
+#>   rule                n total rows     
+#>   <chr>           <int> <int> <list>   
+#> 1 Negative amount     2     6 <int [2]>
+#> 2 No customer         2     6 <int [2]>
+#> 3 Huge amount         0     6 <int [0]>
+```
+
+`rows` holds the row numbers of each rule’s violations. Filtered to the
+rules that failed, the tally is itself a violation set. `total` is the
+number of rows checked, so the same tally can warn about every broken
+rule and stop only for those broken at scale:
+
+``` r
+report |>
+  dplyr::filter(n > 0) |>
+  ensure_empty(warn_msg = "Rules with violations")
+
+report |>
+  dplyr::filter(n / total > 0.001) |>
+  ensure_empty(abort_msg = "Rules broken by more than 0.1 % of the rows")
+```
+
 ## Personal data and large registers
 
 inshape is made for interactive review of registers, at the console in
@@ -547,6 +742,16 @@ gaps <- violations(ensure_balanced(panel, cpr, year, gaps_only = TRUE))
 gaps
 #> # A tibble: 0 × 4
 #> # ℹ 4 variables: cpr <chr>, year <dbl>, born <date>, death <date>
+```
+
+Whether rows are kept anywhere is for the analysis and its data
+agreement to decide. To save them, do it yourself, from the rows
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+returns:
+
+``` r
+violations(ensure_none(sales, amount < 0)) |>
+  data.table::fwrite("negative_amounts.csv")
 ```
 
 A DuckDB or Arrow table is checked where it lives, and only the count

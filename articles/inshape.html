@@ -65,7 +65,10 @@ addresses at once.</p>
 steps. The <code>describe_*()</code> functions look at the structure and
 judge nothing; the <code>ensure_*()</code> functions are
 <em>checkpoints</em>: each states one rule, warns or aborts with the
-rows that break it, and returns the data, so it sits in a pipeline.</p>
+rows that break it, and returns the data, so it sits in a pipeline. Most
+rules are about structure; <code><a href="../reference/ensure_none.html">ensure_none()</a></code>,
+<code><a href="../reference/ensure_all.html">ensure_all()</a></code> and <code><a href="../reference/ensure_empty.html">ensure_empty()</a></code> take any rule
+dplyr can express.</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -109,8 +112,18 @@ rows that break it, and returns the data, so it sits in a pipeline.</p>
 <td>a summary</td>
 </tr>
 <tr class="odd">
+<td><code><a href="../reference/describe_match.html">describe_match()</a></code></td>
+<td>(look) what a join of two tables will do</td>
+<td>a summary</td>
+</tr>
+<tr class="even">
 <td><code><a href="../reference/ensure_codes.html">ensure_codes()</a></code></td>
 <td>a coded column holds only codes from the code list</td>
+<td>the data</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/ensure_complete.html">ensure_complete()</a></code></td>
+<td>the columns named have no missing values</td>
 <td>the data</td>
 </tr>
 <tr class="even">
@@ -142,6 +155,36 @@ rows that break it, and returns the data, so it sits in a pipeline.</p>
 <td><code><a href="../reference/ensure_within.html">ensure_within()</a></code></td>
 <td>no rows after death or emigration, or before birth</td>
 <td>the data</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/ensure_valid_spells.html">ensure_valid_spells()</a></code></td>
+<td>a spell has a start and does not end before it</td>
+<td>the data</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/ensure_matched.html">ensure_matched()</a></code></td>
+<td>every key occurs in a reference register</td>
+<td>the data</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/ensure_none.html">ensure_none()</a></code></td>
+<td>no row matches a condition (<code>NA</code> passes)</td>
+<td>the data</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/ensure_all.html">ensure_all()</a></code></td>
+<td>every row meets a condition (<code>NA</code> fails)</td>
+<td>the data</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/ensure_empty.html">ensure_empty()</a></code></td>
+<td>a violation set you built yourself has no rows</td>
+<td>the set</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/tally_violations.html">tally_violations()</a></code></td>
+<td>(count) violations for many rules at once</td>
+<td>a tally</td>
 </tr>
 <tr class="even">
 <td><code><a href="../reference/merge_spells.html">merge_spells()</a></code></td>
@@ -242,13 +285,39 @@ word. Check the key first:</p>
 group sit together.</p>
 </div>
 <div class="section level2">
+<h2 id="missing-values-ensure_complete">Missing values: <code>ensure_complete()</code><a class="anchor" aria-label="anchor" href="#missing-values-ensure_complete"></a>
+</h2>
+<p>Some columns an analysis cannot do without: the id, the date, the
+outcome. A missing value in them drops the row from a model without a
+word, or becomes a group of its own in a count.
+<code><a href="../reference/ensure_complete.html">ensure_complete()</a></code> requires the columns named to have a
+value in every row, or all columns if none are named. The reported rows
+carry a <code>missing</code> column that names the columns missing in
+each:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">register</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  cpr  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="cn">NA</span>, <span class="st">"d"</span><span class="op">)</span>,</span>
+<span>  born <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1980-05-01"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"1975-02-11"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  sex  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span>, <span class="st">"F"</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ensure_complete.html">ensure_complete</a></span><span class="op">(</span><span class="va">register</span>, <span class="va">cpr</span>, <span class="va">born</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in ensure_complete(register, cpr, born): Missing values in: cpr, born</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> 2 rows in 2 groups:</span></span>
+<span><span class="co">#&gt;     missing   cpr   born   sex</span></span>
+<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">1</span> born      b     <span style="color: #BB0000;">NA</span>     M</span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">2</span> cpr, born <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     F</span></span></code></pre></div>
+<p>Missing means <code>NA</code>; an empty string is a value.</p>
+</div>
+<div class="section level2">
 <h2 id="panels-ensure_balanced">Panels: <code>ensure_balanced()</code><a class="anchor" aria-label="anchor" href="#panels-ensure_balanced"></a>
 </h2>
 <p>A yearly register extract is a panel: one row per person (or company)
 and year. Whether it is <em>balanced</em>, every unit present in every
 year, decides which methods are valid and often reveals a broken
 extract.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  cpr  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span>,</span>
 <span>  year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fl">2021</span>, <span class="fl">2022</span>, <span class="fl">2020</span>, <span class="fl">2022</span>, <span class="fl">2022</span><span class="op">)</span></span>
@@ -267,7 +336,7 @@ migrate. What usually <em>should</em> hold is that a unit, once present,
 does not skip a year before it leaves. <code>gaps_only = TRUE</code>
 checks that: <code>c</code> entering in 2022 is fine, <code>b</code>
 missing in 2021 is not.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">cpr</span>, <span class="va">year</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in ensure_balanced(panel, cpr, year, gaps_only = TRUE): Gaps in panel: missing cpr-year combinations</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> 1 row found:</span></span>
@@ -277,7 +346,7 @@ missing in 2021 is not.</p>
 <p>By default the expected years are those found in the data, so a year
 that was never loaded goes unnoticed. State the years you expect to
 catch that as well:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">cpr</span>, <span class="va">year</span>, periods <span class="op">=</span> <span class="fl">2015</span><span class="op">:</span><span class="fl">2024</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -286,7 +355,7 @@ catch that as well:</p>
 <p>The other shape of register data is spells: address periods,
 employment, benefit periods. A person has only one address at a time, so
 overlapping spells within a person are an error:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">addresses</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  cpr   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span><span class="op">)</span>,</span>
 <span>  start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2020-01-01"</span>, <span class="st">"2021-01-01"</span>, <span class="st">"2020-01-01"</span>, <span class="st">"2020-06-01"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -308,7 +377,7 @@ must have an address every day, a spell that starts later than the day
 after the earlier ones ended leaves days without one. The spell after
 each gap is reported with the length of the gap, and
 <code>max_gap</code> accepts short ones:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  cpr   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span><span class="op">)</span>,</span>
 <span>  start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2020-01-01"</span>, <span class="st">"2021-01-01"</span>, <span class="st">"2020-01-01"</span>, <span class="st">"2020-07-04"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -329,7 +398,7 @@ two spells), touching on one shared day, overlapping, nested or a
 duplicate. In patient registers up to a quarter of the entries can be
 such transfers, and counting spells without merging them first inflates
 every count.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">admissions</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  cpr   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span>,</span>
 <span>  start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2020-01-01"</span>, <span class="st">"2020-01-11"</span>, <span class="st">"2020-03-01"</span>,</span>
@@ -367,7 +436,7 @@ latest end, and <code>n_spells</code> counts what was merged.
 <code>max_gap = 30</code> also merges spells less than a month apart, a
 readmission counted as the same episode, and <code>by</code> merges only
 spells that agree in a column such as the employer:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/merge_spells.html">merge_spells</a></span><span class="op">(</span><span class="va">admissions</span>, <span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt;   cpr   start      end        n_spells</span></span>
@@ -387,7 +456,7 @@ usually of linkage or of a correction applied to some years only.
 <code><a href="../reference/describe_varying.html">describe_varying()</a></code> shows which columns vary within units,
 from the constant to the varying. A column that varies for a handful of
 units out of millions is rarely meant to vary:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">persons</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  cpr    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"c"</span><span class="op">)</span>,</span>
 <span>  year   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fl">2021</span>, <span class="fl">2020</span>, <span class="fl">2021</span>, <span class="fl">2020</span>, <span class="fl">2021</span><span class="op">)</span>,</span>
@@ -406,7 +475,7 @@ units out of millions is rarely meant to vary:</p>
 <p><code><a href="../reference/ensure_constant.html">ensure_constant()</a></code> turns that into a rule and lists every
 row of the units that break it. A missing value is not a contradiction,
 so <code>c</code> passes:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ensure_constant.html">ensure_constant</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in ensure_constant(persons, cpr, sex): Varies within units: sex per cpr</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> 2 rows found:</span></span>
@@ -423,7 +492,7 @@ so <code>c</code> passes:</p>
 <code><a href="../reference/describe_codes.html">describe_codes()</a></code> shows when each code occurs, so a revision
 stands out as a period with many new and many gone codes, and a typo as
 a code seen once:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">residents</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2018</span><span class="op">:</span><span class="fl">2021</span>, each <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span>
 <span>  municipality <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"955"</span>, <span class="st">"956"</span>, <span class="st">"957"</span>, <span class="cn">NA</span>,    <span class="st">"955"</span>, <span class="st">"956"</span>, <span class="st">"957"</span>, <span class="st">"957"</span>,</span>
@@ -452,7 +521,7 @@ a code seen once:</p>
 <span><span class="co">#&gt;   <span style="color: #BCBCBC;">3</span> 955    <span style="text-decoration: underline;">2</span>018  <span style="text-decoration: underline;">2</span>019       2     0     2</span></span>
 <span><span class="co">#&gt;   <span style="color: #BCBCBC;">4</span> 960    <span style="text-decoration: underline;">2</span>020  <span style="text-decoration: underline;">2</span>021       2     0     2</span></span></code></pre></div>
 <p><code><a href="../reference/ensure_codes.html">ensure_codes()</a></code> requires the codes of a code list:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ensure_codes.html">ensure_codes</a></span><span class="op">(</span><span class="va">residents</span>, <span class="va">municipality</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"955"</span>, <span class="st">"956"</span>, <span class="st">"957"</span>, <span class="st">"960"</span>, <span class="st">"965"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in ensure_codes(residents, municipality, c("955", "956", "957", : Codes not in the code list: municipality</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> 1 row in 1 group:</span></span>
@@ -466,7 +535,7 @@ a code seen once:</p>
 <p>A register is delivered again and again, and the same person-year
 should not change between deliveries unless it was corrected.
 <code><a href="../reference/describe_changes.html">describe_changes()</a></code> compares two extracts by their key:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">before</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>cpr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span>, year <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>                 sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"M"</span>, <span class="st">"F"</span><span class="op">)</span>, born <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1950</span>, <span class="fl">1960</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">after</span>  <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>cpr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"d"</span><span class="op">)</span>, year <span class="op">=</span> <span class="fl">2023</span>,</span>
@@ -493,7 +562,7 @@ hold a person after death or emigration, or income before birth.
 <code><a href="../reference/ensure_within.html">ensure_within()</a></code> requires each row to lie between its own
 bounds, usually joined on from the population register. A yearly row
 counts by the year, so the year of death itself is fine:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  cpr   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span><span class="op">)</span>,</span>
 <span>  year  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2022</span>, <span class="fl">2023</span>, <span class="fl">2024</span>, <span class="fl">2022</span>, <span class="fl">2023</span><span class="op">)</span>,</span>
@@ -520,7 +589,7 @@ primo 2021 is the status on 31 December 2020.</p>
 spell, passed or dropped out. With <code>status_is = "outcome"</code>, a
 running spell shows as <code>ongoing</code> and the outcome applies from
 the end date until a new spell starts:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">education</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  cpr    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span>,</span>
 <span>  start  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2018-08-15"</span>, <span class="st">"2021-08-15"</span>, <span class="st">"2019-08-15"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -559,7 +628,7 @@ until the data gets messy: overlapping spells duplicate rows, and an
 ongoing spell with no end matches nothing.
 <code><a href="../reference/add_spell_status.html">add_spell_status()</a></code> keeps the rows of the panel exactly as
 they are and uses the rules of <code><a href="../reference/spells_to_panel.html">spells_to_panel()</a></code>:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">population</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>cpr  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span>,</span>
 <span>                         year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fl">2021</span>, <span class="fl">2020</span>, <span class="fl">2020</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -578,13 +647,13 @@ they are and uses the rules of <code><a href="../reference/spells_to_panel.html"
 <p>Validate spell boundaries before checking their relationships.
 Missing ends represent ongoing spells; <code>open_end = FALSE</code>
 requires closed spells.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ensure_valid_spells.html">ensure_valid_spells</a></span><span class="op">(</span><span class="va">education</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Valid spells: start to end</span></span></code></pre></div>
 <p>Check that each observation can be linked to a reference register.
 Duplicate reference keys do not multiply rows, and missing keys do not
 match unless <code>na_matches = "na"</code> is specified.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">observations</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>cpr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span><span class="op">)</span>, year <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
 <span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>person_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span>, year <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ensure_matched.html">ensure_matched</a></span><span class="op">(</span><span class="va">observations</span>, <span class="va">reference</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cpr <span class="op">=</span> <span class="st">"person_id"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">)</span></span>
@@ -595,6 +664,43 @@ match unless <code>na_matches = "na"</code> is specified.</p>
 <span><span class="co">#&gt;   <span style="color: #BCBCBC;">1</span> c      <span style="text-decoration: underline;">2</span>020</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="before-a-join-describe_match">Before a join: <code>describe_match()</code><a class="anchor" aria-label="anchor" href="#before-a-join-describe_match"></a>
+</h2>
+<p><code><a href="../reference/ensure_matched.html">ensure_matched()</a></code> asks one question of a join, whether
+every row finds a match. <code><a href="../reference/describe_match.html">describe_match()</a></code> looks at the
+whole of it first: how many keys are in both tables, how many only in
+one, and whether the reference repeats a key, so that a left join
+returns more rows than it was given. Here <code>c</code> is not in the
+register, <code>d</code> has no income, and <code>b</code> is registered
+twice:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">income</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  cpr    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  year   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2023</span>, <span class="fl">2024</span>, <span class="fl">2024</span>, <span class="fl">2024</span>, <span class="fl">2024</span><span class="op">)</span>,</span>
+<span>  income <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">12</span>, <span class="fl">7</span>, <span class="fl">9</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">population_register</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  person_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"d"</span><span class="op">)</span>,</span>
+<span>  kommune   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"955"</span>, <span class="st">"956"</span>, <span class="st">"957"</span>, <span class="st">"960"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/describe_match.html">describe_match</a></span><span class="op">(</span><span class="va">income</span>, <span class="va">population_register</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cpr <span class="op">=</span> <span class="st">"person_id"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── Match: cpr = person_id ──────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; data: 5 rows, reference: 4 rows</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Keys:</span></span>
+<span><span class="co">#&gt;     found              keys  rows ref_rows</span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">1</span> in both               2     3        3</span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">2</span> only in data          1     1        0</span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">3</span> only in reference     1     0        1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; • Rows of data without a match: 2 (40.0%), 1 of them with a missing key</span></span>
+<span><span class="co">#&gt; • Keys repeated in the reference: 1; a left join returns 6 rows, 1 more than data</span></span></code></pre></div>
+<p>A row with a missing key matches nothing and is counted on its own.
+The key must be stated in <code>by</code>: a join on whatever names two
+registers happen to share is how a wrong key goes unnoticed.</p>
+</div>
+<div class="section level2">
 <h2 id="codes-valid-at-the-observation-time">Codes valid at the observation time<a class="anchor" aria-label="anchor" href="#codes-valid-at-the-observation-time"></a>
 </h2>
 <p>A temporal code list has <code>code</code>, <code>valid_from</code>
@@ -603,7 +709,7 @@ open, and a code may have several intervals. Time and bounds use the
 same scale: dates, date-times, or numeric periods. Missing observation
 times fail for non-missing codes. <code>na_ok</code> controls missing
 codes separately.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">codebook</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>code <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>,</span>
 <span>                   valid_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2015</span>, <span class="fl">2020</span><span class="op">)</span>, valid_to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2019</span>, <span class="cn">NA_real_</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">coded</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>classification <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>, year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2019</span>, <span class="fl">2020</span>, <span class="fl">2020</span><span class="op">)</span><span class="op">)</span></span>
@@ -615,6 +721,105 @@ codes separately.</p>
 <span><span class="co">#&gt;   <span style="color: #BCBCBC;">1</span> A               <span style="text-decoration: underline;">2</span>020</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="rules-of-your-own-ensure_none-ensure_all-and-ensure_empty">Rules of your own: <code>ensure_none()</code>,
+<code>ensure_all()</code> and <code>ensure_empty()</code><a class="anchor" aria-label="anchor" href="#rules-of-your-own-ensure_none-ensure_all-and-ensure_empty"></a>
+</h2>
+<p>The structure checks cover the rules every register has. The rest are
+particular to a delivery: no negative amounts, every cvr eight digits, a
+total that matches its parts. Any rule dplyr can express is a
+checkpoint, stated as “the set of violations must be empty”.</p>
+<p><code><a href="../reference/ensure_none.html">ensure_none()</a></code> takes the condition for a violating row
+and returns the full data, so checks chain before the real work
+continues:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sales</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  order_id    <span class="op">=</span> <span class="fl">1001</span><span class="op">:</span><span class="fl">1006</span>,</span>
+<span>  customer_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">17</span>, <span class="cn">NA</span>, <span class="fl">25</span>, <span class="fl">31</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  amount      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">250</span>, <span class="op">-</span><span class="fl">40</span>, <span class="fl">120</span>, <span class="fl">80</span>, <span class="op">-</span><span class="fl">15</span>, <span class="fl">300</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sales</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_none.html">ensure_none</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&lt;</span> <span class="fl">0</span>, warn_msg <span class="op">=</span> <span class="st">"Negative amounts"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_none.html">ensure_none</a></span><span class="op">(</span><span class="va">amount</span> <span class="op">&gt;</span> <span class="fl">1e6</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in ensure_none(sales, amount &lt; 0, warn_msg = "Negative amounts"): Negative amounts</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> 2 rows found:</span></span>
+<span><span class="co">#&gt;     order_id customer_id amount</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">1</span>002          17    -<span style="color: #BB0000;">40</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">1</span>005          31    -<span style="color: #BB0000;">15</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> No rows where amount &gt; 1e+06</span></span>
+<span><span class="co">#&gt; [1] 6</span></span></code></pre></div>
+<p>Without a message, the condition becomes one, which is often enough
+at the console. Give checks that stay in a script a message in your own
+words. Messages are shown literally, so
+<code>"cvr must match ^\\d{8}$"</code> is safe.</p>
+<p>The condition follows <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>: a row where it is
+<code>NA</code> is not a violation. <code><a href="../reference/ensure_all.html">ensure_all()</a></code> states the
+rule positively instead, and there a row passes only when the condition
+is <code>TRUE</code>, so a missing value is a violation:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sales</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_none.html">ensure_none</a></span><span class="op">(</span><span class="va">customer_id</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> No rows where customer_id &lt; 0</span></span>
+<span></span>
+<span><span class="va">sales</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_all.html">ensure_all</a></span><span class="op">(</span><span class="va">customer_id</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in ensure_all(sales, customer_id &gt; 0): Found rows that do not meet customer_id &gt; 0</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> 2 rows found:</span></span>
+<span><span class="co">#&gt;     order_id customer_id amount</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">1</span>003          <span style="color: #BB0000;">NA</span>    120</span></span>
+<span><span class="co">#&gt;   <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">1</span>006          <span style="color: #BB0000;">NA</span>    300</span></span></code></pre></div>
+<p>No customer id is negative, but two are missing. Use
+<code><a href="../reference/ensure_all.html">ensure_all()</a></code> when a value has to be present <em>and</em>
+right, and <code><a href="../reference/ensure_none.html">ensure_none()</a></code> when a missing value is acceptable
+or a rule of its own, such as <code><a href="../reference/ensure_complete.html">ensure_complete()</a></code>.</p>
+<p><code><a href="../reference/ensure_empty.html">ensure_empty()</a></code> is the most general form: build the
+violation set yourself, with a <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code> or an anti-join,
+and pipe it in.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">expected</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter-joins.html" class="external-link">anti_join</a></span><span class="op">(</span><span class="va">delivery</span>, by <span class="op">=</span> <span class="st">"cvr"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_empty.html">ensure_empty</a></span><span class="op">(</span>warn_msg <span class="op">=</span> <span class="st">"Firms missing from the delivery"</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="many-rules-at-once-tally_violations">Many rules at once: <code>tally_violations()</code><a class="anchor" aria-label="anchor" href="#many-rules-at-once-tally_violations"></a>
+</h3>
+<p>A chain of checkpoints stops at the first abort. When a delivery has
+five problems, you want to hear about all five in one go.
+<code><a href="../reference/tally_violations.html">tally_violations()</a></code> evaluates every rule and counts the
+violating rows, but never warns or stops: the checkpoints judge, the
+tally only counts.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">report</span> <span class="op">&lt;-</span> <span class="va">sales</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/tally_violations.html">tally_violations</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Negative amount"</span> <span class="op">=</span> <span class="va">amount</span> <span class="op">&lt;</span> <span class="fl">0</span>,</span>
+<span>    <span class="st">"No customer"</span>     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">customer_id</span><span class="op">)</span>,</span>
+<span>    <span class="st">"Huge amount"</span>     <span class="op">=</span> <span class="va">amount</span> <span class="op">&gt;</span> <span class="fl">1e6</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">report</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 4</span></span></span>
+<span><span class="co">#&gt;   rule                n total rows     </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Negative amount     2     6 <span style="color: #949494;">&lt;int [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> No customer         2     6 <span style="color: #949494;">&lt;int [2]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Huge amount         0     6 <span style="color: #949494;">&lt;int [0]&gt;</span></span></span></code></pre></div>
+<p><code>rows</code> holds the row numbers of each rule’s violations.
+Filtered to the rules that failed, the tally is itself a violation set.
+<code>total</code> is the number of rows checked, so the same tally can
+warn about every broken rule and stop only for those broken at
+scale:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">report</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">n</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_empty.html">ensure_empty</a></span><span class="op">(</span>warn_msg <span class="op">=</span> <span class="st">"Rules with violations"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">report</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">n</span> <span class="op">/</span> <span class="va">total</span> <span class="op">&gt;</span> <span class="fl">0.001</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ensure_empty.html">ensure_empty</a></span><span class="op">(</span>abort_msg <span class="op">=</span> <span class="st">"Rules broken by more than 0.1 % of the rows"</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
 <h2 id="personal-data-and-large-registers">Personal data and large registers<a class="anchor" aria-label="anchor" href="#personal-data-and-large-registers"></a>
 </h2>
 <p>inshape is made for interactive review of registers, at the console
@@ -623,12 +828,18 @@ are personal data, so inshape writes nothing to disk, neither rows nor a
 log. A failure shows the count and the first rows. Wrap the check in
 <code><a href="../reference/violations.html">violations()</a></code> to get all of them, to look at in the session;
 when the check passes, it returns no rows:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gaps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="../reference/ensure_balanced.html">ensure_balanced</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">cpr</span>, <span class="va">year</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> No gaps in year per cpr</span></span>
 <span><span class="va">gaps</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 0 × 4</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 variables: cpr &lt;chr&gt;, year &lt;dbl&gt;, born &lt;date&gt;, death &lt;date&gt;</span></span></span></code></pre></div>
+<p>Whether rows are kept anywhere is for the analysis and its data
+agreement to decide. To save them, do it yourself, from the rows
+<code><a href="../reference/violations.html">violations()</a></code> returns:</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="../reference/ensure_none.html">ensure_none</a></span><span class="op">(</span><span class="va">sales</span>, <span class="va">amount</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/fwrite.html" class="external-link">fwrite</a></span><span class="op">(</span><span class="st">"negative_amounts.csv"</span><span class="op">)</span></span></code></pre></div>
 <p>A DuckDB or Arrow table is checked where it lives, and only the count
 and the first rows are fetched into R. See <code><a href="../reference/checkpoints.html">?checkpoints</a></code> for
 both.</p>

@@ -67,6 +67,14 @@ reference:
       - violations
       - checkpoints
 
+  - title: Numbers
+    desc: >
+      Beyond the shape: do the numbers add up, to a published table and
+      over periods?
+    contents:
+      - ensure_reconciled
+      - ensure_stock_flow
+
   - title: Fixes
     desc: >
       Fixes where the rule makes the result unambiguous. Each says what it

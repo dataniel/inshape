@@ -1,5 +1,13 @@
 # inshape 0.1.0
 
+* inshape now also asks whether the numbers add up. New
+  `ensure_reconciled()` counts or sums microdata by the dimensions of a
+  published table you give it and reports the cells that differ, both
+  ways, with a `tolerance` for tables rounded for disclosure; suppressed
+  cells are not compared. New `ensure_stock_flow()` checks that a stock is
+  the stock before plus the inflows minus the outflows, per period and
+  group, with the stock counted at the end or the start of each period.
+
 * New `describe_transitions()` and `ensure_transitions()` for a status that
   follows a unit over time. The description is a table of units per
   transition, where impossible transitions show as cells that should be

@@ -70,6 +70,8 @@ pak::pak("dataniel/inshape")
 | `ensure_no_overlap()` | Spells (addresses, employment) do not overlap within a unit |
 | `ensure_none()` | No row matches a condition written as in `filter()` |
 | `ensure_panel()` | A panel in one call: the key is complete and unique, and no unit skips a period |
+| `ensure_reconciled()` | Microdata counted (or summed) by a published table's dimensions give the table's numbers, cell for cell |
+| `ensure_stock_flow()` | A stock and its flows add up over periods: population at the end = before + born + immigrated - dead - emigrated |
 | `ensure_spells()` | Spells in one call: the unit is complete, the spells valid and not overlapping, optionally without gaps |
 | `ensure_transitions()` | A status only changes in allowed ways: no forbidden transition (`"completed -> not started"`), nothing after a final status |
 | `ensure_unique()` | Key columns identify each row uniquely |

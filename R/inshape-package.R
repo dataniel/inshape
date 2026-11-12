@@ -45,6 +45,8 @@
 #'   dplyr can express, such as no negative amounts.
 #' * [tally_violations()]: count many rules at once, without judging.
 #' * [violations()]: the rows that break a check, all of them.
+#' * [ensure_reconciled()] and [ensure_stock_flow()]: the numbers add up,
+#'   to a published table and over periods.
 #' * [describe_transitions()] and [ensure_transitions()]: how a status
 #'   changes over time, and the changes that cannot happen.
 #' * [merge_spells()]: one spell recorded as several, merged into one.

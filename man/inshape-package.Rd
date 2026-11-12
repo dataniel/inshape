@@ -53,6 +53,8 @@ call with one overview.
 dplyr can express, such as no negative amounts.
 \item \code{\link[=tally_violations]{tally_violations()}}: count many rules at once, without judging.
 \item \code{\link[=violations]{violations()}}: the rows that break a check, all of them.
+\item \code{\link[=ensure_reconciled]{ensure_reconciled()}} and \code{\link[=ensure_stock_flow]{ensure_stock_flow()}}: the numbers add up,
+to a published table and over periods.
 \item \code{\link[=describe_transitions]{describe_transitions()}} and \code{\link[=ensure_transitions]{ensure_transitions()}}: how a status
 changes over time, and the changes that cannot happen.
 \item \code{\link[=merge_spells]{merge_spells()}}: one spell recorded as several, merged into one.

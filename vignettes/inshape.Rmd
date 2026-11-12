@@ -51,6 +51,8 @@ and `ensure_empty()` take any rule dplyr can express.
 | `ensure_panel()` | the key is complete and unique, and no unit skips a period | the data |
 | `ensure_spells()` | the unit is complete, the spells valid and not overlapping | the data |
 | `ensure_lookup()` | a lookup table's key is unique and covers the data | the data |
+| `ensure_reconciled()` | microdata give the numbers of a published table | the data |
+| `ensure_stock_flow()` | a stock is the stock before plus its flows | the data |
 | `ensure_none()` | no row matches a condition (`NA` passes) | the data |
 | `ensure_all()` | every row meets a condition (`NA` fails) | the data |
 | `ensure_empty()` | a violation set you built yourself has no rows | the set |
@@ -518,6 +520,45 @@ codebook <- tibble(code = c("A", "B"),
                    valid_from = c(2015, 2020), valid_to = c(2019, NA_real_))
 coded <- tibble(classification = c("A", "A", "B"), year = c(2019, 2020, 2020))
 ensure_codes(coded, classification, codebook, time = year)
+```
+
+## Do the numbers add up: `ensure_reconciled()` and `ensure_stock_flow()`
+
+The shape can be right and the numbers still wrong. `ensure_reconciled()`
+counts the microdata by the dimensions of a published table and compares
+cell for cell. The table is a data frame you read yourself; a year read as
+text matches a numeric one:
+
+```{r}
+residents <- tibble(
+  cpr  = c("a", "b", "c", "d", "e"),
+  year = c(2023, 2023, 2024, 2024, 2024),
+  sex  = c("F", "M", "F", "F", "M")
+)
+statbank <- tibble(
+  tid = c("2023", "2023", "2024", "2024"),
+  sex = c("F", "M", "F", "M"),
+  n   = c(1, 1, 3, 1)
+)
+
+ensure_reconciled(residents, statbank, by = c(year = "tid", "sex"))
+```
+
+`ensure_stock_flow()` checks a population account: the stock at the end of
+a period is the stock before, plus the flows in, minus the flows out.
+
+```{r}
+account <- tibble(
+  year       = 2021:2024,
+  population = c(56000, 56100, 56210, 56300),
+  born       = c(800, 820, 790, 810),
+  immigrated = c(2000, 2100, 2050, 2200),
+  dead       = c(500, 520, 510, 530),
+  emigrated  = c(2200, 2300, 2280, 2330)
+)
+
+ensure_stock_flow(account, year, population,
+                  inflow = c(born, immigrated), outflow = c(dead, emigrated))
 ```
 
 ## Rules of your own: `ensure_none()`, `ensure_all()` and `ensure_empty()`

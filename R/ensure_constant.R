@@ -8,6 +8,13 @@
 #' reported, so the conflicting values sit together. Returns `data`, so it
 #' can sit in the middle of a pipeline.
 #'
+#' The same check covers hierarchies: that each settlement lies in one
+#' municipality, or each 4-digit code in one 2-digit code, is the parent
+#' column constant within the child, `ensure_constant(places, settlement,
+#' municipality)`. With years, give both, `ensure_constant(places,
+#' c(settlement, year), municipality)`, so a settlement may move between
+#' municipalities in a reform but not within a year.
+#'
 #' A missing value does not break the rule: a sex that is missing in one
 #' year and known in another is incomplete, not contradictory. Find such
 #' units with [describe_varying()], which counts them as partly missing.

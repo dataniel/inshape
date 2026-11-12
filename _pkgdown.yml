@@ -67,6 +67,19 @@ reference:
       - violations
       - checkpoints
 
+  - title: Groups, relations and events
+    desc: >
+      Families, households and workplaces are groups of rows with roles;
+      spouses and parents are rows that point to each other; events have
+      many rows per unit. Three building blocks and two event functions
+      cover them, without a definition of a family built in.
+    contents:
+      - describe_groups
+      - ensure_counts
+      - ensure_references
+      - describe_events
+      - ensure_sequence
+
   - title: Numbers
     desc: >
       Beyond the shape: do the numbers add up, to a published table and

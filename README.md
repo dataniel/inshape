@@ -52,6 +52,8 @@ pak::pak("dataniel/inshape")
 | `carry_status()` | A status that holds once reached (completed), or never falls in an order you give, carried forward into a new column, with every change counted |
 | `describe_changes()` | Two extracts of a register: keys that came and went, and per column the values that changed, went missing or were filled in |
 | `describe_codes()` | How the codes of a column change over periods: first and last period, codes skipping periods, new and gone codes |
+| `describe_events()` | Event data (moves, exams, contacts): events per unit, per period and per type, and the time between a unit's events |
+| `describe_groups()` | The compositions of groups such as families: "1 reference + 1 partner + 2 child: 4,210", so impossible groups show |
 | `describe_key()` | How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in |
 | `describe_match()` | What a join will do: keys in both tables, only in one, rows without a match, and the rows a left join returns when the reference repeats a key |
 | `describe_panel()` | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
@@ -63,6 +65,7 @@ pak::pak("dataniel/inshape")
 | `ensure_codes()` | Codes belong to a code list, optionally within their validity periods |
 | `ensure_complete()` | Columns an analysis cannot do without (an id, a date) have no missing values; the rows are reported with the columns missing in each |
 | `ensure_constant()` | Columns such as sex or birth date are constant within each unit |
+| `ensure_counts()` | Rows of each role per group within limits: exactly one reference person, at most two parents, at most one death |
 | `ensure_empty()` | A violation set built with `filter()` or an anti-join has no rows |
 | `ensure_lookup()` | A lookup table before a join: its key is unique, and every key of the data is in it |
 | `ensure_matched()` | Every key occurs in a reference register, including composite or renamed keys |
@@ -72,6 +75,8 @@ pak::pak("dataniel/inshape")
 | `ensure_panel()` | A panel in one call: the key is complete and unique, and no unit skips a period |
 | `ensure_reconciled()` | Microdata counted (or summed) by a published table's dimensions give the table's numbers, cell for cell |
 | `ensure_stock_flow()` | A stock and its flows add up over periods: population at the end = before + born + immigrated - dead - emigrated |
+| `ensure_references()` | A column pointing to another row (spouse, mother) finds it, not itself, and with `mutual` is pointed back to, in the same family if asked |
+| `ensure_sequence()` | Events come in order: no exam before enrolment, no move out before a move in |
 | `ensure_spells()` | Spells in one call: the unit is complete, the spells valid and not overlapping, optionally without gaps |
 | `ensure_transitions()` | A status only changes in allowed ways: no forbidden transition (`"completed -> not started"`), nothing after a final status |
 | `ensure_unique()` | Key columns identify each row uniquely |

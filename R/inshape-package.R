@@ -45,6 +45,9 @@
 #'   dplyr can express, such as no negative amounts.
 #' * [tally_violations()]: count many rules at once, without judging.
 #' * [violations()]: the rows that break a check, all of them.
+#' * [describe_groups()], [ensure_counts()] and [ensure_references()]:
+#'   families and other groups, and rows that point to each other.
+#' * [describe_events()] and [ensure_sequence()]: events and their order.
 #' * [ensure_reconciled()] and [ensure_stock_flow()]: the numbers add up,
 #'   to a published table and over periods.
 #' * [describe_transitions()] and [ensure_transitions()]: how a status

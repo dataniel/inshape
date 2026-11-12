@@ -51,6 +51,11 @@ and `ensure_empty()` take any rule dplyr can express.
 | `ensure_panel()` | the key is complete and unique, and no unit skips a period | the data |
 | `ensure_spells()` | the unit is complete, the spells valid and not overlapping | the data |
 | `ensure_lookup()` | a lookup table's key is unique and covers the data | the data |
+| `describe_groups()` | (look) the compositions of groups such as families | a summary |
+| `ensure_counts()` | rows of each role per group within limits | the data |
+| `ensure_references()` | a row pointing to another finds it, and agrees | the data |
+| `describe_events()` | (look) events per unit, per period, and the time between | a summary |
+| `ensure_sequence()` | one event comes before another | the data |
 | `ensure_reconciled()` | microdata give the numbers of a published table | the data |
 | `ensure_stock_flow()` | a stock is the stock before plus its flows | the data |
 | `ensure_none()` | no row matches a condition (`NA` passes) | the data |
@@ -520,6 +525,58 @@ codebook <- tibble(code = c("A", "B"),
                    valid_from = c(2015, 2020), valid_to = c(2019, NA_real_))
 coded <- tibble(classification = c("A", "A", "B"), year = c(2019, 2020, 2020))
 ensure_codes(coded, classification, codebook, time = year)
+```
+
+## Families and other groups: `describe_groups()`, `ensure_counts()` and `ensure_references()`
+
+A family is a group of persons, each with a role in it. The rules are
+about how the group is composed and whether its members point to each
+other. Since the definition of a family differs between registers and
+over time, inshape has no family check built in, but three building
+blocks that also fit households and workplaces. `describe_groups()` shows
+the compositions there are, so the impossible ones show first:
+
+```{r}
+families <- tibble(
+  family = c(1, 1, 1, 2, 2, 3, 4, 4),
+  cpr    = c("a", "b", "c", "d", "e", "f", "g", "h"),
+  role   = c("reference", "partner", "child", "reference", "child",
+             "child", "reference", "reference"),
+  spouse = c("b", "a", NA, NA, NA, NA, "x", NA)
+)
+
+describe_groups(families, family, role)
+```
+
+`ensure_counts()` states the limits per role, and `ensure_references()`
+checks that a spouse is found, points back and is in the same family:
+
+```{r}
+ensure_counts(families, family, role, limits = list(reference = 1, partner = c(0, 1)))
+
+ensure_references(families, cpr, spouse, same = family, mutual = TRUE)
+```
+
+Shared facts such as the family type or the address are
+`ensure_constant(families, family, type)`, and a person in at most one
+family a year is `ensure_unique(families, cpr, year)`.
+
+## Events: `describe_events()` and `ensure_sequence()`
+
+Events have many rows per unit: moves, exams, contacts. `describe_events()`
+counts them per unit, per period and per type, and the time between a
+unit's events; `ensure_sequence()` requires one event before another. Two
+of a kind that can happen once, such as deaths, is `ensure_counts()` with
+the event as the role.
+
+```{r}
+school <- tibble(
+  cpr   = c("a", "a", "b", "b", "c"),
+  date  = as.Date(c("2020-08-15", "2021-06-01", "2021-06-01", "2021-08-15", "2021-06-01")),
+  event = c("enrolled", "exam", "exam", "enrolled", "exam")
+)
+
+ensure_sequence(school, cpr, date, event, first = "enrolled", then = "exam")
 ```
 
 ## Do the numbers add up: `ensure_reconciled()` and `ensure_stock_flow()`

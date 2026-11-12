@@ -1,5 +1,19 @@
 # inshape 0.1.0
 
+* Groups and relations, built so they fit families, households,
+  workplaces and school classes alike, with no definition of a family
+  built in: `describe_groups()` counts the groups per composition of
+  roles; `ensure_counts()` requires a count per role and group, such as
+  exactly one reference person or at most two parents; and
+  `ensure_references()` checks a column pointing to another row, such as a
+  spouse, which must be found, not be the row itself, point back with
+  `mutual = TRUE`, and agree on `same` columns such as the family.
+* Events: `describe_events()` counts events per unit, per period and per
+  type and the time between a unit's events; `ensure_sequence()` requires
+  one event before another, such as enrolment before an exam.
+* `?ensure_constant` shows how it checks hierarchies, such as settlements
+  within municipalities.
+
 * inshape now also asks whether the numbers add up. New
   `ensure_reconciled()` counts or sums microdata by the dimensions of a
   published table you give it and reports the cells that differ, both

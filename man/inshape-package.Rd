@@ -53,6 +53,9 @@ call with one overview.
 dplyr can express, such as no negative amounts.
 \item \code{\link[=tally_violations]{tally_violations()}}: count many rules at once, without judging.
 \item \code{\link[=violations]{violations()}}: the rows that break a check, all of them.
+\item \code{\link[=describe_groups]{describe_groups()}}, \code{\link[=ensure_counts]{ensure_counts()}} and \code{\link[=ensure_references]{ensure_references()}}:
+families and other groups, and rows that point to each other.
+\item \code{\link[=describe_events]{describe_events()}} and \code{\link[=ensure_sequence]{ensure_sequence()}}: events and their order.
 \item \code{\link[=ensure_reconciled]{ensure_reconciled()}} and \code{\link[=ensure_stock_flow]{ensure_stock_flow()}}: the numbers add up,
 to a published table and over periods.
 \item \code{\link[=describe_transitions]{describe_transitions()}} and \code{\link[=ensure_transitions]{ensure_transitions()}}: how a status

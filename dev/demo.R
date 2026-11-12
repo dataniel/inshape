@@ -89,6 +89,13 @@ ensure_balanced(panel, cpr, aar, gaps_only = TRUE)
 # Helt balanceret (alle personer alle år) er sjældent sandt for en befolkning
 ensure_balanced(panel, cpr, aar)
 
+# Mangler der værdier? 30 rækker mangler fødselsdato
+ensure_complete(panel, cpr, foedt)
+
+# Panelets tjek på én gang med én samlet oversigt. Fejlen bærer ingen
+# rækker; violations() på den peger på de enkelte tjek.
+ensure_panel(panel, cpr, aar)
+
 # I en pipeline med egne beskeder: første fejl stopper scriptet
 ryddet <- panel |>
   distinct() |>                                        # fjern eksakte kopier
@@ -99,6 +106,11 @@ ryddet |>
   ensure_balanced(cpr, aar, periods = 2019:2023, gaps_only = TRUE,
                   warn_msg = "Huller i befolkningspanelet") |>
   invisible()
+
+# Hullerne er der stadig efter oprydningen. fill_panel() indsætter de
+# manglende personår med NA i de øvrige kolonner, og flag markerer dem.
+udfyldt <- fill_panel(ryddet, cpr, aar, flag = "udfyldt")
+udfyldt |> count(udfyldt)
 
 # Alle rækkerne bag en fejl, til at se på i sessionen
 fejl <- violations(ensure_unique(panel, cpr, aar))
@@ -135,6 +147,33 @@ med_koder$kode[c(10, 20)] <- "95"
 describe_codes(med_koder, kode, aar)
 ensure_codes(med_koder, kode, c(koder, "959"))
 
+# Kodelisten som tabel: findes hver kode præcis én gang, og findes alle
+# rækkernes koder i listen? De to tastefejl "95" gør ikke.
+kodeliste <- tibble(kode = c(unname(koder), "959"),
+                    navn = c(names(koder), "Qeqqata"))
+ensure_lookup(med_koder, kodeliste, by = "kode")
+
+
+# Stemmer mikrodata med den offentliggjorte tabel? Her er tabellen lavet ud
+# fra data, men med 3 kvinder for meget i 2022.
+offentliggjort <- ryddet |>
+  count(tid = aar, koen) |>
+  mutate(n = if_else(tid == 2022 & koen == "K", n + 3L, n))
+ensure_reconciled(ryddet, offentliggjort, by = c(aar = "tid", "koen"))
+
+# Befolkningsregnskab: bestand ultimo = året før + tilgang - afgang. I 2022
+# er bestanden talt 40 for højt, så 2023 ser ud til at mangle 40.
+regnskab <- tibble(
+  aar         = 2019:2023,
+  bestand     = c(56200, 56350, 56420, 56590, 56640),
+  foedte      = c(780, 800, 760, 790, 770),
+  indvandrede = c(2000, 2050, 2100, 2080, 2150),
+  doede       = c(500, 520, 540, 510, 530),
+  udvandrede  = c(2150, 2180, 2250, 2230, 2300)
+)
+ensure_stock_flow(regnskab, aar, bestand,
+                  inflow = c(foedte, indvandrede), outflow = c(doede, udvandrede))
+
 
 # 3b. Et nyt udtræk: hvad er ændret siden sidst? ----------------------------
 #
@@ -152,6 +191,46 @@ nyt <- ryddet |>
 aendringer <- describe_changes(gammelt, nyt, cpr, aar)
 aendringer
 aendringer$changed        # personår med mindst én ændret kolonne
+
+# Kan det nye udtræk kobles til personregistret? De 5 nye personer findes
+# ikke i personer, så koblingen mister rækker.
+describe_match(nyt, personer, by = "cpr")
+ensure_matched(nyt, personer, by = "cpr")
+
+
+# 3c. Status over tid: overgange og en rettelse ------------------------------
+#
+# Uddannelsesstatus pr. personår. 12 personer går fra afsluttet tilbage til
+# ikke startet i 2023, som når et register mangler uddannelsen et år.
+uddannelse <- ryddet |>
+  select(cpr, aar) |>
+  mutate(start = sample(2018:2024, 1), slut = start + sample(1:3, 1), .by = cpr) |>
+  mutate(status = case_when(aar < start ~ "ikke startet",
+                            aar < slut  ~ "i gang",
+                            TRUE        ~ "afsluttet")) |>
+  select(cpr, aar, status)
+tilbage <- uddannelse |>
+  filter(aar %in% 2022:2023, status == "afsluttet") |>
+  count(cpr) |>
+  filter(n == 2) |>
+  slice_sample(n = 12) |>
+  pull(cpr)
+uddannelse <- uddannelse |>
+  mutate(status = if_else(cpr %in% tilbage & aar == 2023, "ikke startet", status))
+
+# Hvilke overgange findes, og hvor tit? afsluttet -> ikke startet bør stå ud
+describe_transitions(uddannelse, cpr, aar, status)
+
+# Kræv at afsluttet er en endestation, eller forbyd bestemte overgange.
+# Her finder de to kald de samme 12 personer.
+ensure_transitions(uddannelse, cpr, aar, status, final = "afsluttet")
+ensure_transitions(uddannelse, cpr, aar, status,
+                   forbid = c("afsluttet -> ikke startet", "i gang -> ikke startet"))
+
+# Ret det: afsluttet bliver ved med at gælde. Resultatet kommer i en ny
+# kolonne, status_carried, og funktionen melder hver ændring.
+rettet <- carry_status(uddannelse, cpr, aar, status, final = "afsluttet")
+rettet |> filter(status != status_carried)
 
 
 # 4. Forløb: én række pr. forløb med start og slut --------------------------
@@ -185,6 +264,10 @@ forloeb <- bind_rows(
   forloeb |> slice(25) |> mutate(slut = start - 3)                       # slut før start
 )
 
+# Er hvert forløb gyldigt i sig selv? Ét slutter før det starter; slut = NA
+# er et igangværende forløb og er tilladt.
+ensure_valid_spells(forloeb, start, slut)
+
 # Hvordan hænger hver persons forløb sammen? Omkring en femtedel starter
 # dagen efter det forrige slutter (adjacent): ofte samme forløb registreret
 # to gange, som skal lægges sammen før man tæller forløb.
@@ -204,6 +287,67 @@ describe_spells(samlet, cpr, start, slut)$relations
 # Kræv at forløb ikke overlapper: overlappende forløb deler et overlap_id.
 # Det igangværende forløb (slut = NA) overlapper alt, der starter efter det.
 ensure_no_overlap(forloeb, cpr, start, slut)
+
+# Dækker forløbene personen uden pauser? Pauser er normale her, så tillad
+# op til 30 dage; de længere pauser vises.
+ensure_no_gaps(samlet, cpr, start, slut, max_gap = 30)
+
+# Forløbenes tjek på én gang. Overlap tjekkes først, når forløbene er gyldige.
+ensure_spells(forloeb, cpr, start, slut)
+
+
+# 4b. Hændelser: én række pr. hændelse med en dato ---------------------------
+#
+# Indskrivning og eksamen. 6 tager eksamen før de er indskrevet, og 4 tager
+# eksamen uden at være indskrevet.
+indskrevne <- personer |>
+  slice_head(n = 300) |>
+  transmute(cpr, dato = as.Date("2020-08-15") + sample.int(700, n(), TRUE),
+            haendelse = "indskrevet")
+eksamener <- indskrevne |>
+  mutate(dato = dato + sample(200:900, n(), TRUE), haendelse = "eksamen")
+eksamener$dato[1:6] <- indskrevne$dato[1:6] - 30
+haendelser <- bind_rows(indskrevne[-(7:10), ], eksamener) |> arrange(cpr, dato)
+
+describe_events(haendelser, cpr, dato, haendelse)
+ensure_sequence(haendelser, cpr, dato, haendelse,
+                first = "indskrevet", then = "eksamen")
+
+
+# 4c. Familier: grupper og henvisninger mellem rækker ------------------------
+#
+# Én række pr. person med familie, rolle og ægtefælle. Fejlene: 3 familier
+# mangler referenceperson, 2 har to, og 4 partnere peger på en tilfældig
+# person i stedet for referencepersonen.
+familier <- personer |>
+  slice_head(n = 1200) |>
+  select(cpr) |>
+  mutate(familie = sample.int(400, n(), TRUE)) |>
+  arrange(familie) |>
+  mutate(rolle = c("reference", "partner", rep("barn", n()))[seq_len(n())],
+         .by = familie) |>
+  mutate(aegtefaelle = case_when(
+           rolle == "reference" ~ cpr[rolle == "partner"][1],
+           rolle == "partner"   ~ cpr[rolle == "reference"][1]),
+         .by = familie)
+forkert <- sample(which(familier$rolle == "partner"), 4)
+familier$aegtefaelle[forkert] <- sample(familier$cpr, 4)
+fejlfam <- sample(unique(familier$familie[familier$rolle == "partner"]), 5)
+familier <- familier |>
+  mutate(rolle = case_when(
+    familie %in% fejlfam[1:3] & rolle == "reference" ~ "barn",
+    familie %in% fejlfam[4:5] & rolle == "partner"   ~ "reference",
+    TRUE ~ rolle))
+
+# Hvordan ser familierne ud: størrelser og antal pr. rolle
+describe_groups(familier, familie, rolle)
+
+# Præcis én referenceperson og højst én partner pr. familie
+ensure_counts(familier, familie, rolle,
+              limits = list(reference = 1, partner = c(0, 1)))
+
+# Findes ægtefællen, hører de til samme familie, og peger ægtefællen tilbage?
+ensure_references(familier, cpr, aegtefaelle, same = familie, mutual = TRUE)
 
 
 # 5. Fra forløb til panel ---------------------------------------------------
@@ -238,6 +382,7 @@ if (requireNamespace("duckdb", quietly = TRUE) && requireNamespace("dbplyr", qui
   ensure_unique(db, cpr, aar)
   ensure_balanced(db, cpr, aar, gaps_only = TRUE)
   ensure_constant(db, cpr, koen)
+  ensure_panel(db, cpr, aar)
 
   # Beskrivelserne regnes også i databasen; kun optællingerne hentes
   print(describe_panel(db, cpr, aar))

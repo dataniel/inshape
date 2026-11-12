@@ -124,7 +124,7 @@ print.inshape_transitions <- function(x, ...) {
     cli::cat_line(paste0("  ", apply(cells, 1, paste, collapse = "  ")))
   } else {
     shown <- tab[change, ]
-    shown <- shown[order(-shown$units), ]
+    shown <- shown[order(-shown$units, shown$from, shown$to), ]
     table_block("Changes of status, most units first:", shown)
   }
   invisible(x)

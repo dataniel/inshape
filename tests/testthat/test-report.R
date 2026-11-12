@@ -34,8 +34,15 @@ test_that("failure messages report the row count and preview rows", {
   expect_match(conditionMessage(cnd), "7 more rows")
   expect_match(conditionMessage(cnd), "For all rows: violations(check_rows(big))", fixed = TRUE)
 
-  # A call too long to read on one line is not repeated
-  long <- rlang::catch_cnd(check_rows(data.frame(x = 1:12, a_long_column_name = 1, another_long_column_name = 2)))
+  # A call of a usual length with several arguments is still repeated
+  medium <- rlang::catch_cnd(check_rows(data.frame(x = 1:12, a_long_column_name = 1, another_long_column_name = 2)))
+  expect_match(conditionMessage(medium), "violations(check_rows(data.frame(", fixed = TRUE)
+
+  # A call too long to copy at a glance is not
+  long <- rlang::catch_cnd(check_rows(data.frame(
+    x = 1:12, a_long_column_name = 1, another_long_column_name = 2,
+    a_third_long_column_name = 3, a_fourth_long_column_name = 4, and_a_fifth = 5
+  )))
   expect_match(conditionMessage(long), "Wrap the check in violations() to get all rows.", fixed = TRUE)
 
   # All rows are shown, so there is nothing to point to

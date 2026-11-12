@@ -86,7 +86,8 @@ describe_events <- function(data, id, time, event = NULL) {
       by = ev_col)
     names(out)[1] <- "event"
     out[c("events", "units")] <- lapply(out[c("events", "units")], as.numeric)
-    out[order(-out$events), ]
+    # Ties by name: a database returns its groups in no fixed order
+    out[order(-out$events, out$event), ]
   }
 
   gaps <- tbl |>

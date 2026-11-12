@@ -101,13 +101,14 @@ code_cols <- function(x) {
 
 # The checkpoint call as the user can paste it into violations(): taken
 # from the frame of the checkpoint, without the message arguments, which do
-# not change the rows. NULL when it is too long to read on one line.
+# not change the rows. NULL when it is too long to copy at a glance, such
+# as a whole pipeline of checks nested into one call.
 check_call_text <- function(call) {
   if (!is.environment(call)) return(NULL)
   cl <- tryCatch(rlang::frame_call(call), error = function(e) NULL)
   if (!is.call(cl)) return(NULL)
   if (!is.null(names(cl))) cl <- cl[!names(cl) %in% c("success_msg", "warn_msg", "abort_msg")]
   txt <- deparse(cl, width.cutoff = 500L)
-  if (length(txt) != 1 || nchar(txt) > 80) return(NULL)
+  if (length(txt) != 1 || nchar(txt) > 150) return(NULL)
   txt
 }

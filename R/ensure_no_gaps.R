@@ -78,7 +78,15 @@ ensure_no_gaps <- function(data, id, start, end, max_gap = 0,
     find_spell_gaps(data, ids, start_col, end_col, max_gap)
   }
 
-  what <- paste0(if (max_gap > 0) paste0(" longer than ", max_gap), " per ", toString(ids))
+  # Dates are compared in days; whole numbers in whatever period they count
+  proto <- if (is_remote(tbl)) {
+    dplyr::collect(utils::head(dplyr::select(tbl, dplyr::all_of(start_col)), 0L))[[1]]
+  } else {
+    data[[start_col]]
+  }
+  unit <- if (inherits(proto, c("Date", "POSIXt"))) "day" else "period"
+  what <- paste0(if (max_gap > 0) paste0(" longer than ", count(max_gap, unit)),
+                 " per ", toString(ids))
   gap_col <- diagnostic_name(tbl, "gap")
   name <- data_label(rlang::caller_arg(data))
   report_check(
@@ -92,7 +100,7 @@ ensure_no_gaps <- function(data, id, start, end, max_gap = 0,
       len <- gap_lengths(v, gap_col)
       list(
         lines = c(paste0("In ", count(n_distinct_rows(v, ids), "unit")),
-                  paste0("Gap length: shortest ", big(len[1]), ", median ", big(len[2]),
+                  paste0("Gap length in ", unit, "s: shortest ", big(len[1]), ", median ", big(len[2]),
                          ", longest ", big(len[3]))),
         hints = if (!is_remote(v)) paste0(
           "To join spells across gaps up to a length you choose: merge_spells(",

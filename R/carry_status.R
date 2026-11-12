@@ -212,7 +212,8 @@ report_carry <- function(out, ids, old, new, remote = FALSE) {
                       .data[[old]], .data[[new]], name = "units")
     dplyr::left_join(rows, u, by = c(old, new))
   }
-  per <- per[order(-per$rows), ]
+  # Ties by value: a database returns its groups in no fixed order
+  per <- per[order(-per$rows, per[[old]], per[[new]]), ]
   lines <- paste0(fmt_values(per[[old]]), " -> ", fmt_values(per[[new]]), ": ",
                   count(per$rows, "row"), " in ", count(per$units, "unit"))
   head <- paste0("Changed ", count(n, "row"), " in ", count(units, "unit"), ":")

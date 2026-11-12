@@ -42,7 +42,7 @@ test_that("the spell checks count units and point to merge_spells()", {
 
   msg <- msg_of(ensure_no_gaps(spells, cpr, start, end))
   expect_match(msg, "In 1 unit", fixed = TRUE)
-  expect_match(msg, "Gap length: shortest 29, median 29, longest 29", fixed = TRUE)
+  expect_match(msg, "Gap length in days: shortest 29, median 29, longest 29", fixed = TRUE)
   expect_match(msg, "merge_spells(spells, cpr, start, end, max_gap = <length>)", fixed = TRUE)
 })
 

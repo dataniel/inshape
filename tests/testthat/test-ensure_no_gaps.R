@@ -25,10 +25,23 @@ test_that("the spell after each gap is reported with the length of the gap", {
 test_that("max_gap accepts gaps up to that length", {
   expect_equal(gaps(spells, cpr, start, end, max_gap = 3)$cpr, "c")
   expect_message(out <- ensure_no_gaps(spells, cpr, start, end, max_gap = 31),
-                 "No gaps between spells longer than 31 per cpr")
+                 "No gaps between spells longer than 31 days per cpr")
   expect_identical(out, spells)
   expect_error(ensure_no_gaps(spells, cpr, start, end, max_gap = -1), "max_gap")
   expect_error(ensure_no_gaps(spells, cpr, start, end, max_gap = 1.5), "max_gap")
+})
+
+test_that("the message names the unit of the gaps", {
+  cnd <- rlang::catch_cnd(ensure_no_gaps(spells, cpr, start, end, max_gap = 1),
+                          classes = "inshape_failure")
+  expect_match(conditionMessage(cnd), "longer than 1 day per cpr", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "Gap length in days: shortest 3", fixed = TRUE)
+
+  years <- data.frame(id = c(1, 1), from = c(2015, 2020), to = c(2016, 2021))
+  cnd <- rlang::catch_cnd(ensure_no_gaps(years, id, from, to, max_gap = 2),
+                          classes = "inshape_failure")
+  expect_match(conditionMessage(cnd), "longer than 2 periods per id", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "Gap length in periods: shortest 3", fixed = TRUE)
 })
 
 test_that("the message counts the rows, and abort_msg aborts", {

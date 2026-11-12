@@ -118,7 +118,7 @@ ensure_no_gaps(addresses, cpr, start, end)
 #> Warning: Gaps between spells per cpr
 #> ℹ 1 row
 #>   In 1 unit
-#>   Gap length: shortest 3, median 3, longest 3
+#>   Gap length in days: shortest 3, median 3, longest 3
 #> ℹ The rows:
 #>       gap cpr   start      end
 #>     <int> <chr> <date>     <date>
@@ -127,5 +127,5 @@ ensure_no_gaps(addresses, cpr, start, end)
 
 # Accept up to a week without an address
 ensure_no_gaps(addresses, cpr, start, end, max_gap = 7)
-#> ✔ No gaps between spells longer than 7 per cpr
+#> ✔ No gaps between spells longer than 7 days per cpr
 ```

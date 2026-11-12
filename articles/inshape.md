@@ -387,7 +387,7 @@ ensure_no_gaps(moves, cpr, start, end)
 #> Warning in ensure_no_gaps(moves, cpr, start, end): Gaps between spells per cpr
 #> ℹ 1 row
 #>   In 1 unit
-#>   Gap length: shortest 3, median 3, longest 3
+#>   Gap length in days: shortest 3, median 3, longest 3
 #> ℹ The rows:
 #>       gap cpr   start      end
 #>     <int> <chr> <date>     <date>

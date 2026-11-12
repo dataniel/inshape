@@ -59,6 +59,7 @@ ensure_none <- function(data, ...,
   if (length(conditions) == 0) {
     cli::cli_abort("Supply at least one condition in {.arg ...}.")
   }
+  check_unnamed(conditions)
   rule <- paste(vapply(conditions, rlang::as_label, character(1)), collapse = " & ")
 
   violations <- filter_violations(tbl, conditions, rule, rlang::current_env())
@@ -70,6 +71,25 @@ ensure_none <- function(data, ...,
     success_msg, warn_msg, abort_msg
   )
   invisible(data)
+}
+
+# A named condition is a typo for `==`, a misspelt argument, or the `log`
+# and `dump` of expectr, which inshape does not have. Taken as a condition,
+# `dump = FALSE` would make the check pass whatever the data holds.
+check_unnamed <- function(conditions, call = rlang::caller_env()) {
+  named <- names(conditions)[names(conditions) != ""]
+  if (length(named) == 0) return(invisible())
+  if (any(named %in% c("log", "dump"))) {
+    cli::cli_abort(c(
+      "Conditions in {.arg ...} must not be named.",
+      "i" = "inshape has no {.arg log} or {.arg dump}; it never writes rows to disk.",
+      "i" = "To keep the rows, save what {.fn violations} returns."
+    ), call = call)
+  }
+  cli::cli_abort(c(
+    "Conditions in {.arg ...} must not be named.",
+    "i" = "Did you write {.code =} where you meant {.code ==}, or misspell the argument {.arg {named[1]}}?"
+  ), call = call)
 }
 
 # The violation set of ensure_none() and ensure_all(). An error names the

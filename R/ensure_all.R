@@ -66,13 +66,7 @@ ensure_all <- function(data, ...,
   if (length(conditions) == 0) {
     cli::cli_abort("Supply at least one condition in {.arg ...}.")
   }
-  named <- names(conditions)[names(conditions) != ""]
-  if (length(named) > 0) {
-    cli::cli_abort(c(
-      "Conditions in {.arg ...} must not be named.",
-      "i" = "Did you write {.code =} where you meant {.code ==}, or misspell the argument {.arg {named[1]}}?"
-    ))
-  }
+  check_unnamed(conditions)
   rule <- paste(vapply(conditions, rlang::as_label, character(1)), collapse = " & ")
 
   # A row passes only when every condition is TRUE, so NA is a violation

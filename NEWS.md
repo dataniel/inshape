@@ -15,8 +15,9 @@
 * expectr's `log` and `dump` arguments and the options `expectr.log`,
   `expectr.dump` and `expectr.quiet` are gone: inshape never writes rows to
   disk itself. Save the rows from `violations()` if you need them. A call
-  that still passes `log =` or `dump =` fails with "unused argument"
-  instead of being ignored.
+  that still passes `log =` or `dump =` fails instead of being ignored:
+  `ensure_empty()` with "unused argument", `ensure_none()` and
+  `ensure_all()` because their conditions must not be named.
 
 * New `describe_match()` says what a join will do before it is made: the
   keys found in both tables, only in the data and only in the reference,

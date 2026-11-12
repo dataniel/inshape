@@ -60,3 +60,9 @@ test_that("ensure_none() returns grouped data unchanged", {
   g <- dplyr::group_by(df, id)
   expect_identical(suppressWarnings(ensure_none(g, amount < 0)), g)
 })
+
+test_that("ensure_none() refuses named conditions, such as expectr's log and dump", {
+  expect_error(ensure_none(df, amount < 0, dump = FALSE), "must not be named")
+  expect_error(ensure_none(df, amount < 0, dump = tempdir()), "must not be named")
+  expect_error(ensure_none(df, amount < 0, log = tempfile()), "must not be named")
+})

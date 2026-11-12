@@ -74,3 +74,8 @@ test_that("ensure_all() checks a database table where it lives", {
   expect_error(ensure_none(tbl, amuont < 0), "could not be evaluated")
   expect_no_warning(ensure_none(dplyr::group_by(tbl, id), amount > mean(amount, na.rm = TRUE) + 100))
 })
+
+test_that("ensure_all() refuses expectr's log and dump", {
+  expect_error(ensure_all(df, amount >= 0, dump = FALSE), "must not be named")
+  expect_error(ensure_all(df, amount >= 0, log = tempfile()), "must not be named")
+})

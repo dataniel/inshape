@@ -4,8 +4,21 @@
 # Synthetic inputs only. Compares the key-based checkpoints before the
 # speed-up (baseline-checkpoints.R, a frozen reference) with the current
 # code, in memory.
-pkgload::load_all(quiet = TRUE)
+# load_all() alone compiles with -O0 for debugging, which makes the compiled
+# checks run about twice as slow; build an optimised DLL first. The old
+# objects go first, or make finds them up to date and keeps the -O0 build.
+unlink(Sys.glob(c("src/*.o", "src/*.dll", "src/*.so")))
+pkgbuild::compile_dll(force = TRUE, debug = FALSE, quiet = TRUE)
+pkgload::load_all(compile = FALSE, quiet = TRUE)
 baseline <- new.env(parent = asNamespace("inshape"))
+# The frozen code reports through the report_check() of its time; map its
+# arguments onto today's, so both sides pay for the same report
+baseline$report_check <- function(violations, success_msg, fail_msg, abort = FALSE,
+                                  log = NULL, dump = NULL, key = character(),
+                                  group = NULL) {
+  inshape:::report_check(violations, pass = success_msg, fail = fail_msg,
+                         abort_msg = if (abort) fail_msg, key = key, group = group)
+}
 sys.source("benchmarks/baseline-checkpoints.R", baseline)
 # The frozen code predates the ensure_ names
 for (nm in c("unique", "balanced", "no_overlap")) {

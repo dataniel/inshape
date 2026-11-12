@@ -5,7 +5,12 @@
 # data shaped like a register, in memory. Nothing is kept between calls,
 # so each call is a first look at the data. There is no baseline; the point is
 # what a full-population check costs.
-pkgload::load_all(quiet = TRUE)
+# load_all() alone compiles with -O0 for debugging, which makes the compiled
+# checks run about twice as slow; build an optimised DLL first. The old
+# objects go first, or make finds them up to date and keeps the -O0 build.
+unlink(Sys.glob(c("src/*.o", "src/*.dll", "src/*.so")))
+pkgbuild::compile_dll(force = TRUE, debug = FALSE, quiet = TRUE)
+pkgload::load_all(compile = FALSE, quiet = TRUE)
 options(cli.default_handler = function(...) invisible())
 set.seed(42)
 

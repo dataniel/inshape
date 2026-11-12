@@ -1,5 +1,19 @@
 # inshape 0.1.0
 
+* New `describe_transitions()` and `ensure_transitions()` for a status that
+  follows a unit over time. The description is a table of units per
+  transition, where impossible transitions show as cells that should be
+  empty; the check forbids transitions written as `"completed -> not
+  started"`, or every change away from a `final` status, and counts the
+  rows per transition. Each observation is compared with the unit's next
+  one, whatever the distance, and spells work with their start as `time`.
+* New `carry_status()` fixes those transitions when the rule is given: a
+  `final` status holds once reached, or the status never falls in an
+  `order`. The result goes to a new column by default, and the message
+  counts the rows and units per change.
+* New `fill_panel()` adds the missing unit-periods of a panel as rows of
+  missing values and says how many; `ensure_balanced()` points to it.
+
 * New `ensure_panel()`, `ensure_spells()` and `ensure_lookup()` run the
   checks a panel, a set of spells or a lookup table nearly always needs and
   report them in one overview: what passed, what failed with its counts,

@@ -49,11 +49,13 @@ pak::pak("dataniel/inshape")
 | Function | Description |
 |---|---|
 | `add_spell_status()` | Status from spells on a panel you already have, at primo/ultimo or on a date |
+| `carry_status()` | A status that holds once reached (completed), or never falls in an order you give, carried forward into a new column, with every change counted |
 | `describe_changes()` | Two extracts of a register: keys that came and went, and per column the values that changed, went missing or were filled in |
 | `describe_codes()` | How the codes of a column change over periods: first and last period, codes skipping periods, new and gone codes |
 | `describe_key()` | How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in |
 | `describe_match()` | What a join will do: keys in both tables, only in one, rows without a match, and the rows a left join returns when the reference repeats a key |
 | `describe_panel()` | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
+| `describe_transitions()` | The transitions between statuses from one observation to the next, as a table where impossible transitions show as cells that should be empty |
 | `describe_spells()` | Spell data: gaps, transfers (adjacent spells), overlapping, nested and duplicate spells, ongoing and invalid spells |
 | `describe_varying()` | Which columns vary within units: constant, nearly constant (errors) and varying |
 | `ensure_all()` | Every row meets a condition written as in `filter()`; a missing value is a violation |
@@ -69,9 +71,11 @@ pak::pak("dataniel/inshape")
 | `ensure_none()` | No row matches a condition written as in `filter()` |
 | `ensure_panel()` | A panel in one call: the key is complete and unique, and no unit skips a period |
 | `ensure_spells()` | Spells in one call: the unit is complete, the spells valid and not overlapping, optionally without gaps |
+| `ensure_transitions()` | A status only changes in allowed ways: no forbidden transition (`"completed -> not started"`), nothing after a final status |
 | `ensure_unique()` | Key columns identify each row uniquely |
 | `ensure_valid_spells()` | Spells have a start and do not end before it, optionally requiring a closed end |
 | `ensure_within()` | No rows after death or emigration, or before birth: each row within its unit's lifetime |
+| `fill_panel()` | The missing unit-periods of a panel added as rows of missing values, with the count of rows added |
 | `merge_spells()` | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | `spells_to_panel()` | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
 | `tally_violations()` | Violations counted for many rules at once, judging nothing; filter and pipe into `ensure_empty()` |

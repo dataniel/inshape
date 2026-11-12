@@ -215,7 +215,7 @@ table_block <- function(title, df, n = 20) {
 
 # Number formatting for the describe_*() summaries
 big <- function(v) format(v, big.mark = ",", scientific = FALSE, trim = TRUE)
-count <- function(v, noun) paste(big(v), if (v == 1) noun else paste0(noun, "s"))
+count <- function(v, noun) paste(big(v), ifelse(v == 1, noun, paste0(noun, "s")))
 share <- function(v, of) if (of == 0) "" else sprintf(" (%.1f%%)", 100 * v / of)
 
 # A tibble printed without its header and footer lines

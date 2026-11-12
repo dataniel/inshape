@@ -27,6 +27,7 @@ reference:
       - describe_match
       - describe_panel
       - describe_spells
+      - describe_transitions
       - describe_varying
 
   - title: Rules
@@ -62,15 +63,24 @@ reference:
       - ensure_codes
       - ensure_valid_spells
       - ensure_matched
+      - ensure_transitions
       - violations
       - checkpoints
 
-  - title: Spells and panels
+  - title: Fixes
     desc: >
-      Merge spells recorded as several, convert spell data to a period
-      panel, or add the status from spells to a panel you already have.
+      Fixes where the rule makes the result unambiguous. Each says what it
+      changed, and none guesses a value.
     contents:
       - merge_spells
+      - fill_panel
+      - carry_status
+
+  - title: Spells and panels
+    desc: >
+      Convert spell data to a period panel, or add the status from spells
+      to a panel you already have.
+    contents:
       - spells_to_panel
       - add_spell_status
 

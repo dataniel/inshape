@@ -34,3 +34,4 @@ src/*.rds
 
 # Local scripts for trying things out
 /dev/local/
+tests/testthat/_problems/

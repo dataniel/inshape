@@ -55,7 +55,11 @@ and `ensure_empty()` take any rule dplyr can express.
 | `ensure_all()` | every row meets a condition (`NA` fails) | the data |
 | `ensure_empty()` | a violation set you built yourself has no rows | the set |
 | `tally_violations()` | (count) violations for many rules at once | a tally |
-| `merge_spells()` | (conversion) spells recorded as several, merged | merged spells |
+| `describe_transitions()` | (look) how a status changes from one observation to the next | a summary |
+| `ensure_transitions()` | a status does not change in a forbidden way | the data |
+| `merge_spells()` | (fix) spells recorded as several, merged | merged spells |
+| `fill_panel()` | (fix) missing unit-periods added as rows | the filled panel |
+| `carry_status()` | (fix) a status that holds once reached, carried forward | the data plus status |
 | `spells_to_panel()` | (conversion) spells to a period panel | a panel |
 | `add_spell_status()` | (conversion) status from spells on an existing panel | the data plus status |
 
@@ -184,6 +188,51 @@ as well:
 ```{r, eval = FALSE}
 ensure_balanced(panel, cpr, year, periods = 2015:2024, gaps_only = TRUE)
 ```
+
+When the gaps are real, `fill_panel()` adds them as rows with the unit and
+the period filled in and everything else missing, so a count per year sees
+them. It says how many rows it added:
+
+```{r}
+filled <- fill_panel(panel, cpr, year)
+```
+
+## Status over time: `describe_transitions()`, `ensure_transitions()` and `carry_status()`
+
+A status that follows a person, such as education, can only change in
+some ways. `describe_transitions()` counts the units going from each
+status to each other between two observations, so the impossible ones show
+as cells that should be empty:
+
+```{r}
+education <- tibble(
+  cpr    = c("a", "a", "a", "b", "b", "c", "c"),
+  year   = c(2019, 2020, 2021, 2019, 2020, 2019, 2021),
+  status = c("not started", "enrolled", "completed",
+             "enrolled", "completed", "completed", "not started")
+)
+
+describe_transitions(education, cpr, year, status)
+```
+
+`ensure_transitions()` forbids them, as pairs or as a final status nothing
+may follow:
+
+```{r}
+ensure_transitions(education, cpr, year, status, final = "completed")
+```
+
+Which of the two observations is wrong, the package cannot know. When you
+know that the final status holds, `carry_status()` carries it forward,
+into a new column so the original stands beside it, and counts what it
+changed:
+
+```{r}
+education <- carry_status(education, cpr, year, status, final = "completed")
+```
+
+The unit is what `id` says: when a person may complete one education and
+start another, use `id = c(cpr, education)`.
 
 ## Spells: `ensure_no_overlap()`
 

@@ -45,7 +45,11 @@
 #'   dplyr can express, such as no negative amounts.
 #' * [tally_violations()]: count many rules at once, without judging.
 #' * [violations()]: the rows that break a check, all of them.
+#' * [describe_transitions()] and [ensure_transitions()]: how a status
+#'   changes over time, and the changes that cannot happen.
 #' * [merge_spells()]: one spell recorded as several, merged into one.
+#' * [fill_panel()]: the missing unit-periods of a panel added as rows.
+#' * [carry_status()]: a status that holds once reached, carried forward.
 #' * [spells_to_panel()] and [add_spell_status()]: from spells to a panel.
 #'
 #' The `ensure_*()` functions are checkpoints: they warn or abort with the

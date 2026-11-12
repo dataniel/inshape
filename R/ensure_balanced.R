@@ -94,9 +94,15 @@ ensure_balanced <- function(data, id, time,
       list(
         lines = c(paste0("Missing for ", count(units, "unit")),
                   tally_line(paste("By", time_col), tv)),
-        hints = if (!gaps_only) paste0(
-          "If units may enter late and leave early: ensure_balanced(", name, ", ",
-          code_cols(ids), ", ", code_name(time_col), ", gaps_only = TRUE)")
+        hints = c(
+          if (!gaps_only) paste0(
+            "If units may enter late and leave early: ensure_balanced(", name, ", ",
+            code_cols(ids), ", ", code_name(time_col), ", gaps_only = TRUE)"),
+          paste0(
+            "To add them as rows with missing values: fill_panel(", name, ", ",
+            code_cols(ids), ", ", code_name(time_col),
+            if (!gaps_only) ", gaps_only = FALSE", ")")
+        )
       )
     }
   )

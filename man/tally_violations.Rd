@@ -70,7 +70,7 @@ tally |>
 }\if{html}{\out{</div>}}
 
 Kept unfiltered, it is a validation report: send it back to whoever made
-the data, e.g. with \code{daos::write_excel()} after dropping the \code{rows} column.
+the data, e.g. with \code{lazer::write_excel()} after dropping the \code{rows} column.
 
 Rules follow \code{\link[dplyr:filter]{dplyr::filter()}} semantics: each must give \code{TRUE} for a
 violating row, and \code{NA} counts as no violation. Rules are evaluated with

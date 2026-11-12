@@ -50,7 +50,7 @@
 #' ```
 #'
 #' Kept unfiltered, it is a validation report: send it back to whoever made
-#' the data, e.g. with `daos::write_excel()` after dropping the `rows` column.
+#' the data, e.g. with `lazer::write_excel()` after dropping the `rows` column.
 #'
 #' Rules follow [dplyr::filter()] semantics: each must give `TRUE` for a
 #' violating row, and `NA` counts as no violation. Rules are evaluated with

@@ -89,7 +89,9 @@ ensure_complete(persons[1:3, ], sex)
 # Warning: b lacks a birth date, the third row a cpr as well
 ensure_complete(persons, cpr, born)
 #> Warning: Missing values in: cpr, born
-#> ℹ 2 rows in 2 groups:
+#> ℹ 2 rows in 2 groups
+#>   Missing per column: born (2), cpr (1)
+#> ℹ The rows:
 #>     missing   cpr   born   sex
 #>     <chr>     <chr> <date> <chr>
 #>   1 born      b     NA     M
@@ -98,7 +100,9 @@ ensure_complete(persons, cpr, born)
 # All columns
 ensure_complete(persons)
 #> Warning: Missing values in: all columns
-#> ℹ 3 rows in 3 groups:
+#> ℹ 3 rows in 3 groups
+#>   Missing per column: born (2), cpr (1), sex (1)
+#> ℹ The rows:
 #>     missing   cpr   born       sex
 #>     <chr>     <chr> <date>     <chr>
 #>   1 born      b     NA         M

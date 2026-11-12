@@ -122,7 +122,9 @@ values per column, <code><a href="ensure_valid_spells.html">ensure_valid_spells(
 <span class="r-in"><span><span class="co"># Warning: b lacks a birth date, the third row a cpr as well</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_complete</span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">born</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Missing values in: cpr, born</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows in 2 groups:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows in 2 groups</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Missing per column: born (2), cpr (1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     missing   cpr   born   sex</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> born      b     <span style="color: #BB0000;">NA</span>     M</span>
@@ -131,7 +133,9 @@ values per column, <code><a href="ensure_valid_spells.html">ensure_valid_spells(
 <span class="r-in"><span><span class="co"># All columns</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_complete</span><span class="op">(</span><span class="va">persons</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Missing values in: all columns</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 3 rows in 3 groups:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 3 rows in 3 groups</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Missing per column: born (2), cpr (1), sex (1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     missing   cpr   born       sex</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> born      b     <span style="color: #BB0000;">NA</span>         M</span>

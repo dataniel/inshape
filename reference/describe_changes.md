@@ -84,6 +84,7 @@ describe_changes(old, new, cpr, year)
 #> ── Changes by cpr, year ────────────────────────────────────────────────────────
 #> 3 rows before, 3 rows now, 2 keys in both
 #> 
+#> ✔ The same columns, with the same types
 #> • New keys: 1 (33.3%)
 #> • Keys gone: 1 (33.3%)
 #> • Keys with a changed value: 1 (50.0%)

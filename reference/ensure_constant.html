@@ -107,7 +107,11 @@ issued instead.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>A missing value does not break the rule: a sex that is missing in one
+    <p>The same check covers hierarchies: that each settlement lies in one
+municipality, or each 4-digit code in one 2-digit code, is the parent
+column constant within the child, <code>ensure_constant(places, settlement, municipality)</code>. With years, give both, <code>ensure_constant(places, c(settlement, year), municipality)</code>, so a settlement may move between
+municipalities in a reform but not within a year.</p>
+<p>A missing value does not break the rule: a sex that is missing in one
 year and known in another is incomplete, not contradictory. Find such
 units with <code><a href="describe_varying.html">describe_varying()</a></code>, which counts them as partly missing.</p>
     </div>
@@ -126,11 +130,14 @@ units with <code><a href="describe_varying.html">describe_varying()</a></code>, 
 <span class="r-in"><span><span class="co"># b changes sex; c is only missing in 2021</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_constant</span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">sex</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Varies within units: sex per cpr</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows found:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   In 1 unit</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     cpr   sex    year</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> b     M      <span style="text-decoration: underline;">2</span>020</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">2</span> b     F      <span style="text-decoration: underline;">2</span>021</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Which value holds is a choice, e.g. dplyr::mutate(persons, sex = &lt;first, last or most common&gt;, .by = cpr)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

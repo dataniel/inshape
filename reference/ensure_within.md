@@ -119,7 +119,9 @@ panel <- data.frame(
 # a has a row after the year of death, b one before birth
 ensure_within(panel, year, from = born, to = death)
 #> Warning: Rows outside: year within born to death
-#> ℹ 2 rows in 2 groups:
+#> ℹ 2 rows in 2 groups
+#>   Bounds broken: after death (1), before born (1)
+#> ℹ The rows:
 #>     outside      year born       death      cpr
 #>     <chr>       <dbl> <date>     <date>     <chr>
 #>   1 after death  2024 1950-04-01 2023-05-01 a

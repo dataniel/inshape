@@ -101,7 +101,7 @@ mtcars |>
 #>   4  14.7     8   440   230  3.23  5.34  17.4     0     0     3     4
 #>   5  13.3     8   350   245  3.73  3.84  15.4     0     0     3     4
 #>   # ℹ 1 more row
-#> ℹ Wrap the check in violations() to get all rows.
+#> ℹ For all rows: violations(ensure_all(ensure_all(mtcars, cyl %in% c(4, 6, 8)), mpg > 15))
 #> [1] 32
 
 # A missing value is a violation here, but not in ensure_none()

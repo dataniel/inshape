@@ -17,6 +17,8 @@ that prints, and judges nothing.
   : Describe the structure of a panel
 - [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md)
   : Describe the structure of spell data
+- [`describe_transitions()`](https://dataniel.github.io/inshape/reference/describe_transitions.md)
+  : Describe the transitions between statuses over time
 - [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md)
   : Describe which columns vary within a unit
 
@@ -35,6 +37,16 @@ counts many rules and judges nothing.
   : Assert that every row meets a condition
 - [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md)
   : Count violations for several rules at once
+
+## Common checks in one call
+
+The structure checks a panel, a set of spells or a lookup table nearly
+always needs, run together and reported in one overview.
+
+- [`ensure_panel()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  [`ensure_spells()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  [`ensure_lookup()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  : Check a panel, spells or a lookup table in one call
 
 ## Structure checks
 
@@ -62,18 +74,58 @@ in a pipeline.
   : Assert that spell boundaries are valid
 - [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
   : Assert that every key occurs in a reference register
+- [`ensure_transitions()`](https://dataniel.github.io/inshape/reference/ensure_transitions.md)
+  : Assert that a status only changes in allowed ways
 - [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
   : The rows that break a check
 - [`checkpoints`](https://dataniel.github.io/inshape/reference/checkpoints.md)
   : Checkpoints: shared arguments, personal data and database tables
 
-## Spells and panels
+## Groups, relations and events
 
-Merge spells recorded as several, convert spell data to a period panel,
-or add the status from spells to a panel you already have.
+Families, households and workplaces are groups of rows with roles;
+spouses and parents are rows that point to each other; events have many
+rows per unit. Three building blocks and two event functions cover them,
+without a definition of a family built in.
+
+- [`describe_groups()`](https://dataniel.github.io/inshape/reference/describe_groups.md)
+  : Describe how groups are composed of roles
+- [`ensure_counts()`](https://dataniel.github.io/inshape/reference/ensure_counts.md)
+  : Assert how many rows of each role a group has
+- [`ensure_references()`](https://dataniel.github.io/inshape/reference/ensure_references.md)
+  : Assert that rows pointing to other rows find them, and agree
+- [`describe_events()`](https://dataniel.github.io/inshape/reference/describe_events.md)
+  : Describe events: how many per unit, per period and how far apart
+- [`ensure_sequence()`](https://dataniel.github.io/inshape/reference/ensure_sequence.md)
+  : Assert that events come in order
+
+## Numbers
+
+Beyond the shape: do the numbers add up, to a published table and over
+periods?
+
+- [`ensure_reconciled()`](https://dataniel.github.io/inshape/reference/ensure_reconciled.md)
+  : Assert that microdata add up to a published table
+- [`ensure_stock_flow()`](https://dataniel.github.io/inshape/reference/ensure_stock_flow.md)
+  : Assert that a stock and its flows add up over periods
+
+## Fixes
+
+Fixes where the rule makes the result unambiguous. Each says what it
+changed, and none guesses a value.
 
 - [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md)
   : Merge spells that follow each other or overlap into one
+- [`fill_panel()`](https://dataniel.github.io/inshape/reference/fill_panel.md)
+  : Add the missing unit-periods of a panel as rows
+- [`carry_status()`](https://dataniel.github.io/inshape/reference/carry_status.md)
+  : Let a status stand once it is reached
+
+## Spells and panels
+
+Convert spell data to a period panel, or add the status from spells to a
+panel you already have.
+
 - [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md)
   : Turn spell data into a period panel with primo and ultimo status
 - [`add_spell_status()`](https://dataniel.github.io/inshape/reference/add_spell_status.md)

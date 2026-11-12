@@ -19,6 +19,21 @@ addresses |>
   ensure_no_overlap(cpr, start, end)
 ```
 
+The checks a panel, a set of spells or a lookup table nearly always
+needs also run in one call, with one overview of what passed and what
+failed:
+
+``` r
+ensure_panel(persons, cpr, year)
+#> Panel cpr by year: 1 of 3 checks failed
+#> ✔ Complete: cpr, year
+#> ✔ Unique on cpr, year
+#> ✖ Gaps in panel: missing cpr-year combinations (1,204 rows)
+#>   Missing for 312 units
+#>   By year: 2019 (1,150), 2021 (54)
+#> ℹ For the rows: violations(ensure_balanced(persons, cpr, year, gaps_only = TRUE))
+```
+
 ## Installation
 
 inshape is not on CRAN. Install it from GitHub:
@@ -33,11 +48,15 @@ pak::pak("dataniel/inshape")
 | Function | Description |
 |----|----|
 | [`add_spell_status()`](https://dataniel.github.io/inshape/reference/add_spell_status.md) | Status from spells on a panel you already have, at primo/ultimo or on a date |
+| [`carry_status()`](https://dataniel.github.io/inshape/reference/carry_status.md) | A status that holds once reached (completed), or never falls in an order you give, carried forward into a new column, with every change counted |
 | [`describe_changes()`](https://dataniel.github.io/inshape/reference/describe_changes.md) | Two extracts of a register: keys that came and went, and per column the values that changed, went missing or were filled in |
 | [`describe_codes()`](https://dataniel.github.io/inshape/reference/describe_codes.md) | How the codes of a column change over periods: first and last period, codes skipping periods, new and gone codes |
+| [`describe_events()`](https://dataniel.github.io/inshape/reference/describe_events.md) | Event data (moves, exams, contacts): events per unit, per period and per type, and the time between a unit’s events |
+| [`describe_groups()`](https://dataniel.github.io/inshape/reference/describe_groups.md) | The compositions of groups such as families: “1 reference + 1 partner + 2 child: 4,210”, so impossible groups show |
 | [`describe_key()`](https://dataniel.github.io/inshape/reference/describe_key.md) | How well columns work as a key: duplicated keys, exact copies vs. conflicts and the columns they differ in |
 | [`describe_match()`](https://dataniel.github.io/inshape/reference/describe_match.md) | What a join will do: keys in both tables, only in one, rows without a match, and the rows a left join returns when the reference repeats a key |
 | [`describe_panel()`](https://dataniel.github.io/inshape/reference/describe_panel.md) | The structure of a panel: units, gaps, entries and exits per period, participation patterns |
+| [`describe_transitions()`](https://dataniel.github.io/inshape/reference/describe_transitions.md) | The transitions between statuses from one observation to the next, as a table where impossible transitions show as cells that should be empty |
 | [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md) | Spell data: gaps, transfers (adjacent spells), overlapping, nested and duplicate spells, ongoing and invalid spells |
 | [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md) | Which columns vary within units: constant, nearly constant (errors) and varying |
 | [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md) | Every row meets a condition written as in [`filter()`](https://rdrr.io/r/stats/filter.html); a missing value is a violation |
@@ -45,27 +64,56 @@ pak::pak("dataniel/inshape")
 | [`ensure_codes()`](https://dataniel.github.io/inshape/reference/ensure_codes.md) | Codes belong to a code list, optionally within their validity periods |
 | [`ensure_complete()`](https://dataniel.github.io/inshape/reference/ensure_complete.md) | Columns an analysis cannot do without (an id, a date) have no missing values; the rows are reported with the columns missing in each |
 | [`ensure_constant()`](https://dataniel.github.io/inshape/reference/ensure_constant.md) | Columns such as sex or birth date are constant within each unit |
+| [`ensure_counts()`](https://dataniel.github.io/inshape/reference/ensure_counts.md) | Rows of each role per group within limits: exactly one reference person, at most two parents, at most one death |
 | [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md) | A violation set built with [`filter()`](https://rdrr.io/r/stats/filter.html) or an anti-join has no rows |
+| [`ensure_lookup()`](https://dataniel.github.io/inshape/reference/ensure_panel.md) | A lookup table before a join: its key is unique, and every key of the data is in it |
 | [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md) | Every key occurs in a reference register, including composite or renamed keys |
 | [`ensure_no_gaps()`](https://dataniel.github.io/inshape/reference/ensure_no_gaps.md) | Spells cover a unit without a break between them, or with gaps of at most `max_gap` days |
 | [`ensure_no_overlap()`](https://dataniel.github.io/inshape/reference/ensure_no_overlap.md) | Spells (addresses, employment) do not overlap within a unit |
 | [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md) | No row matches a condition written as in [`filter()`](https://rdrr.io/r/stats/filter.html) |
+| [`ensure_panel()`](https://dataniel.github.io/inshape/reference/ensure_panel.md) | A panel in one call: the key is complete and unique, and no unit skips a period |
+| [`ensure_reconciled()`](https://dataniel.github.io/inshape/reference/ensure_reconciled.md) | Microdata counted (or summed) by a published table’s dimensions give the table’s numbers, cell for cell |
+| [`ensure_stock_flow()`](https://dataniel.github.io/inshape/reference/ensure_stock_flow.md) | A stock and its flows add up over periods: population at the end = before + born + immigrated - dead - emigrated |
+| [`ensure_references()`](https://dataniel.github.io/inshape/reference/ensure_references.md) | A column pointing to another row (spouse, mother) finds it, not itself, and with `mutual` is pointed back to, in the same family if asked |
+| [`ensure_sequence()`](https://dataniel.github.io/inshape/reference/ensure_sequence.md) | Events come in order: no exam before enrolment, no move out before a move in |
+| [`ensure_spells()`](https://dataniel.github.io/inshape/reference/ensure_panel.md) | Spells in one call: the unit is complete, the spells valid and not overlapping, optionally without gaps |
+| [`ensure_transitions()`](https://dataniel.github.io/inshape/reference/ensure_transitions.md) | A status only changes in allowed ways: no forbidden transition (`"completed -> not started"`), nothing after a final status |
 | [`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md) | Key columns identify each row uniquely |
 | [`ensure_valid_spells()`](https://dataniel.github.io/inshape/reference/ensure_valid_spells.md) | Spells have a start and do not end before it, optionally requiring a closed end |
 | [`ensure_within()`](https://dataniel.github.io/inshape/reference/ensure_within.md) | No rows after death or emigration, or before birth: each row within its unit’s lifetime |
+| [`fill_panel()`](https://dataniel.github.io/inshape/reference/fill_panel.md) | The missing unit-periods of a panel added as rows of missing values, with the count of rows added |
 | [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md) | Merge spells that follow each other or overlap (transfers, readmissions within `max_gap` days) into one |
 | [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md) | Spells to a yearly, quarterly or monthly panel with primo and ultimo status |
 | [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md) | Violations counted for many rules at once, judging nothing; filter and pipe into [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md) |
 | [`violations()`](https://dataniel.github.io/inshape/reference/violations.md) | The rows that break a check, all of them: wrap the check in it |
 
 The `ensure_*()` checkpoints warn or abort with the offending rows and
-return the data. The message shows the first rows;
+return the data. The message counts what it found in a way that shows
+the pattern before the rows, and ends with the next step as code to
+copy:
+
+    Duplicate rows on cpr, year
+    ℹ 412 rows in 200 groups
+      180 groups are exact copies
+      20 groups differ in: kom (14), civst (9)
+      By year: 2019 (388), 2021 (24)
+    ℹ The first 5 rows:
+      ...
+    ℹ For all rows: violations(ensure_unique(persons, cpr, year))
+    ℹ To drop the exact copies: dplyr::distinct(persons)
+    ℹ Copies that differ need a rule for which to keep, e.g. dplyr::slice_max(persons, <column>, by = c(cpr, year))
+
+On a console too narrow for a wide register, the preview keeps the key
+and the columns that explain the failure.
 [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
-returns all of them:
+returns all rows and columns:
 
 ``` r
 dups <- violations(ensure_unique(persons, cpr, year))
 ```
+
+A hint never makes a choice for you: where the fix takes a rule, such as
+which of two differing copies to keep, the code has a hole in it.
 
 Look at a reference before linking it and require the match, or validate
 a code at the time it was observed:
@@ -102,7 +150,7 @@ its printed summary.
 
 inshape is made for interactive review of registers. The offending rows
 of a check are personal data, so inshape writes nothing to disk, neither
-rows nor a log: a failure shows the count and the first rows at the
+rows nor a log: a failure shows counts and the first rows at the
 console, and the rest stay in memory, for
 [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
 to return. See
@@ -168,6 +216,8 @@ that prints, and judges nothing.
   : Describe the structure of a panel
 - [`describe_spells()`](https://dataniel.github.io/inshape/reference/describe_spells.md)
   : Describe the structure of spell data
+- [`describe_transitions()`](https://dataniel.github.io/inshape/reference/describe_transitions.md)
+  : Describe the transitions between statuses over time
 - [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md)
   : Describe which columns vary within a unit
 
@@ -186,6 +236,16 @@ counts many rules and judges nothing.
   : Assert that every row meets a condition
 - [`tally_violations()`](https://dataniel.github.io/inshape/reference/tally_violations.md)
   : Count violations for several rules at once
+
+## Common checks in one call
+
+The structure checks a panel, a set of spells or a lookup table nearly
+always needs, run together and reported in one overview.
+
+- [`ensure_panel()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  [`ensure_spells()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  [`ensure_lookup()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  : Check a panel, spells or a lookup table in one call
 
 ## Structure checks
 
@@ -213,18 +273,58 @@ in a pipeline.
   : Assert that spell boundaries are valid
 - [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
   : Assert that every key occurs in a reference register
+- [`ensure_transitions()`](https://dataniel.github.io/inshape/reference/ensure_transitions.md)
+  : Assert that a status only changes in allowed ways
 - [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
   : The rows that break a check
 - [`checkpoints`](https://dataniel.github.io/inshape/reference/checkpoints.md)
   : Checkpoints: shared arguments, personal data and database tables
 
-## Spells and panels
+## Groups, relations and events
 
-Merge spells recorded as several, convert spell data to a period panel,
-or add the status from spells to a panel you already have.
+Families, households and workplaces are groups of rows with roles;
+spouses and parents are rows that point to each other; events have many
+rows per unit. Three building blocks and two event functions cover them,
+without a definition of a family built in.
+
+- [`describe_groups()`](https://dataniel.github.io/inshape/reference/describe_groups.md)
+  : Describe how groups are composed of roles
+- [`ensure_counts()`](https://dataniel.github.io/inshape/reference/ensure_counts.md)
+  : Assert how many rows of each role a group has
+- [`ensure_references()`](https://dataniel.github.io/inshape/reference/ensure_references.md)
+  : Assert that rows pointing to other rows find them, and agree
+- [`describe_events()`](https://dataniel.github.io/inshape/reference/describe_events.md)
+  : Describe events: how many per unit, per period and how far apart
+- [`ensure_sequence()`](https://dataniel.github.io/inshape/reference/ensure_sequence.md)
+  : Assert that events come in order
+
+## Numbers
+
+Beyond the shape: do the numbers add up, to a published table and over
+periods?
+
+- [`ensure_reconciled()`](https://dataniel.github.io/inshape/reference/ensure_reconciled.md)
+  : Assert that microdata add up to a published table
+- [`ensure_stock_flow()`](https://dataniel.github.io/inshape/reference/ensure_stock_flow.md)
+  : Assert that a stock and its flows add up over periods
+
+## Fixes
+
+Fixes where the rule makes the result unambiguous. Each says what it
+changed, and none guesses a value.
 
 - [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md)
   : Merge spells that follow each other or overlap into one
+- [`fill_panel()`](https://dataniel.github.io/inshape/reference/fill_panel.md)
+  : Add the missing unit-periods of a panel as rows
+- [`carry_status()`](https://dataniel.github.io/inshape/reference/carry_status.md)
+  : Let a status stand once it is reached
+
+## Spells and panels
+
+Convert spell data to a period panel, or add the status from spells to a
+panel you already have.
+
 - [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md)
   : Turn spell data into a period panel with primo and ultimo status
 - [`add_spell_status()`](https://dataniel.github.io/inshape/reference/add_spell_status.md)

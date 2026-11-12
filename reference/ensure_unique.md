@@ -82,11 +82,14 @@ ensure_unique(persons[persons$cpr != "b", ], cpr, year)
 # Warning: b appears twice in 2024
 ensure_unique(persons, cpr, year)
 #> Warning: Duplicate rows on cpr, year
-#> ℹ 2 rows in 1 group:
+#> ℹ 2 rows in 1 group
+#>   The copies are identical in every column
+#> ℹ The rows:
 #>     dupid cpr    year
 #>     <int> <chr> <dbl>
 #>   1     1 b      2024
 #>   2     1 b      2024
+#> ℹ To drop the exact copies: dplyr::distinct(persons)
 
 if (FALSE) { # \dontrun{
 df |>

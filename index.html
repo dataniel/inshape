@@ -56,11 +56,21 @@
 <span></span>
 <span><span class="va">addresses</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ensure_no_overlap.html">ensure_no_overlap</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span></code></pre></div>
+<p>The checks a panel, a set of spells or a lookup table nearly always needs also run in one call, with one overview of what passed and what failed:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ensure_panel.html">ensure_panel</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">year</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Panel cpr by year: 1 of 3 checks failed</span></span>
+<span><span class="co">#&gt; ✔ Complete: cpr, year</span></span>
+<span><span class="co">#&gt; ✔ Unique on cpr, year</span></span>
+<span><span class="co">#&gt; ✖ Gaps in panel: missing cpr-year combinations (1,204 rows)</span></span>
+<span><span class="co">#&gt;   Missing for 312 units</span></span>
+<span><span class="co">#&gt;   By year: 2019 (1,150), 2021 (54)</span></span>
+<span><span class="co">#&gt; ℹ For the rows: violations(ensure_balanced(persons, cpr, year, gaps_only = TRUE))</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>inshape is not on CRAN. Install it from GitHub:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"dataniel/inshape"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -82,12 +92,24 @@
 <td>Status from spells on a panel you already have, at primo/ultimo or on a date</td>
 </tr>
 <tr>
+<td><code><a href="reference/carry_status.html">carry_status()</a></code></td>
+<td>A status that holds once reached (completed), or never falls in an order you give, carried forward into a new column, with every change counted</td>
+</tr>
+<tr>
 <td><code><a href="reference/describe_changes.html">describe_changes()</a></code></td>
 <td>Two extracts of a register: keys that came and went, and per column the values that changed, went missing or were filled in</td>
 </tr>
 <tr>
 <td><code><a href="reference/describe_codes.html">describe_codes()</a></code></td>
 <td>How the codes of a column change over periods: first and last period, codes skipping periods, new and gone codes</td>
+</tr>
+<tr>
+<td><code><a href="reference/describe_events.html">describe_events()</a></code></td>
+<td>Event data (moves, exams, contacts): events per unit, per period and per type, and the time between a unit’s events</td>
+</tr>
+<tr>
+<td><code><a href="reference/describe_groups.html">describe_groups()</a></code></td>
+<td>The compositions of groups such as families: “1 reference + 1 partner + 2 child: 4,210”, so impossible groups show</td>
 </tr>
 <tr>
 <td><code><a href="reference/describe_key.html">describe_key()</a></code></td>
@@ -100,6 +122,10 @@
 <tr>
 <td><code><a href="reference/describe_panel.html">describe_panel()</a></code></td>
 <td>The structure of a panel: units, gaps, entries and exits per period, participation patterns</td>
+</tr>
+<tr>
+<td><code><a href="reference/describe_transitions.html">describe_transitions()</a></code></td>
+<td>The transitions between statuses from one observation to the next, as a table where impossible transitions show as cells that should be empty</td>
 </tr>
 <tr>
 <td><code><a href="reference/describe_spells.html">describe_spells()</a></code></td>
@@ -130,8 +156,16 @@
 <td>Columns such as sex or birth date are constant within each unit</td>
 </tr>
 <tr>
+<td><code><a href="reference/ensure_counts.html">ensure_counts()</a></code></td>
+<td>Rows of each role per group within limits: exactly one reference person, at most two parents, at most one death</td>
+</tr>
+<tr>
 <td><code><a href="reference/ensure_empty.html">ensure_empty()</a></code></td>
 <td>A violation set built with <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code> or an anti-join has no rows</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_panel.html">ensure_lookup()</a></code></td>
+<td>A lookup table before a join: its key is unique, and every key of the data is in it</td>
 </tr>
 <tr>
 <td><code><a href="reference/ensure_matched.html">ensure_matched()</a></code></td>
@@ -151,6 +185,34 @@
 </td>
 </tr>
 <tr>
+<td><code><a href="reference/ensure_panel.html">ensure_panel()</a></code></td>
+<td>A panel in one call: the key is complete and unique, and no unit skips a period</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_reconciled.html">ensure_reconciled()</a></code></td>
+<td>Microdata counted (or summed) by a published table’s dimensions give the table’s numbers, cell for cell</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_stock_flow.html">ensure_stock_flow()</a></code></td>
+<td>A stock and its flows add up over periods: population at the end = before + born + immigrated - dead - emigrated</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_references.html">ensure_references()</a></code></td>
+<td>A column pointing to another row (spouse, mother) finds it, not itself, and with <code>mutual</code> is pointed back to, in the same family if asked</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_sequence.html">ensure_sequence()</a></code></td>
+<td>Events come in order: no exam before enrolment, no move out before a move in</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_panel.html">ensure_spells()</a></code></td>
+<td>Spells in one call: the unit is complete, the spells valid and not overlapping, optionally without gaps</td>
+</tr>
+<tr>
+<td><code><a href="reference/ensure_transitions.html">ensure_transitions()</a></code></td>
+<td>A status only changes in allowed ways: no forbidden transition (<code>"completed -&gt; not started"</code>), nothing after a final status</td>
+</tr>
+<tr>
 <td><code><a href="reference/ensure_unique.html">ensure_unique()</a></code></td>
 <td>Key columns identify each row uniquely</td>
 </tr>
@@ -161,6 +223,10 @@
 <tr>
 <td><code><a href="reference/ensure_within.html">ensure_within()</a></code></td>
 <td>No rows after death or emigration, or before birth: each row within its unit’s lifetime</td>
+</tr>
+<tr>
+<td><code><a href="reference/fill_panel.html">fill_panel()</a></code></td>
+<td>The missing unit-periods of a panel added as rows of missing values, with the count of rows added</td>
 </tr>
 <tr>
 <td><code><a href="reference/merge_spells.html">merge_spells()</a></code></td>
@@ -181,11 +247,23 @@
 </tr>
 </tbody>
 </table>
-<p>The <code>ensure_*()</code> checkpoints warn or abort with the offending rows and return the data. The message shows the first rows; <code><a href="reference/violations.html">violations()</a></code> returns all of them:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>The <code>ensure_*()</code> checkpoints warn or abort with the offending rows and return the data. The message counts what it found in a way that shows the pattern before the rows, and ends with the next step as code to copy:</p>
+<pre><code>Duplicate rows on cpr, year
+ℹ 412 rows in 200 groups
+  180 groups are exact copies
+  20 groups differ in: kom (14), civst (9)
+  By year: 2019 (388), 2021 (24)
+ℹ The first 5 rows:
+  ...
+ℹ For all rows: violations(ensure_unique(persons, cpr, year))
+ℹ To drop the exact copies: dplyr::distinct(persons)
+ℹ Copies that differ need a rule for which to keep, e.g. dplyr::slice_max(persons, &lt;column&gt;, by = c(cpr, year))</code></pre>
+<p>On a console too narrow for a wide register, the preview keeps the key and the columns that explain the failure. <code><a href="reference/violations.html">violations()</a></code> returns all rows and columns:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span>, <span class="va">year</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>A hint never makes a choice for you: where the fix takes a rule, such as which of two differing copies to keep, the code has a hole in it.</p>
 <p>Look at a reference before linking it and require the match, or validate a code at the time it was observed:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/describe_match.html">describe_match</a></span><span class="op">(</span><span class="va">income</span>, <span class="va">population</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cpr"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">income</span> <span class="op">|&gt;</span></span>
@@ -204,14 +282,14 @@
 <span>  <span class="fu"><a href="reference/ensure_valid_spells.html">ensure_valid_spells</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">end</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ensure_no_overlap.html">ensure_no_overlap</a></span><span class="op">(</span><span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span></code></pre></div>
 <p>Code validity bounds are inclusive, and missing bounds are open. Missing observation times fail for non-missing codes. <code><a href="reference/ensure_matched.html">ensure_matched()</a></code> treats missing keys as unmatched unless <code>na_matches = "na"</code> is requested. Diagnostic columns get a suffix on name collisions, preserving the input columns. <code><a href="reference/describe_changes.html">describe_changes()</a></code> explicitly lists columns it cannot compare in <code>columns_skipped</code> and in its printed summary.</p>
-<p>inshape is made for interactive review of registers. The offending rows of a check are personal data, so inshape writes nothing to disk, neither rows nor a log: a failure shows the count and the first rows at the console, and the rest stay in memory, for <code><a href="reference/violations.html">violations()</a></code> to return. See <code><a href="reference/checkpoints.html">?checkpoints</a></code>.</p>
+<p>inshape is made for interactive review of registers. The offending rows of a check are personal data, so inshape writes nothing to disk, neither rows nor a log: a failure shows counts and the first rows at the console, and the rest stay in memory, for <code><a href="reference/violations.html">violations()</a></code> to return. See <code><a href="reference/checkpoints.html">?checkpoints</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="built-for-registers">Built for registers<a class="anchor" aria-label="anchor" href="#built-for-registers"></a>
 </h2>
 <p>Character keys such as cpr are compressed to integer ids by a compiled, partitioned and multi-threaded hash, without sorting them; a panel then becomes a bit matrix, one bit per unit and period, read with processor bit instructions; and spell lookups run in one compiled pass over the sorted spells. On 25 million rows (5 million persons over 5 years), <code><a href="reference/describe_panel.html">describe_panel()</a></code> takes under 2 seconds. See <code>benchmarks/</code>.</p>
 <p>A DuckDB or Arrow table is checked and described in the database, without loading it into R; the <code>describe_*()</code> summaries fetch only their counts:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"register.duckdb"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"persons"</span><span class="op">)</span> <span class="op">|&gt;</span></span>

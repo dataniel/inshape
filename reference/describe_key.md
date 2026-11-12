@@ -65,8 +65,8 @@ describe_key(firms, cvr, year)
 #> ── Key: cvr, year ──────────────────────────────────────────────────────────────
 #> 5 rows, 3 distinct keys
 #> 
-#> • Duplicated keys: 2 (4 rows, 2 extra rows)
+#> ⚠ Duplicated keys: 2 (4 rows, 2 extra rows)
+#> ⚠ Copies differ in: industry (1)
 #> • Exact copies, identical in every column: 1 of 2 keys
-#> • Copies differ in: industry (1)
 #> • Copies per duplicated key: 2 (2)
 ```

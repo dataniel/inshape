@@ -82,8 +82,8 @@ describe_codes(persons, municipality, year)
 #> ── Codes: municipality by year ─────────────────────────────────────────────────
 #> 12 rows, 5 codes, 4 periods, 2018-2021
 #> 
+#> ✔ No code skips a period
 #> • In every period: 1 code (20.0%)
-#> • Skipping periods: 0 codes (0.0%)
 #> 
 #> By period:
 #>     period codes   new  gone missing

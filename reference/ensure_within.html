@@ -171,7 +171,9 @@ period.</p></div>
 <span class="r-in"><span><span class="co"># a has a row after the year of death, b one before birth</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_within</span><span class="op">(</span><span class="va">panel</span>, <span class="va">year</span>, from <span class="op">=</span> <span class="va">born</span>, to <span class="op">=</span> <span class="va">death</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Rows outside: year within born to death</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows in 2 groups:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows in 2 groups</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Bounds broken: after death (1), before born (1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     outside      year born       death      cpr</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> after death  <span style="text-decoration: underline;">2</span>024 1950-04-01 2023-05-01 a</span>

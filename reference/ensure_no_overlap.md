@@ -100,9 +100,12 @@ addresses <- data.frame(
 # b has two addresses in June 2020
 ensure_no_overlap(addresses, cpr, start, end)
 #> Warning: Overlapping spells per cpr
-#> ℹ 2 rows in 1 group:
+#> ℹ 2 rows in 1 group
+#>   In 1 unit
+#> ℹ The rows:
 #>     overlap_id cpr   start      end
 #>          <int> <chr> <date>     <date>
 #>   1          1 b     2020-01-01 2020-06-30
 #>   2          1 b     2020-06-01 2021-12-31
+#> ℹ If they are one spell recorded more than once: merge_spells(addresses, cpr, start, end)
 ```

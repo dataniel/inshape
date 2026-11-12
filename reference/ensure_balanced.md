@@ -114,26 +114,39 @@ panel <- data.frame(
 # Not balanced: b lacks 2021, c lacks 2020 and 2021
 ensure_balanced(panel, cpr, year)
 #> Warning: Panel is not balanced: missing cpr-year combinations
-#> ℹ 3 rows found:
+#> ℹ 3 rows
+#>   Missing for 2 units
+#>   By year: 2021 (2), 2020 (1)
+#> ℹ The rows:
 #>     cpr    year
 #>     <chr> <dbl>
 #>   1 b      2021
 #>   2 c      2020
 #>   3 c      2021
+#> ℹ If units may enter late and leave early: ensure_balanced(panel, cpr, year, gaps_only = TRUE)
+#> ℹ To add them as rows with missing values: fill_panel(panel, cpr, year, gaps_only = FALSE)
 
 # Only gaps: b lacks 2021; c simply entered in 2022
 ensure_balanced(panel, cpr, year, gaps_only = TRUE)
 #> Warning: Gaps in panel: missing cpr-year combinations
-#> ℹ 1 row found:
+#> ℹ 1 row
+#>   Missing for 1 unit
+#>   By year: 2021 (1)
+#> ℹ The rows:
 #>     cpr    year
 #>     <chr> <dbl>
 #>   1 b      2021
+#> ℹ To add them as rows with missing values: fill_panel(panel, cpr, year)
 
 # A year missing for everyone is only found with explicit periods
 ensure_balanced(panel, cpr, year, periods = 2019:2022, gaps_only = TRUE)
 #> Warning: Gaps in panel: missing cpr-year combinations
-#> ℹ 1 row found:
+#> ℹ 1 row
+#>   Missing for 1 unit
+#>   By year: 2021 (1)
+#> ℹ The rows:
 #>     cpr    year
 #>     <chr> <int>
 #>   1 b      2021
+#> ℹ To add them as rows with missing values: fill_panel(panel, cpr, year)
 ```

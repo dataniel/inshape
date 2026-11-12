@@ -150,28 +150,41 @@ only built for units that actually lack a period.</p>
 <span class="r-in"><span><span class="co"># Not balanced: b lacks 2021, c lacks 2020 and 2021</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_balanced</span><span class="op">(</span><span class="va">panel</span>, <span class="va">cpr</span>, <span class="va">year</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Panel is not balanced: missing cpr-year combinations</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 3 rows found:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 3 rows</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Missing for 2 units</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   By year: 2021 (2), 2020 (1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     cpr    year</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> b      <span style="text-decoration: underline;">2</span>021</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">2</span> c      <span style="text-decoration: underline;">2</span>020</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">3</span> c      <span style="text-decoration: underline;">2</span>021</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> If units may enter late and leave early: ensure_balanced(panel, cpr, year, gaps_only = TRUE)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> To add them as rows with missing values: fill_panel(panel, cpr, year, gaps_only = FALSE)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Only gaps: b lacks 2021; c simply entered in 2022</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_balanced</span><span class="op">(</span><span class="va">panel</span>, <span class="va">cpr</span>, <span class="va">year</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Gaps in panel: missing cpr-year combinations</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 row found:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 row</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Missing for 1 unit</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   By year: 2021 (1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     cpr    year</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> b      <span style="text-decoration: underline;">2</span>021</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> To add them as rows with missing values: fill_panel(panel, cpr, year)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A year missing for everyone is only found with explicit periods</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_balanced</span><span class="op">(</span><span class="va">panel</span>, <span class="va">cpr</span>, <span class="va">year</span>, periods <span class="op">=</span> <span class="fl">2019</span><span class="op">:</span><span class="fl">2022</span>, gaps_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Gaps in panel: missing cpr-year combinations</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 row found:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 row</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Missing for 1 unit</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   By year: 2021 (1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     cpr    year</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span> b      <span style="text-decoration: underline;">2</span>021</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> To add them as rows with missing values: fill_panel(panel, cpr, year)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -107,9 +107,9 @@ describe_panel(panel, cpr, year)
 #> ── Panel: cpr by year ──────────────────────────────────────────────────────────
 #> 9 rows, 4 units, 3 periods, 2020-2022
 #> 
+#> ⚠ With gaps: 1 unit (25.0%), 1 missing unit-period inside their span
+#> ✔ No duplicated unit-periods
 #> • Observed in every period: 2 units (50.0%)
-#> • With gaps: 1 unit (25.0%), 1 missing unit-period inside their span
-#> • Duplicated unit-periods: 0 (0 extra rows)
 #> 
 #> By period:
 #>     period units entries exits  gaps

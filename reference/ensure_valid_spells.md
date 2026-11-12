@@ -70,7 +70,9 @@ ensure_valid_spells(
 spells <- data.frame(start = c(2020, NA, 2023), end = c(NA, 2022, 2022))
 ensure_valid_spells(spells, start, end)
 #> Warning: Invalid spells: start to end
-#> ℹ 2 rows in 2 groups:
+#> ℹ 2 rows in 2 groups
+#>   Reasons: end before start (1), missing start (1)
+#> ℹ The rows:
 #>     reason           start   end
 #>     <chr>            <dbl> <dbl>
 #>   1 missing start       NA  2022

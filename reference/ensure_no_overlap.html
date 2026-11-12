@@ -132,11 +132,14 @@ twice, <code><a href="ensure_balanced.html">ensure_balanced()</a></code> for yea
 <span class="r-in"><span><span class="co"># b has two addresses in June 2020</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_no_overlap</span><span class="op">(</span><span class="va">addresses</span>, <span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Overlapping spells per cpr</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows in 1 group:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 2 rows in 1 group</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   In 1 unit</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     overlap_id cpr   start      end</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span>          1 b     2020-01-01 2020-06-30</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">2</span>          1 b     2020-06-01 2021-12-31</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> If they are one spell recorded more than once: merge_spells(addresses, cpr, start, end)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

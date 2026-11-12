@@ -116,10 +116,14 @@ addresses <- data.frame(
 # b has no address on 1, 2 and 3 July 2020
 ensure_no_gaps(addresses, cpr, start, end)
 #> Warning: Gaps between spells per cpr
-#> ℹ 1 row found:
+#> ℹ 1 row
+#>   In 1 unit
+#>   Gap length: shortest 3, median 3, longest 3
+#> ℹ The rows:
 #>       gap cpr   start      end
 #>     <int> <chr> <date>     <date>
 #>   1     3 b     2020-07-04 2021-12-31
+#> ℹ To join spells across gaps up to a length you choose: merge_spells(addresses, cpr, start, end, max_gap = <length>)
 
 # Accept up to a week without an address
 ensure_no_gaps(addresses, cpr, start, end, max_gap = 7)

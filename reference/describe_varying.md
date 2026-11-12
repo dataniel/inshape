@@ -77,6 +77,10 @@ describe_varying(persons, cpr)
 #> ── Within cpr ──────────────────────────────────────────────────────────────────
 #> 3 units, 3 columns
 #> 
+#> ✔ No column is nearly constant
+#> • Constant: 0 columns
+#> 
+#> Per column:
 #>     column varying share   partly_missing all_missing
 #>   1 sex          1 33.33%               1           0
 #>   2 income       3 100.00%              0           0

@@ -80,7 +80,26 @@ issued instead.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The offending rows are deliberately not kept in the session afterwards: on
+
+<div class="section">
+<h3 id="the-failure-message">The failure message<a class="anchor" aria-label="anchor" href="#the-failure-message"></a></h3>
+
+
+<p>A failure is laid out in the same order by every structure check: what
+broke, the number of rows, counts that show the pattern (exact copies
+against copies that differ, units, periods, codes, the columns that
+vary), the first rows, and the next step. Five rows do not show whether
+40,000 duplicates are one year or the whole table; the counts do, and
+show fewer personal data. They are computed only when the check fails.</p>
+<p>The next step is code to copy, with the column names filled in: the
+call to wrap in <code><a href="violations.html">violations()</a></code>, and a fix where one is unambiguous, such
+as <code><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">dplyr::distinct()</a></code> for exact copies or <code><a href="merge_spells.html">merge_spells()</a></code> for
+overlapping spells. Where a fix takes a choice the package cannot make,
+such as which of two differing copies to keep, the code has a hole in
+it, <code>&lt;column&gt;</code>. When the console is too narrow for every column, the
+preview keeps the key, the diagnostic column and the columns that
+explain the failure, and names the others.</p>
+<p>The offending rows are deliberately not kept in the session afterwards: on
 a population register a failed check can hold millions of rows, and they
 would stay in memory until the next failure. Messages are shown literally:
 braces are not interpolated.
@@ -92,7 +111,10 @@ names and values.</p>
 an error) that carries the offending rows in its <code>violations</code> field.
 <code><a href="violations.html">violations()</a></code> catches it and returns the rows, to look at all of them
 in the session:</p>
-<p></p><div class="sourceCode r"><pre><code><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="../reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div><div class="section">
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/violations.html">violations</a></span><span class="op">(</span><span class="fu"><a href="../reference/ensure_unique.html">ensure_unique</a></span><span class="op">(</span><span class="va">persons</span>, <span class="va">cpr</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div>
+</div>
+
+<div class="section">
 <h3 id="personal-data">Personal data<a class="anchor" aria-label="anchor" href="#personal-data"></a></h3>
 
 
@@ -100,7 +122,8 @@ in the session:</p>
 the environment where the data lives. The offending rows of a check are
 personal data: they hold the key, often a cpr number, and every other
 column of the rows. inshape therefore writes nothing to disk, neither
-the rows nor a log of the checks, and keeps nothing after a check:</p><ul><li><p><strong>The message</strong> shows the number of rows and the first 5 of them at
+the rows nor a log of the checks, and keeps nothing after a check:</p><ul><li><p><strong>The message</strong> shows the number of rows, counts that show their
+pattern (per year, per code, per column), and the first 5 of them at
 the console. Output that is kept, such as a rendered report or a
 shared screen, keeps them too, so run the checks at the console.</p></li>
 <li><p><strong>The condition</strong> carries the rows in memory, until it is caught, by
@@ -165,6 +188,8 @@ queries, to <code>collect()</code>.</p>
 <code><a href="ensure_no_overlap.html">ensure_no_overlap()</a></code>, <code><a href="ensure_no_gaps.html">ensure_no_gaps()</a></code>,
 <code><a href="ensure_valid_spells.html">ensure_valid_spells()</a></code>, <code><a href="ensure_constant.html">ensure_constant()</a></code>, <code><a href="ensure_within.html">ensure_within()</a></code>,
 <code><a href="ensure_codes.html">ensure_codes()</a></code> and <code><a href="ensure_matched.html">ensure_matched()</a></code> for the structure,
+<code><a href="ensure_panel.html">ensure_panel()</a></code>, <code><a href="ensure_panel.html">ensure_spells()</a></code> and <code><a href="ensure_panel.html">ensure_lookup()</a></code> for the
+common ones in one call,
 <code><a href="ensure_none.html">ensure_none()</a></code>, <code><a href="ensure_all.html">ensure_all()</a></code>, <code><a href="ensure_empty.html">ensure_empty()</a></code> and
 <code><a href="tally_violations.html">tally_violations()</a></code> for rules of your own, and <code><a href="violations.html">violations()</a></code> for the
 rows that break one.</p></div>

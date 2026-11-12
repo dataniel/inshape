@@ -109,8 +109,9 @@ describe_spells(admissions, cpr, start, end)
 #> ── Spells: start to end per cpr ────────────────────────────────────────────────
 #> 6 rows, 6 usable spells, 3 units
 #> 
+#> ✔ Every spell has a start and ends after it
+#> ⚠ Units with overlapping spells: 1 (33.3%)
 #> • Ongoing (no end): 1
-#> • Units with overlapping spells: 1 (33.3%)
 #> 
 #> Relation to the unit's earlier spells:
 #>     relation    spells

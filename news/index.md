@@ -2,6 +2,112 @@
 
 ## inshape 0.1.0
 
+- Groups and relations, built so they fit families, households,
+  workplaces and school classes alike, with no definition of a family
+  built in:
+  [`describe_groups()`](https://dataniel.github.io/inshape/reference/describe_groups.md)
+  counts the groups per composition of roles;
+  [`ensure_counts()`](https://dataniel.github.io/inshape/reference/ensure_counts.md)
+  requires a count per role and group, such as exactly one reference
+  person or at most two parents; and
+  [`ensure_references()`](https://dataniel.github.io/inshape/reference/ensure_references.md)
+  checks a column pointing to another row, such as a spouse, which must
+  be found, not be the row itself, point back with `mutual = TRUE`, and
+  agree on `same` columns such as the family.
+
+- Events:
+  [`describe_events()`](https://dataniel.github.io/inshape/reference/describe_events.md)
+  counts events per unit, per period and per type and the time between a
+  unit’s events;
+  [`ensure_sequence()`](https://dataniel.github.io/inshape/reference/ensure_sequence.md)
+  requires one event before another, such as enrolment before an exam.
+
+- [`?ensure_constant`](https://dataniel.github.io/inshape/reference/ensure_constant.md)
+  shows how it checks hierarchies, such as settlements within
+  municipalities.
+
+- inshape now also asks whether the numbers add up. New
+  [`ensure_reconciled()`](https://dataniel.github.io/inshape/reference/ensure_reconciled.md)
+  counts or sums microdata by the dimensions of a published table you
+  give it and reports the cells that differ, both ways, with a
+  `tolerance` for tables rounded for disclosure; suppressed cells are
+  not compared. New
+  [`ensure_stock_flow()`](https://dataniel.github.io/inshape/reference/ensure_stock_flow.md)
+  checks that a stock is the stock before plus the inflows minus the
+  outflows, per period and group, with the stock counted at the end or
+  the start of each period.
+
+- New
+  [`describe_transitions()`](https://dataniel.github.io/inshape/reference/describe_transitions.md)
+  and
+  [`ensure_transitions()`](https://dataniel.github.io/inshape/reference/ensure_transitions.md)
+  for a status that follows a unit over time. The description is a table
+  of units per transition, where impossible transitions show as cells
+  that should be empty; the check forbids transitions written as
+  `"completed -> not started"`, or every change away from a `final`
+  status, and counts the rows per transition. Each observation is
+  compared with the unit’s next one, whatever the distance, and spells
+  work with their start as `time`.
+
+- New
+  [`carry_status()`](https://dataniel.github.io/inshape/reference/carry_status.md)
+  fixes those transitions when the rule is given: a `final` status holds
+  once reached, or the status never falls in an `order`. The result goes
+  to a new column by default, and the message counts the rows and units
+  per change.
+
+- New
+  [`fill_panel()`](https://dataniel.github.io/inshape/reference/fill_panel.md)
+  adds the missing unit-periods of a panel as rows of missing values and
+  says how many;
+  [`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md)
+  points to it.
+
+- New
+  [`ensure_panel()`](https://dataniel.github.io/inshape/reference/ensure_panel.md),
+  [`ensure_spells()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  and
+  [`ensure_lookup()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  run the checks a panel, a set of spells or a lookup table nearly
+  always needs and report them in one overview: what passed, what failed
+  with its counts, and the call that gives the rows. All checks run, so
+  every problem shows at once; overlaps and gaps wait until the spells
+  are valid.
+  [`violations()`](https://dataniel.github.io/inshape/reference/violations.md)
+  on a wrapper names the single checks to wrap instead.
+
+- The seven `describe_*()` summaries print in one layout: the size, then
+  the problems, then the neutral counts, then the tables. A problem that
+  is present has a warning sign and one that could be there but is not a
+  tick, so “Ongoing: 12,400” and “Ending before they start: 3” no longer
+  look alike.
+  [`describe_varying()`](https://dataniel.github.io/inshape/reference/describe_varying.md)
+  flags columns that vary for under 1% of units as nearly constant. The
+  returned objects are unchanged.
+
+- A failed structure check now shows the pattern before the rows: exact
+  copies against copies that differ, and in which columns
+  ([`ensure_unique()`](https://dataniel.github.io/inshape/reference/ensure_unique.md));
+  units and periods
+  ([`ensure_balanced()`](https://dataniel.github.io/inshape/reference/ensure_balanced.md));
+  codes, missing values per column, units per varying column, gap
+  lengths and reasons; and the values that half the rows, or all of them
+  on a few values, share, such as `By year: 2019 (388), 2021 (24)`.
+  Counts are computed only on failure, as queries on a database table.
+
+- The message ends with the next step as code to copy, with the column
+  names filled in: `violations(ensure_unique(persons, cpr, year))`,
+  [`dplyr::distinct()`](https://dplyr.tidyverse.org/reference/distinct.html)
+  for exact copies,
+  [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md)
+  for overlaps and gaps, `gaps_only = TRUE` for a panel with late
+  entries. Where the fix takes a choice, the code has a hole in it, such
+  as `<column>`.
+
+- On a console too narrow for all columns, the preview keeps the key,
+  the diagnostic column and the columns that explain the failure, and
+  names the ones it leaves out.
+
 - The general checkpoints from the expectr package are now part of
   inshape, renamed to the `ensure_` prefix and built on the same
   reporting as the structure checks:

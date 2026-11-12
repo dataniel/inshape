@@ -64,6 +64,13 @@ before anyone builds on them?
 - [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md):
   every key occurs in a reference register.
 
+- [`ensure_panel()`](https://dataniel.github.io/inshape/reference/ensure_panel.md),
+  [`ensure_spells()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+  and
+  [`ensure_lookup()`](https://dataniel.github.io/inshape/reference/ensure_panel.md):
+  the checks a panel, a set of spells or a lookup table nearly always
+  needs, in one call with one overview.
+
 - [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
   [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md)
   and
@@ -76,8 +83,35 @@ before anyone builds on them?
 - [`violations()`](https://dataniel.github.io/inshape/reference/violations.md):
   the rows that break a check, all of them.
 
+- [`describe_groups()`](https://dataniel.github.io/inshape/reference/describe_groups.md),
+  [`ensure_counts()`](https://dataniel.github.io/inshape/reference/ensure_counts.md)
+  and
+  [`ensure_references()`](https://dataniel.github.io/inshape/reference/ensure_references.md):
+  families and other groups, and rows that point to each other.
+
+- [`describe_events()`](https://dataniel.github.io/inshape/reference/describe_events.md)
+  and
+  [`ensure_sequence()`](https://dataniel.github.io/inshape/reference/ensure_sequence.md):
+  events and their order.
+
+- [`ensure_reconciled()`](https://dataniel.github.io/inshape/reference/ensure_reconciled.md)
+  and
+  [`ensure_stock_flow()`](https://dataniel.github.io/inshape/reference/ensure_stock_flow.md):
+  the numbers add up, to a published table and over periods.
+
+- [`describe_transitions()`](https://dataniel.github.io/inshape/reference/describe_transitions.md)
+  and
+  [`ensure_transitions()`](https://dataniel.github.io/inshape/reference/ensure_transitions.md):
+  how a status changes over time, and the changes that cannot happen.
+
 - [`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md):
   one spell recorded as several, merged into one.
+
+- [`fill_panel()`](https://dataniel.github.io/inshape/reference/fill_panel.md):
+  the missing unit-periods of a panel added as rows.
+
+- [`carry_status()`](https://dataniel.github.io/inshape/reference/carry_status.md):
+  a status that holds once reached, carried forward.
 
 - [`spells_to_panel()`](https://dataniel.github.io/inshape/reference/spells_to_panel.md)
   and

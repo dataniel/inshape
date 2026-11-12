@@ -89,11 +89,23 @@ before birth.</p></li>
 <li><p><code><a href="ensure_codes.html">ensure_codes()</a></code>: a coded column holds only codes from the code list,
 valid at the time of the row.</p></li>
 <li><p><code><a href="ensure_matched.html">ensure_matched()</a></code>: every key occurs in a reference register.</p></li>
+<li><p><code><a href="ensure_panel.html">ensure_panel()</a></code>, <code><a href="ensure_panel.html">ensure_spells()</a></code> and <code><a href="ensure_panel.html">ensure_lookup()</a></code>: the checks
+a panel, a set of spells or a lookup table nearly always needs, in one
+call with one overview.</p></li>
 <li><p><code><a href="ensure_none.html">ensure_none()</a></code>, <code><a href="ensure_all.html">ensure_all()</a></code> and <code><a href="ensure_empty.html">ensure_empty()</a></code>: any other rule
 dplyr can express, such as no negative amounts.</p></li>
 <li><p><code><a href="tally_violations.html">tally_violations()</a></code>: count many rules at once, without judging.</p></li>
 <li><p><code><a href="violations.html">violations()</a></code>: the rows that break a check, all of them.</p></li>
+<li><p><code><a href="describe_groups.html">describe_groups()</a></code>, <code><a href="ensure_counts.html">ensure_counts()</a></code> and <code><a href="ensure_references.html">ensure_references()</a></code>:
+families and other groups, and rows that point to each other.</p></li>
+<li><p><code><a href="describe_events.html">describe_events()</a></code> and <code><a href="ensure_sequence.html">ensure_sequence()</a></code>: events and their order.</p></li>
+<li><p><code><a href="ensure_reconciled.html">ensure_reconciled()</a></code> and <code><a href="ensure_stock_flow.html">ensure_stock_flow()</a></code>: the numbers add up,
+to a published table and over periods.</p></li>
+<li><p><code><a href="describe_transitions.html">describe_transitions()</a></code> and <code><a href="ensure_transitions.html">ensure_transitions()</a></code>: how a status
+changes over time, and the changes that cannot happen.</p></li>
 <li><p><code><a href="merge_spells.html">merge_spells()</a></code>: one spell recorded as several, merged into one.</p></li>
+<li><p><code><a href="fill_panel.html">fill_panel()</a></code>: the missing unit-periods of a panel added as rows.</p></li>
+<li><p><code><a href="carry_status.html">carry_status()</a></code>: a status that holds once reached, carried forward.</p></li>
 <li><p><code><a href="spells_to_panel.html">spells_to_panel()</a></code> and <code><a href="add_spell_status.html">add_spell_status()</a></code>: from spells to a panel.</p></li>
 </ul><p>The <code>ensure_*()</code> functions are checkpoints: they warn or abort with the
 offending rows and return the data, so they sit in a pipeline. What they

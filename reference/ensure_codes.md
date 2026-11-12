@@ -101,7 +101,9 @@ valid <- c("955", "956", "957", "959", "960")
 # "95" is not a municipality
 ensure_codes(persons, municipality, valid)
 #> Warning: Codes not in the code list: municipality
-#> ℹ 1 row in 1 group:
+#> ℹ 1 row in 1 group
+#>   Codes: 95 (1)
+#> ℹ The rows:
 #>     municipality cpr
 #>     <chr>        <chr>
 #>   1 95           c

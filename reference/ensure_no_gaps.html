@@ -144,10 +144,14 @@ spells across short gaps, <a href="checkpoints.html">checkpoints</a>.</p></div>
 <span class="r-in"><span><span class="co"># b has no address on 1, 2 and 3 July 2020</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_no_gaps</span><span class="op">(</span><span class="va">addresses</span>, <span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Gaps between spells per cpr</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 row found:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 row</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   In 1 unit</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Gap length: shortest 3, median 3, longest 3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The rows:</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>       gap cpr   start      end</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   <span style="color: #BCBCBC;">1</span>     3 b     2020-07-04 2021-12-31</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> To join spells across gaps up to a length you choose: merge_spells(addresses, cpr, start, end, max_gap = &lt;length&gt;)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Accept up to a week without an address</span></span></span>
 <span class="r-in"><span><span class="fu">ensure_no_gaps</span><span class="op">(</span><span class="va">addresses</span>, <span class="va">cpr</span>, <span class="va">start</span>, <span class="va">end</span>, max_gap <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span></span>

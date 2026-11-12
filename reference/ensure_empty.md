@@ -97,7 +97,7 @@ mtcars |>
 #>   4  17.3     8  276.   180  3.07  3.73  17.6     0     0     3     3
 #>   5  15.2     8  276.   180  3.07  3.78  18       0     0     3     3
 #>   # ℹ 9 more rows
-#> ℹ Wrap the check in violations() to get all rows.
+#> ℹ For all rows: violations(ensure_empty(dplyr::filter(mtcars, cyl > 6)))
 
 # Many rules at once, then one judgement
 mtcars |>

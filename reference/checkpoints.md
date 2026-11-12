@@ -38,6 +38,28 @@ take any rule dplyr can express. This page documents what they share.
 
 ## Details
 
+### The failure message
+
+A failure is laid out in the same order by every structure check: what
+broke, the number of rows, counts that show the pattern (exact copies
+against copies that differ, units, periods, codes, the columns that
+vary), the first rows, and the next step. Five rows do not show whether
+40,000 duplicates are one year or the whole table; the counts do, and
+show fewer personal data. They are computed only when the check fails.
+
+The next step is code to copy, with the column names filled in: the call
+to wrap in
+[`violations()`](https://dataniel.github.io/inshape/reference/violations.md),
+and a fix where one is unambiguous, such as
+[`dplyr::distinct()`](https://dplyr.tidyverse.org/reference/distinct.html)
+for exact copies or
+[`merge_spells()`](https://dataniel.github.io/inshape/reference/merge_spells.md)
+for overlapping spells. Where a fix takes a choice the package cannot
+make, such as which of two differing copies to keep, the code has a hole
+in it, `<column>`. When the console is too narrow for every column, the
+preview keeps the key, the diagnostic column and the columns that
+explain the failure, and names the others.
+
 The offending rows are deliberately not kept in the session afterwards:
 on a population register a failed check can hold millions of rows, and
 they would stay in memory until the next failure. Messages are shown
@@ -61,7 +83,8 @@ personal data: they hold the key, often a cpr number, and every other
 column of the rows. inshape therefore writes nothing to disk, neither
 the rows nor a log of the checks, and keeps nothing after a check:
 
-- **The message** shows the number of rows and the first 5 of them at
+- **The message** shows the number of rows, counts that show their
+  pattern (per year, per code, per column), and the first 5 of them at
   the console. Output that is kept, such as a rendered report or a
   shared screen, keeps them too, so run the checks at the console.
 
@@ -141,6 +164,11 @@ the keys that came, went or changed stay queries, to `collect()`.
 and
 [`ensure_matched()`](https://dataniel.github.io/inshape/reference/ensure_matched.md)
 for the structure,
+[`ensure_panel()`](https://dataniel.github.io/inshape/reference/ensure_panel.md),
+[`ensure_spells()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+and
+[`ensure_lookup()`](https://dataniel.github.io/inshape/reference/ensure_panel.md)
+for the common ones in one call,
 [`ensure_none()`](https://dataniel.github.io/inshape/reference/ensure_none.md),
 [`ensure_all()`](https://dataniel.github.io/inshape/reference/ensure_all.md),
 [`ensure_empty()`](https://dataniel.github.io/inshape/reference/ensure_empty.md)

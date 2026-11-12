@@ -62,6 +62,14 @@ ensure_constant(
 
 ## Details
 
+The same check covers hierarchies: that each settlement lies in one
+municipality, or each 4-digit code in one 2-digit code, is the parent
+column constant within the child,
+`ensure_constant(places, settlement, municipality)`. With years, give
+both, `ensure_constant(places, c(settlement, year), municipality)`, so a
+settlement may move between municipalities in a reform but not within a
+year.
+
 A missing value does not break the rule: a sex that is missing in one
 year and known in another is incomplete, not contradictory. Find such
 units with
@@ -84,9 +92,12 @@ persons <- data.frame(
 # b changes sex; c is only missing in 2021
 ensure_constant(persons, cpr, sex)
 #> Warning: Varies within units: sex per cpr
-#> ℹ 2 rows found:
+#> ℹ 2 rows
+#>   In 1 unit
+#> ℹ The rows:
 #>     cpr   sex    year
 #>     <chr> <chr> <dbl>
 #>   1 b     M      2020
 #>   2 b     F      2021
+#> ℹ Which value holds is a choice, e.g. dplyr::mutate(persons, sex = <first, last or most common>, .by = cpr)
 ```

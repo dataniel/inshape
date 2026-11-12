@@ -8,7 +8,8 @@ name: R-CMD-check
 
 jobs:
   R-CMD-check:
-    runs-on: ubuntu-latest
+    # inshape is used on Windows only, so that is where it is checked
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
